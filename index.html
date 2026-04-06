@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #0b141a;
+      color: white;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #111b21;
+    }
+
+    header {
+      background: #202c33;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .msg {
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 10px;
+      max-width: 70%;
+    }
+
+    .me {
+      background: #005c4b;
+      margin-left: auto;
+    }
+
+    .other {
+      background: #202c33;
+    }
+
+    .inputArea {
+      display: flex;
+      padding: 10px;
+      background: #202c33;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      margin-left: 5px;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #25d366;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.8;
+    }
+
+    .login {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 20px;
+    }
+
+    .logout {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      background: red;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    Chat
+    <button class="logout" onclick="logout()">Sair</button>
+  </header>
+
+  <div id="loginDiv" class="login">
+    <input id="email" placeholder="Email">
+    <input id="senha" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <button onclick="registrar()">Criar conta</button>
+  </div>
+
+  <div id="appDiv" style="display:none;">
+    <div id="chat"></div>
+
+    <div class="inputArea">
+      <input id="msg" placeholder="Mensagem...">
+      <button onclick="enviar()">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
+  authDomain: "zap-proprio-web.firebaseapp.com",
+  projectId: "zap-proprio-web",
+  storageBucket: "zap-proprio-web.firebasestorage.app",
+  messagingSenderId: "974920784341",
+  appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// LOGIN
+window.login = () => {
+  signInWithEmailAndPassword(auth, email.value, senha.value);
+};
+
+// REGISTRO
+window.registrar = () => {
+  createUserWithEmailAndPassword(auth, email.value, senha.value);
+};
+
+// LOGOUT
+window.logout = () => {
+  signOut(auth);
+};
+
+// USUÁRIO
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loginDiv.style.display = "none";
+    appDiv.style.display = "block";
+
+    const q = query(collection(db, "chat"), orderBy("time"));
+
+    onSnapshot(q, (snapshot) => {
+      chat.innerHTML = "";
+
+      snapshot.forEach(doc => {
+        let d = doc.data();
+
+        let classe = d.email === auth.currentUser.email ? "me" : "other";
+
+        chat.innerHTML += `
+          <div class="msg ${classe}">
+            <b>${d.email}</b><br>
+            ${d.msg}
+          </div>
+        `;
+      });
+
+      chat.scrollTop = chat.scrollHeight;
+    });
+
+  } else {
+    loginDiv.style.display = "flex";
+    appDiv.style.display = "none";
+  }
+});
+
+// ENVIAR
+window.enviar = async () => {
+  if (!msg.value) return;
+
+  await addDoc(collection(db, "chat"), {
+    email: auth.currentUser.email,
+    msg: msg.value,
+    time: Date.now()
+  });
+
+  msg.value = "";
+};
+</script>
+
+</body>
+</html>
