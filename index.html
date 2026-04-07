@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Chat</title>
+<title>Chat Zap</title>
 
 <style>
 body {
@@ -22,25 +22,27 @@ body {
 
 input {
   margin: 5px;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 10px;
   border: none;
+  width: 250px;
 }
 
 button {
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
   background: #22c55e;
   color: white;
+  margin: 3px;
 }
 
 .topo {
   display: flex;
   justify-content: space-between;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   background: #1e293b;
 }
 
@@ -54,10 +56,11 @@ button {
 }
 
 .msg {
-  padding: 8px 12px;
-  border-radius: 10px;
-  margin: 5px 0;
-  max-width: 70%;
+  padding: 10px;
+  border-radius: 12px;
+  margin: 6px 0;
+  max-width: 65%;
+  word-wrap: break-word;
 }
 
 .eu {
@@ -80,13 +83,17 @@ button {
 .enviar input {
   flex: 1;
 }
+
+small {
+  opacity: 0.7;
+}
 </style>
 </head>
 
 <body>
 
 <div id="login">
-  <h2>Entrar / Criar conta</h2>
+  <h2>Chat Zap 🔥</h2>
   <input id="email" placeholder="Email">
   <input id="senha" placeholder="Senha" type="password">
   <button onclick="registrar()">Criar conta</button>
@@ -98,6 +105,7 @@ button {
     <span id="nomeUser"></span>
     <div>
       <button onclick="mudarNome()">Nome</button>
+      <button onclick="limpar()">Limpar</button>
       <button onclick="logout()">Sair</button>
     </div>
   </div>
@@ -105,7 +113,7 @@ button {
   <div id="mensagens"></div>
 
   <div class="enviar">
-    <input id="msg" placeholder="Mensagem...">
+    <input id="msg" placeholder="Mensagem..." onkeypress="if(event.key==='Enter') enviar()">
     <button onclick="enviar()">➤</button>
   </div>
 </div>
@@ -113,15 +121,15 @@ button {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "SUA KEY",
-  authDomain: "SEU AUTHDOMAIN",
-  projectId: "SEU PROJECTID",
-  storageBucket: "SEU STORAGE",
-  messagingSenderId: "SEU ID",
-  appId: "SEU APPID"
+  apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
+  authDomain: "zap-proprio-web.firebaseapp.com",
+  projectId: "zap-proprio-web",
+  storageBucket: "zap-proprio-web.firebasestorage.app",
+  messagingSenderId: "974920784341",
+  appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -131,14 +139,14 @@ const db = getFirestore();
 let nome = localStorage.getItem("nome") || "Anônimo";
 
 window.registrar = async () => {
-  let email = document.getElementById("email").value;
-  let senha = document.getElementById("senha").value;
+  let email = emailInput.value;
+  let senha = senhaInput.value;
   await createUserWithEmailAndPassword(auth, email, senha);
 };
 
 window.login = async () => {
-  let email = document.getElementById("email").value;
-  let senha = document.getElementById("senha").value;
+  let email = emailInput.value;
+  let senha = senhaInput.value;
   await signInWithEmailAndPassword(auth, email, senha);
 };
 
@@ -149,12 +157,12 @@ window.mudarNome = () => {
   if(novo){
     nome = novo;
     localStorage.setItem("nome", nome);
-    document.getElementById("nomeUser").innerText = nome;
+    nomeUser.innerText = nome;
   }
 };
 
 window.enviar = async () => {
-  let texto = document.getElementById("msg").value;
+  let texto = msg.value;
   if(!texto) return;
 
   await addDoc(collection(db, "mensagens"), {
@@ -164,23 +172,32 @@ window.enviar = async () => {
     data: Date.now()
   });
 
-  document.getElementById("msg").value = "";
+  msg.value = "";
+};
+
+window.limpar = async () => {
+  if(!confirm("Apagar TODAS mensagens?")) return;
+  let snap = await getDocs(collection(db, "mensagens"));
+  snap.forEach(async d => {
+    await deleteDoc(doc(db, "mensagens", d.id));
+  });
 };
 
 onAuthStateChanged(auth, (user) => {
   if(user){
-    document.getElementById("login").style.display = "none";
-    document.getElementById("chat").style.display = "flex";
-    document.getElementById("nomeUser").innerText = nome;
+    login.style.display = "none";
+    chat.style.display = "flex";
+    nomeUser.innerText = nome;
 
     onSnapshot(collection(db, "mensagens"), (snapshot)=>{
-      let chat = document.getElementById("mensagens");
-      chat.innerHTML = "";
+      mensagens.innerHTML = "";
 
       snapshot.docs
         .sort((a,b)=>a.data().data - b.data().data)
         .forEach(docu => {
           let m = docu.data();
+
+          let hora = new Date(m.data).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
           let div = document.createElement("div");
           div.classList.add("msg");
@@ -193,19 +210,20 @@ onAuthStateChanged(auth, (user) => {
 
           div.innerHTML = `
             <b>${m.nome}</b><br>
-            ${m.texto}
+            ${m.texto}<br>
+            <small>${hora}</small>
             ${m.uid === auth.currentUser.uid ? `<br><button onclick="apagar('${docu.id}')">🗑️</button>` : ""}
           `;
 
-          chat.appendChild(div);
+          mensagens.appendChild(div);
         });
 
-      chat.scrollTop = chat.scrollHeight;
+      mensagens.scrollTop = mensagens.scrollHeight;
     });
 
   } else {
-    document.getElementById("login").style.display = "flex";
-    document.getElementById("chat").style.display = "none";
+    login.style.display = "flex";
+    chat.style.display = "none";
   }
 });
 
