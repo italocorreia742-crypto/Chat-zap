@@ -95,7 +95,7 @@ small {
 <div id="login">
   <h2>Chat Zap 🔥</h2>
   <input id="email" placeholder="Email">
-  <input id="senha" placeholder="Senha" type="password">
+  <input id="senha" type="password" placeholder="Senha">
   <button onclick="registrar()">Criar conta</button>
   <button onclick="login()">Entrar</button>
 </div>
@@ -139,14 +139,14 @@ const db = getFirestore();
 let nome = localStorage.getItem("nome") || "Anônimo";
 
 window.registrar = async () => {
-  let email = emailInput.value;
-  let senha = senhaInput.value;
+  let email = document.getElementById("email").value;
+  let senha = document.getElementById("senha").value;
   await createUserWithEmailAndPassword(auth, email, senha);
 };
 
 window.login = async () => {
-  let email = emailInput.value;
-  let senha = senhaInput.value;
+  let email = document.getElementById("email").value;
+  let senha = document.getElementById("senha").value;
   await signInWithEmailAndPassword(auth, email, senha);
 };
 
@@ -157,12 +157,12 @@ window.mudarNome = () => {
   if(novo){
     nome = novo;
     localStorage.setItem("nome", nome);
-    nomeUser.innerText = nome;
+    document.getElementById("nomeUser").innerText = nome;
   }
 };
 
 window.enviar = async () => {
-  let texto = msg.value;
+  let texto = document.getElementById("msg").value;
   if(!texto) return;
 
   await addDoc(collection(db, "mensagens"), {
@@ -172,7 +172,7 @@ window.enviar = async () => {
     data: Date.now()
   });
 
-  msg.value = "";
+  document.getElementById("msg").value = "";
 };
 
 window.limpar = async () => {
@@ -185,18 +185,18 @@ window.limpar = async () => {
 
 onAuthStateChanged(auth, (user) => {
   if(user){
-    login.style.display = "none";
-    chat.style.display = "flex";
-    nomeUser.innerText = nome;
+    document.getElementById("login").style.display = "none";
+    document.getElementById("chat").style.display = "flex";
+    document.getElementById("nomeUser").innerText = nome;
 
     onSnapshot(collection(db, "mensagens"), (snapshot)=>{
-      mensagens.innerHTML = "";
+      let chat = document.getElementById("mensagens");
+      chat.innerHTML = "";
 
       snapshot.docs
         .sort((a,b)=>a.data().data - b.data().data)
         .forEach(docu => {
           let m = docu.data();
-
           let hora = new Date(m.data).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
 
           let div = document.createElement("div");
@@ -215,15 +215,15 @@ onAuthStateChanged(auth, (user) => {
             ${m.uid === auth.currentUser.uid ? `<br><button onclick="apagar('${docu.id}')">🗑️</button>` : ""}
           `;
 
-          mensagens.appendChild(div);
+          chat.appendChild(div);
         });
 
-      mensagens.scrollTop = mensagens.scrollHeight;
+      chat.scrollTop = chat.scrollHeight;
     });
 
   } else {
-    login.style.display = "flex";
-    chat.style.display = "none";
+    document.getElementById("login").style.display = "flex";
+    document.getElementById("chat").style.display = "none";
   }
 });
 
