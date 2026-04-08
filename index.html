@@ -7,65 +7,57 @@
 <link rel="stylesheet" href="https://cloudflare.com">
 <style>
     :root { --bg-dark: #020617; --bg-main: #0f172a; --accent: #22c55e; --sidebar: #0f172a; --text: #f8fafc; --danger: #ef4444; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin:0; font-family:'Segoe UI',sans-serif; background:var(--bg-dark); color:var(--text); display:flex; height:100vh; overflow:hidden; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: sans-serif; background:var(--bg-dark); color:var(--text); display:flex; height:100vh; overflow:hidden; }
     
-    /* Barra Lateral Esquerda */
     .comunidades { width: 72px; background: #000; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
-    .com-icon { width: 48px; height: 48px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: white; position: relative; }
-    .com-icon:hover, .com-icon.active { border-radius: 16px; background: var(--accent); }
+    .com-icon { width: 48px; height: 48px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; }
+    .com-icon.active { border-radius: 16px; background: var(--accent); }
 
-    /* Barra de Canais (Responsiva) */
     .sidebar { width: 240px; background: var(--sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e293b; transition: 0.3s; }
-    .side-header { padding: 15px; font-weight: bold; font-size: 14px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; }
+    .side-header { padding: 15px; font-weight: bold; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; }
+    
     .group-list { flex: 1; padding: 10px; overflow-y: auto; }
-    .group-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; color: #94a3b8; background: rgba(255,255,255,0.02); }
-    .group-item.active { background: #334155; color: white; font-weight: bold; }
-    .btn-del { color: var(--danger); border: none; background: none; cursor: pointer; padding: 5px; }
+    .group-item { padding: 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; margin-bottom: 5px; color: #94a3b8; background: rgba(255,255,255,0.02); }
+    .group-item.active { background: #334155; color: white; border-left: 4px solid var(--accent); }
+    .btn-del { color: var(--danger); border: none; background: none; cursor: pointer; }
 
-    /* Chat */
-    .main { flex: 1; display: flex; flex-direction: column; background: #1e293b; position: relative; min-width: 0; }
+    .main { flex: 1; display: flex; flex-direction: column; background: #1e293b; position: relative; }
     .topbar { height: 55px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: #1e293b; border-bottom: 1px solid #0f172a; }
-    .menu-mobile { display: none; font-size: 20px; margin-right: 15px; cursor: pointer; }
+    .menu-mobile { display: none; font-size: 22px; cursor: pointer; color: var(--accent); margin-right: 15px; }
 
     #mensagens { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-    .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; word-wrap: break-word; }
-    .msg b { display: block; font-size: 11px; margin-bottom: 3px; color: var(--accent); }
-    .msg.eu { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
-    .msg.outro { align-self: flex-start; background: #334155; border-bottom-left-radius: 2px; }
+    .msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; }
+    .msg b { display: block; font-size: 11px; color: var(--accent); margin-bottom: 3px; }
+    .msg.eu { align-self: flex-end; background: var(--accent); color: white; }
+    .msg.outro { align-self: flex-start; background: #334155; }
 
-    /* Input Responsivo */
     .bottom { padding: 15px; background: #1e293b; }
-    .input-wrapper { background: #334155; border-radius: 12px; display: flex; align-items: center; padding-right: 10px; }
-    #msgInput { flex: 1; background: none; border: none; padding: 14px; color: white; outline: none; font-size: 16px; }
-    .btn-send { background: var(--accent); border: none; width: 40px; height: 40px; border-radius: 10px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-    .btn-send:active { transform: scale(0.9); }
+    .input-wrapper { background: #334155; border-radius: 12px; display: flex; align-items: center; padding: 5px 10px; }
+    #msgInput { flex: 1; background: none; border: none; padding: 10px; color: white; outline: none; font-size: 16px; }
+    .btn-send { background: var(--accent); border: none; width: 40px; height: 40px; border-radius: 10px; color: white; cursor: pointer; }
 
-    /* Modais */
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
-    .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; }
-    .modal input { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; }
+    .modal input { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; color: white; border: 1px solid #334155; border-radius: 8px; }
 
-    /* Estilo Mobile */
     @media (max-width: 768px) {
-        .sidebar { position: absolute; left: -240px; height: 100%; z-index: 99; }
+        .sidebar { position: absolute; left: -100%; height: 100%; z-index: 99; width: 260px; }
         .sidebar.open { left: 72px; }
         .menu-mobile { display: block; }
-        .msg { max-width: 90%; }
     }
 </style>
 </head>
 <body>
 
 <div class="comunidades">
-    <div class="com-icon active" id="com-geral"><i class="fas fa-home"></i></div>
-    <div class="com-icon" id="com-work"><i class="fas fa-briefcase"></i></div>
-    <div class="com-icon" id="com-add"><i class="fas fa-plus"></i></div>
+    <div class="com-icon active"><i class="fas fa-home"></i></div>
+    <div class="com-icon" onclick="alert('Novas comunidades em breve!')"><i class="fas fa-plus"></i></div>
 </div>
 
 <div class="sidebar" id="sidebar">
     <div class="side-header">
-        CANAIS <span id="btnCriar" style="cursor:pointer; color:var(--accent); font-size: 22px;">+</span>
+        CANAIS <span id="btnCriar" style="cursor:pointer; color:var(--accent); font-size:25px">+</span>
     </div>
     <div class="group-list" id="listaGrupos"></div>
 </div>
@@ -74,11 +66,11 @@
     <div class="topbar">
         <div style="display:flex; align-items:center">
             <i class="fas fa-bars menu-mobile" id="toggleMenu"></i>
-            <div style="font-weight: bold"># <span id="nomeGrupoTop">global</span></div>
+            <b># <span id="nomeGrupoTop">global</span></b>
         </div>
-        <div style="display:flex; align-items:center; gap:12px">
-            <span id="userName" style="font-size:14px"></span>
-            <i class="fas fa-cog" id="btnConfig" style="cursor:pointer; font-size:18px"></i>
+        <div style="display:flex; align-items:center; gap:15px">
+            <span id="userName"></span>
+            <i class="fas fa-cog" id="btnConfig" style="cursor:pointer"></i>
         </div>
     </div>
 
@@ -86,77 +78,57 @@
 
     <div class="bottom">
         <div class="input-wrapper">
-            <input id="msgInput" placeholder="Sua mensagem..." autocomplete="off">
+            <input id="msgInput" placeholder="Mensagem..." autocomplete="off">
             <button class="btn-send" id="btnEnviar"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
 
-<!-- Modais -->
 <div id="modalGrupo" class="modal"><div class="modal-content">
     <h3>Novo Canal</h3>
     <input id="novoNomeGrupo" placeholder="Nome do canal">
     <button class="btn-send" style="width:100%; height:45px" id="confirmarGrupo">CRIAR</button>
-    <button class="fechar" style="background:none; border:none; color:#94a3b8; width:100%; margin-top:15px; cursor:pointer">Cancelar</button>
+    <center><button class="fechar" style="background:none; border:none; color:#94a3b8; margin-top:15px; cursor:pointer">Cancelar</button></center>
 </div></div>
 
-<div id="modalConfig" class="modal"><div class="modal-content">
-    <h3>Configurações</h3>
-    <p>Cargo: <b id="userCargo"></b></p>
-    <button class="btn-send" style="background:var(--danger); width:100%; height:45px" id="btnLogout">SAIR DA CONTA</button>
-    <button class="fechar" style="background:none; border:none; color:#94a3b8; width:100%; margin-top:15px; cursor:pointer">Fechar</button>
-</div></div>
+<!-- IMPORTAÇÃO CORRIGIDA PARA EVITAR CORS -->
+<script src="https://gstatic.com"></script>
+<script src="https://gstatic.com"></script>
 
-<script type="module">
-import { initializeApp } from "https://gstatic.com";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://gstatic.com";
-
+<script>
 const firebaseConfig = {
     apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
     authDomain: "://firebaseapp.com",
     projectId: "zap-proprio-web"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore();
+// Inicia Firebase (Versão Compat)
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-// Dados Iniciais
 let nome = localStorage.getItem("nome") || prompt("Seu Nome:");
 let senha = localStorage.getItem("senha") || prompt("Sua Senha:");
 if(!nome) window.location.reload();
 localStorage.setItem("nome", nome);
-localStorage.setItem("senha", senha);
 
 let isAdmin = (nome === "MVOIDv" && senha === "@italo2021AH2");
 let grupoAtivo = "global";
 let listaCanais = JSON.parse(localStorage.getItem("meusCanais")) || ["global", "geral", "jogos"];
 
-// Correção dos erros: Ligando eventos via JS em vez de HTML
-const dom = {
-    lista: document.getElementById("listaGrupos"),
-    msgs: document.getElementById("mensagens"),
-    input: document.getElementById("msgInput"),
-    labelGrupo: document.getElementById("nomeGrupoTop"),
-    sidebar: document.getElementById("sidebar")
-};
-
 function iniciar() {
     document.getElementById("userName").innerText = nome;
-    document.getElementById("userCargo").innerText = isAdmin ? "ADMINISTRADOR" : "USUÁRIO";
-    document.getElementById("btnCriar").style.visibility = isAdmin ? "visible" : "hidden";
-    
+    document.getElementById("btnCriar").style.display = isAdmin ? "block" : "none";
     renderGrupos();
     escutarMensagens();
 }
 
-// Renderizar Canais
 function renderGrupos() {
-    dom.lista.innerHTML = "";
+    const list = document.getElementById("listaGrupos");
+    list.innerHTML = "";
     listaCanais.forEach(g => {
         let div = document.createElement("div");
         div.className = `group-item ${g === grupoAtivo ? 'active' : ''}`;
         div.innerHTML = `<span># ${g}</span>`;
-        
         if(isAdmin && g !== 'global') {
             let del = document.createElement("button");
             del.className = "btn-del";
@@ -164,15 +136,14 @@ function renderGrupos() {
             del.onclick = (e) => { e.stopPropagation(); apagarGrupo(g); };
             div.appendChild(del);
         }
-
         div.onclick = () => {
             grupoAtivo = g;
-            dom.labelGrupo.innerText = g;
-            dom.sidebar.classList.remove("open"); // Fecha menu no mobile ao clicar
+            document.getElementById("nomeGrupoTop").innerText = g;
+            document.getElementById("sidebar").classList.remove("open");
             renderGrupos();
             escutarMensagens();
         };
-        dom.lista.appendChild(div);
+        list.appendChild(div);
     });
 }
 
@@ -185,48 +156,41 @@ function apagarGrupo(g) {
     }
 }
 
-// Funções de Mensagem
 async function enviar() {
-    let txt = dom.input.value.trim();
+    let input = document.getElementById("msgInput");
+    let txt = input.value.trim();
     if(!txt) return;
     try {
-        await addDoc(collection(db, "mensagens"), {
-            texto: txt, nome: nome, grupo: grupoAtivo, data: serverTimestamp()
+        await db.collection("mensagens").add({
+            texto: txt, nome: nome, grupo: grupoAtivo, data: firebase.firestore.FieldValue.serverTimestamp()
         });
-        dom.input.value = "";
-        dom.input.focus();
+        input.value = "";
     } catch(e) { console.error(e); }
 }
 
 function escutarMensagens() {
-    const q = query(collection(db, "mensagens"), orderBy("data", "asc"));
-    onSnapshot(q, (snap) => {
-        dom.msgs.innerHTML = "";
-        snap.docs.forEach(doc => {
+    db.collection("mensagens").orderBy("data", "asc").onSnapshot(snap => {
+        const box = document.getElementById("mensagens");
+        box.innerHTML = "";
+        snap.forEach(doc => {
             let m = doc.data();
             if(m.grupo === grupoAtivo) {
                 let div = document.createElement("div");
                 div.className = `msg ${m.nome === nome ? 'eu' : 'outro'}`;
                 div.innerHTML = `<b>${m.nome}</b>${m.texto}`;
-                dom.msgs.appendChild(div);
+                box.appendChild(div);
             }
         });
-        dom.msgs.scrollTop = dom.msgs.scrollHeight;
+        box.scrollTop = box.scrollHeight;
     });
 }
 
-// --- Event Listeners (Correção dos ReferenceErrors) ---
+// Botões e Eventos
 document.getElementById("btnEnviar").onclick = enviar;
-dom.input.onkeypress = (e) => { if(e.key === "Enter") enviar(); };
-
-document.getElementById("toggleMenu").onclick = () => dom.sidebar.classList.toggle("open");
-
+document.getElementById("msgInput").onkeypress = (e) => { if(e.key === "Enter") enviar(); };
+document.getElementById("toggleMenu").onclick = () => document.getElementById("sidebar").classList.toggle("open");
 document.getElementById("btnCriar").onclick = () => document.getElementById("modalGrupo").style.display = "flex";
-document.getElementById("btnConfig").onclick = () => document.getElementById("modalConfig").style.display = "flex";
-
-document.querySelectorAll(".fechar").forEach(b => {
-    b.onclick = () => document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
-});
+document.querySelectorAll(".fechar").forEach(b => b.onclick = () => document.getElementById("modalGrupo").style.display = "none");
 
 document.getElementById("confirmarGrupo").onclick = () => {
     let n = document.getElementById("novoNomeGrupo").value.trim().toLowerCase();
@@ -238,11 +202,9 @@ document.getElementById("confirmarGrupo").onclick = () => {
     }
 };
 
-document.getElementById("btnLogout").onclick = () => { localStorage.clear(); window.location.reload(); };
-
-// Ícones de comunidade
-document.getElementById("com-geral").onclick = () => alert("Você já está na comunidade Geral");
-document.getElementById("com-work").onclick = () => alert("Comunidade de Trabalho em manutenção");
+document.getElementById("btnConfig").onclick = () => {
+    if(confirm("Deseja sair da conta?")) { localStorage.clear(); window.location.reload(); }
+};
 
 iniciar();
 </script>
