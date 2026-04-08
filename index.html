@@ -3,19 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 <title>MVOID Chat ELITE</title>
-<link rel="stylesheet" href="https://cloudflare.com">
+
+<!-- ✅ ICONES (IMPORTANTE) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
     :root { --bg-dark: #020617; --bg-main: #0f172a; --accent: #22c55e; --sidebar: #0f172a; --text: #f8fafc; --danger: #ef4444; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { margin:0; font-family:'Segoe UI',sans-serif; background:var(--bg-dark); color:var(--text); display:flex; height:100vh; overflow:hidden; }
     
-    /* Barra Lateral Esquerda */
     .comunidades { width: 72px; background: #000; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; flex-shrink: 0; }
     .com-icon { width: 48px; height: 48px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: white; position: relative; }
     .com-icon:hover, .com-icon.active { border-radius: 16px; background: var(--accent); }
 
-    /* Barra de Canais (Responsiva) */
     .sidebar { width: 240px; background: var(--sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e293b; transition: 0.3s; }
     .side-header { padding: 15px; font-weight: bold; font-size: 14px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; }
     .group-list { flex: 1; padding: 10px; overflow-y: auto; }
@@ -23,7 +25,6 @@
     .group-item.active { background: #334155; color: white; font-weight: bold; }
     .btn-del { color: var(--danger); border: none; background: none; cursor: pointer; padding: 5px; }
 
-    /* Chat */
     .main { flex: 1; display: flex; flex-direction: column; background: #1e293b; position: relative; min-width: 0; }
     .topbar { height: 55px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: #1e293b; border-bottom: 1px solid #0f172a; }
     .menu-mobile { display: none; font-size: 20px; margin-right: 15px; cursor: pointer; }
@@ -34,19 +35,16 @@
     .msg.eu { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
     .msg.outro { align-self: flex-start; background: #334155; border-bottom-left-radius: 2px; }
 
-    /* Input Responsivo */
     .bottom { padding: 15px; background: #1e293b; }
     .input-wrapper { background: #334155; border-radius: 12px; display: flex; align-items: center; padding-right: 10px; }
     #msgInput { flex: 1; background: none; border: none; padding: 14px; color: white; outline: none; font-size: 16px; }
     .btn-send { background: var(--accent); border: none; width: 40px; height: 40px; border-radius: 10px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
     .btn-send:active { transform: scale(0.9); }
 
-    /* Modais */
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; }
     .modal input { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; }
 
-    /* Estilo Mobile */
     @media (max-width: 768px) {
         .sidebar { position: absolute; left: -240px; height: 100%; z-index: 99; }
         .sidebar.open { left: 72px; }
@@ -108,17 +106,20 @@
 </div></div>
 
 <script type="module">
-import { initializeApp } from "https://gstatic.com";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://gstatic.com";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
-    authDomain: "://firebaseapp.com",
-    projectId: "zap-proprio-web"
+    authDomain: "zap-proprio-web.firebaseapp.com",
+    projectId: "zap-proprio-web",
+    storageBucket: "zap-proprio-web.firebasestorage.app",
+    messagingSenderId: "974920784341",
+    appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore();
+const db = getFirestore(app);
 
 // Dados Iniciais
 let nome = localStorage.getItem("nome") || prompt("Seu Nome:");
@@ -185,39 +186,75 @@ function apagarGrupo(g) {
     }
 }
 
+// Controle do listener (evita bug e duplicação)
+let unsubscribe = null;
+
 // Funções de Mensagem
 async function enviar() {
     let txt = dom.input.value.trim();
-    if(!txt) return;
+    if (!txt) return;
+
     try {
         await addDoc(collection(db, "mensagens"), {
-            texto: txt, nome: nome, grupo: grupoAtivo, data: serverTimestamp()
+            texto: txt,
+            nome: nome,
+            grupo: grupoAtivo,
+            data: serverTimestamp()
         });
+
         dom.input.value = "";
         dom.input.focus();
-    } catch(e) { console.error(e); }
+
+    } catch (e) {
+        console.error("ERRO AO ENVIAR:", e);
+        alert("Erro ao enviar mensagem (ver console)");
+    }
 }
 
 function escutarMensagens() {
-    const q = query(collection(db, "mensagens"), orderBy("data", "asc"));
-    onSnapshot(q, (snap) => {
+
+    // 🔥 mata listener antigo (IMPORTANTE)
+    if (unsubscribe) unsubscribe();
+
+    const q = query(
+        collection(db, "mensagens"),
+        orderBy("data", "asc")
+    );
+
+    unsubscribe = onSnapshot(q, (snap) => {
+
         dom.msgs.innerHTML = "";
+
         snap.docs.forEach(doc => {
             let m = doc.data();
-            if(m.grupo === grupoAtivo) {
+
+            if (m.grupo === grupoAtivo) {
                 let div = document.createElement("div");
+
                 div.className = `msg ${m.nome === nome ? 'eu' : 'outro'}`;
-                div.innerHTML = `<b>${m.nome}</b>${m.texto}`;
+
+                div.innerHTML = `
+                    <b>${m.nome}</b>
+                    ${m.texto}
+                `;
+
                 dom.msgs.appendChild(div);
             }
         });
+
         dom.msgs.scrollTop = dom.msgs.scrollHeight;
+    },
+    (error) => {
+        console.error("ERRO AO OUVIR MENSAGENS:", error);
+        alert("Erro no banco (Firestore). Pode ser regra bloqueando.");
     });
 }
 
 // --- Event Listeners (Correção dos ReferenceErrors) ---
 document.getElementById("btnEnviar").onclick = enviar;
-dom.input.onkeypress = (e) => { if(e.key === "Enter") enviar(); };
+dom.input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") enviar();
+});
 
 document.getElementById("toggleMenu").onclick = () => dom.sidebar.classList.toggle("open");
 
