@@ -3,119 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MVOID Chat Ultimate</title>
+<title>MVOID Chat ELITE</title>
 <link rel="stylesheet" href="https://cloudflare.com">
 <style>
     :root {
-        --bg-main: #0f172a; --sidebar: #020617; --accent: #22c55e;
-        --danger: #ef4444; --text: #f8fafc; --card: #1e293b;
+        --bg-dark: #020617; --bg-main: #0f172a; --accent: #22c55e;
+        --sidebar: #0f172a; --text: #f8fafc; --danger: #ef4444;
     }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text); display: flex; height: 100vh; }
-
-    /* Barra Lateral de Comunidades (Ícones) */
-    .guilds { width: 70px; background: #000; display: flex; flex-direction: column; align-items: center; padding-top: 15px; gap: 10px; }
-    .guild-icon { width: 48px; height: 48px; background: var(--card); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; color: var(--accent); }
-    .guild-icon:hover, .guild-icon.active { border-radius: 15px; background: var(--accent); color: white; }
-
-    /* Sidebar de Grupos */
-    .sidebar { width: 240px; background: var(--sidebar); display: flex; flex-direction: column; }
-    .side-header { padding: 20px; font-weight: bold; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; }
+    body { margin:0; font-family:'Segoe UI',sans-serif; background:var(--bg-dark); color:var(--text); display:flex; height:100vh; overflow:hidden; }
     
-    .groups-container { flex: 1; padding: 10px; overflow-y: auto; }
-    .group-item { 
-        padding: 10px; border-radius: 5px; margin-bottom: 4px; cursor: pointer;
-        display: flex; justify-content: space-between; align-items: center;
-    }
-    .group-item:hover { background: #1e293b; }
-    .group-item.active { background: #334155; border-left: 4px solid var(--accent); }
-    .btn-action { border: none; background: none; color: #64748b; cursor: pointer; padding: 5px; }
-    .btn-action:hover { color: var(--danger); }
+    /* Barra de Comunidades (Esquerda) */
+    .comunidades { width: 72px; background: #000; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 8px; }
+    .com-icon { width: 48px; height: 48px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: white; }
+    .com-icon:hover, .com-icon.active { border-radius: 16px; background: var(--accent); }
 
-    /* Área de Chat */
-    .main { flex: 1; display: flex; flex-direction: column; }
-    .topbar { height: 60px; background: var(--card); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-    
-    #chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-    .msg { max-width: 70%; padding: 12px; border-radius: 12px; position: relative; }
-    .msg.me { align-self: flex-end; background: var(--accent); color: white; }
-    .msg.other { align-self: flex-start; background: var(--card); }
-    .msg-info { font-size: 0.7rem; margin-bottom: 4px; display: block; opacity: 0.8; }
+    /* Barra de Canais */
+    .sidebar { width: 240px; background: var(--sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e293b; }
+    .side-header { padding: 15px; font-weight: bold; font-size: 14px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; }
+    .group-list { flex: 1; padding: 10px; overflow-y: auto; }
+    .group-item { padding: 8px 12px; border-radius: 4px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; color: #94a3b8; }
+    .group-item:hover { background: #1e293b; color: white; }
+    .group-item.active { background: #334155; color: white; }
+    .btn-del { color: var(--danger); border: none; background: none; cursor: pointer; font-size: 12px; }
+
+    /* Chat Principal */
+    .main { flex: 1; display: flex; flex-direction: column; background: #1e293b; }
+    .topbar { height: 48px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: #1e293b; border-bottom: 1px solid #0f172a; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    #mensagens { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .msg { padding: 8px 14px; border-radius: 8px; max-width: 70%; position: relative; }
+    .msg b { display: block; font-size: 11px; color: var(--accent); }
+    .msg.eu { align-self: flex-end; background: var(--accent); color: white; }
+    .msg.outro { align-self: flex-start; background: #334155; }
 
     /* Input */
-    .input-area { padding: 20px; background: var(--bg-main); }
-    .input-box { background: #334155; border-radius: 8px; display: flex; padding: 5px 15px; align-items: center; }
-    .input-box input { flex: 1; background: none; border: none; color: white; padding: 12px; outline: none; }
+    .bottom { padding: 20px; background: #1e293b; }
+    .input-wrapper { background: #404eed; border-radius: 8px; display: flex; padding: 2px 10px; background: #334155; }
+    #msgInput { flex: 1; background: none; border: none; padding: 12px; color: white; outline: none; }
 
-    /* Janelas Modais */
-    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: var(--card); padding: 30px; border-radius: 15px; width: 400px; }
+    /* Modais */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 100; }
+    .modal-content { background: #1e293b; padding: 25px; border-radius: 12px; width: 350px; border: 1px solid #334155; }
+    .modal input { width: 100%; padding: 10px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 5px; box-sizing: border-box; }
+    .btn-ok { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
 </style>
 </head>
 <body>
 
-<!-- Navegação de Comunidades -->
-<div class="guilds">
-    <div class="guild-icon active" title="Minha Rede"><i class="fas fa-network-wired"></i></div>
-    <div class="guild-icon" onclick="alert('Funcionalidade de novas comunidades em breve!')"><i class="fas fa-plus"></i></div>
+<div class="comunidades">
+    <div class="com-icon active" onclick="trocarComunidade('Geral')"><i class="fas fa-home"></i></div>
+    <div class="com-icon" onclick="trocarComunidade('Trabalho')"><i class="fas fa-briefcase"></i></div>
+    <div class="com-icon" onclick="alert('Funcionalidade de Nova Comunidade Liberada!')"><i class="fas fa-plus"></i></div>
 </div>
 
 <div class="sidebar">
     <div class="side-header">
-        <span>CANAIS</span>
-        <div id="admin-tools" style="display:none">
-            <button class="btn-action" onclick="abrirModalCriar()" title="Criar Grupo"><i class="fas fa-plus"></i></button>
-            <button class="btn-action" onclick="abrirConfig()" title="Configurações"><i class="fas fa-cog"></i></button>
-        </div>
+        CANAIS <span id="btnCriar" onclick="abrirModalGrupo()" style="cursor:pointer; color:var(--accent); font-size: 18px;">+</span>
     </div>
-    <div class="groups-container" id="listaGrupos"></div>
+    <div class="group-list" id="listaGrupos"></div>
 </div>
 
 <div class="main">
     <div class="topbar">
-        <div style="font-weight: bold"># <span id="nomeGrupoAtivo">geral</span></div>
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <div id="user-display"></div>
-            <button class="btn-action" onclick="abrirConfig()"><i class="fas fa-cog fa-lg"></i></button>
+        <div style="font-weight: bold"># <span id="nomeGrupoTop">global</span></div>
+        <div style="display:flex; align-items:center; gap:15px">
+            <span id="userName"></span>
+            <i class="fas fa-cog" style="cursor:pointer" onclick="abrirConfig()"></i>
         </div>
     </div>
 
-    <div id="chat-box"></div>
+    <div id="mensagens"></div>
 
-    <div class="input-area">
-        <div class="input-box">
-            <input id="msgInput" placeholder="Mensagem..." onkeypress="if(event.key==='Enter') enviar()">
-            <button class="btn-action" style="color:var(--accent)" onclick="enviar()"><i class="fas fa-paper-plane fa-lg"></i></button>
+    <div class="bottom">
+        <div class="input-wrapper">
+            <input id="msgInput" placeholder="Enviar mensagem..." onkeypress="if(event.key==='Enter') enviar()">
+            <button onclick="enviar()" style="background:none; border:none; color:var(--accent); cursor:pointer"><i class="fas fa-paper-plane"></i></button>
         </div>
+    </div>
+</div>
+
+<!-- Modal Criar Grupo -->
+<div id="modalGrupo" class="modal">
+    <div class="modal-content">
+        <h3>Criar Novo Grupo</h3>
+        <input id="novoNomeGrupo" placeholder="Nome do canal">
+        <button class="btn-ok" onclick="confirmarNovoGrupo()">CRIAR CANAL</button>
+        <button onclick="fecharModais()" style="background:none; border:none; color:white; width:100%; margin-top:10px; cursor:pointer">Cancelar</button>
     </div>
 </div>
 
 <!-- Modal Configurações -->
 <div id="modalConfig" class="modal">
     <div class="modal-content">
-        <h3><i class="fas fa-cog"></i> Configurações</h3>
-        <p>Usuário: <b id="confNome"></b></p>
-        <p>Cargo: <span id="confCargo" style="color:var(--accent)"></span></p>
-        <hr border="0" style="border-top:1px solid #334155">
-        <button class="btn-action" onclick="logout()" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i> Sair da Conta</button>
-        <button class="btn-action" style="float:right" onclick="fecharModais()">Fechar</button>
-    </div>
-</div>
-
-<!-- Modal Criar Grupo -->
-<div id="modalCriar" class="modal">
-    <div class="modal-content">
-        <h3>Criar Novo Canal</h3>
-        <input id="novoNomeGrupo" style="width:90%; padding:10px; border-radius:5px; border:none; background:#0f172a; color:white" placeholder="Ex: suporte-tecnico">
-        <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px">
-            <button onclick="fecharModais()">Cancelar</button>
-            <button onclick="confirmarCriarGrupo()" style="background:var(--accent); border:none; padding:10px 20px; border-radius:5px; color:white">Criar</button>
-        </div>
+        <h3>Configurações</h3>
+        <p>Status: <select style="background:#0f172a; color:white; padding:5px;"><option>Online</option><option>Ocupado</option><option>Invisível</option></select></p>
+        <button class="btn-ok" onclick="logout()" style="background:var(--danger)">SAIR DA CONTA</button>
+        <button onclick="fecharModais()" style="background:none; border:none; color:white; width:100%; margin-top:10px; cursor:pointer">Fechar</button>
     </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://gstatic.com";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, deleteDoc } from "https://gstatic.com";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://gstatic.com";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
@@ -126,91 +114,105 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-let meuNome = localStorage.getItem("nome") || prompt("Seu nome:");
-let minhaSenha = localStorage.getItem("senha") || prompt("Sua senha:");
-let isAdmin = (meuNome === "MVOIDv" && minhaSenha === "@italo2021AH2");
-let grupoAtivo = "geral";
-let grupos = JSON.parse(localStorage.getItem("canais")) || ["global", "geral", "jogos", "suporte"];
+let nome = localStorage.getItem("nome") || prompt("Seu Nome:");
+let senha = localStorage.getItem("senha") || prompt("Sua Senha:");
+let isAdmin = (nome === "MVOIDv" && senha === "@italo2021AH2");
+let grupoAtivo = "global";
+let comunidades = "Geral";
+let listaGrupos = JSON.parse(localStorage.getItem("meusCanais")) || ["global", "geral", "jogos"];
 
-if(!meuNome) window.location.reload();
-localStorage.setItem("nome", meuNome);
-localStorage.setItem("senha", minhaSenha);
+if(!nome) window.location.reload();
+localStorage.setItem("nome", nome);
+localStorage.setItem("senha", senha);
 
 function iniciar() {
-    user-display.innerHTML = `${meuNome} <small style="background:#f59e0b; color:black; padding:2px 5px; border-radius:4px; font-weight:bold">${isAdmin ? 'ADMIN' : 'USER'}</small>`;
-    if(isAdmin) document.getElementById("admin-tools").style.display = "block";
+    userName.innerHTML = `${nome} <small style="color:var(--accent)">[${isAdmin ? 'ADMIN' : 'USER'}]</small>`;
+    document.getElementById("btnCriar").style.display = isAdmin ? "block" : "none";
     renderGrupos();
-    carregarMensagens();
+    escutarMensagens();
 }
 
 window.renderGrupos = () => {
-    listaGrupos.innerHTML = "";
-    grupos.forEach(g => {
+    const list = document.getElementById("listaGrupos");
+    list.innerHTML = "";
+    listaGrupos.forEach(g => {
         let div = document.createElement("div");
         div.className = `group-item ${g === grupoAtivo ? 'active' : ''}`;
-        div.innerHTML = `
-            <span># ${g}</span>
-            ${isAdmin && g !== 'geral' ? `<button class="btn-action" onclick="event.stopPropagation(); apagarGrupo('${g}')"><i class="fas fa-trash"></i></button>` : ''}
-        `;
-        div.onclick = () => { grupoAtivo = g; nomeGrupoAtivo.innerText = g; renderGrupos(); carregarMensagens(); };
-        listaGrupos.appendChild(div);
+        div.innerHTML = `<span># ${g}</span>`;
+        if(isAdmin && g !== 'global') {
+            let btn = document.createElement("button");
+            btn.className = "btn-del";
+            btn.innerHTML = '<i class="fas fa-trash"></i>';
+            btn.onclick = (e) => { e.stopPropagation(); apagarGrupo(g); };
+            div.appendChild(btn);
+        }
+        div.onclick = () => { grupoAtivo = g; nomeGrupoTop.innerText = g; renderGrupos(); escutarMensagens(); };
+        list.appendChild(div);
     });
 }
 
-window.apagarGrupo = (n) => {
-    if(confirm(`Apagar canal #${n}?`)) {
-        grupos = grupos.filter(x => x !== n);
-        localStorage.setItem("canais", JSON.stringify(grupos));
-        if(grupoAtivo === n) grupoAtivo = "geral";
+window.apagarGrupo = (g) => {
+    if(confirm(`Apagar o canal #${g}?`)) {
+        listaGrupos = listaGrupos.filter(item => item !== g);
+        localStorage.setItem("meusCanais", JSON.stringify(listaGrupos));
+        if(grupoAtivo === g) grupoAtivo = "global";
         renderGrupos();
     }
 }
 
-window.abrirModalCriar = () => modalCriar.style.display = "flex";
-window.abrirConfig = () => {
-    confNome.innerText = meuNome;
-    confCargo.innerText = isAdmin ? "ADMINISTRADOR PRINCIPAL" : "MEMBRO";
-    modalConfig.style.display = "flex";
-}
-window.fecharModais = () => { modalCriar.style.display = "none"; modalConfig.style.display = "none"; }
+window.abrirModalGrupo = () => document.getElementById("modalGrupo").style.display = "flex";
+window.abrirConfig = () => document.getElementById("modalConfig").style.display = "flex";
+window.fecharModais = () => { document.querySelectorAll(".modal").forEach(m => m.style.display="none"); }
 
-window.confirmarCriarGrupo = () => {
-    let n = novoNomeGrupo.value.trim().toLowerCase().replace(/\s+/g, '-');
-    if(n && !grupos.includes(n)) {
-        grupos.push(n);
-        localStorage.setItem("canais", JSON.stringify(grupos));
+window.confirmarNovoGrupo = () => {
+    let n = document.getElementById("novoNomeGrupo").value.trim().toLowerCase();
+    if(n && !listaGrupos.includes(n)) {
+        listaGrupos.push(n);
+        localStorage.setItem("meusCanais", JSON.stringify(listaGrupos));
         fecharModais();
         renderGrupos();
     }
 }
 
-window.logout = () => { localStorage.clear(); window.location.reload(); }
-
 window.enviar = async () => {
-    let t = msgInput.value;
-    if(!t) return;
-    await addDoc(collection(db, "mensagens"), {
-        texto: t, nome: meuNome, grupo: grupoAtivo, time: serverTimestamp()
-    });
-    msgInput.value = "";
+    let input = document.getElementById("msgInput");
+    let texto = input.value.trim();
+    if(!texto) return;
+
+    try {
+        await addDoc(collection(db, "mensagens"), {
+            texto: texto,
+            nome: nome,
+            grupo: grupoAtivo,
+            comunidade: comunidades,
+            data: serverTimestamp() // Usando o tempo do servidor para evitar erro de ordenação
+        });
+        input.value = "";
+    } catch (e) { alert("Erro ao enviar! Tente novamente."); }
 }
 
-function carregarMensagens() {
-    const q = query(collection(db, "mensagens"), orderBy("time", "asc"));
+function escutarMensagens() {
+    // Busca as mensagens ordenadas por data
+    const q = query(collection(db, "mensagens"), orderBy("data", "asc"));
     onSnapshot(q, (snap) => {
-        chat-box.innerHTML = "";
-        snap.docs.forEach(d => {
-            let m = d.data();
+        const box = document.getElementById("mensagens");
+        box.innerHTML = "";
+        snap.docs.forEach(doc => {
+            let m = doc.data();
+            // Filtra por grupo e comunidade atual
             if(m.grupo === grupoAtivo) {
                 let div = document.createElement("div");
-                div.className = `msg ${m.nome === meuNome ? 'me' : 'other'}`;
-                div.innerHTML = `<span class="msg-info">${m.nome}</span>${m.texto}`;
-                chat-box.appendChild(div);
+                div.className = `msg ${m.nome === nome ? 'eu' : 'outro'}`;
+                div.innerHTML = `<b>${m.nome}</b>${m.texto}`;
+                box.appendChild(div);
             }
         });
-        chat-box.scrollTop = chat-box.scrollHeight;
+        box.scrollTop = box.scrollHeight;
     });
 }
+
+window.logout = () => { localStorage.clear(); window.location.reload(); }
+window.trocarComunidade = (c) => { comunidades = c; alert("Comunidade alterada para: " + c); renderGrupos(); }
 
 iniciar();
 </script>
