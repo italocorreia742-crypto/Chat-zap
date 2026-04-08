@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Chat Ultra Lite</title>
+<title>Chat do Ítalo 😈</title>
 
 <style>
 body {
@@ -13,7 +13,6 @@ body {
   display:flex;
 }
 
-/* SIDEBAR */
 .sidebar {
   width:220px;
   background:#020617;
@@ -32,33 +31,29 @@ body {
   color:white;
   border-radius:8px;
   cursor:pointer;
-  transition:0.2s;
 }
 .sidebar button:hover {
   background:#334155;
 }
 
-/* MAIN */
 .main {
   flex:1;
   display:flex;
   flex-direction:column;
 }
 
-/* TOP */
 .topbar {
   display:flex;
   justify-content:space-between;
   padding:10px;
   background:#1e293b;
-  align-items:center;
 }
+
 .status {
   font-size:12px;
   opacity:.7;
 }
 
-/* CHAT */
 #mensagens {
   flex:1;
   overflow-y:auto;
@@ -67,7 +62,6 @@ body {
   flex-direction:column;
 }
 
-/* MSG */
 .msg {
   max-width:60%;
   margin:5px 0;
@@ -75,10 +69,12 @@ body {
   border-radius:12px;
   animation:fade .2s;
 }
+
 .eu {
   background:#22c55e;
   align-self:flex-end;
 }
+
 .outro {
   background:#334155;
   align-self:flex-start;
@@ -89,18 +85,19 @@ body {
   to {opacity:1;}
 }
 
-/* INPUT */
 .bottom {
   display:flex;
   padding:10px;
   background:#1e293b;
 }
+
 .bottom input {
   flex:1;
   padding:10px;
   border-radius:10px;
   border:none;
 }
+
 .bottom button {
   margin-left:5px;
   padding:10px;
@@ -110,16 +107,13 @@ body {
   color:white;
   cursor:pointer;
 }
-.bottom button:hover {
-  background:#16a34a;
-}
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-  <h2>Chat</h2>
+  <h2>Chat Ultra</h2>
   <button onclick="mudarNome()">Alterar Nome</button>
   <button onclick="logout()">Sair</button>
 </div>
@@ -141,17 +135,25 @@ body {
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID"
+  apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
+  authDomain: "zap-proprio-web.firebaseapp.com",
+  projectId: "zap-proprio-web",
+  storageBucket: "zap-proprio-web.firebasestorage.app",
+  messagingSenderId: "974920784341",
+  appId: "1:974920784341:web:8eb8b14928d01a9ed3855c",
+  measurementId: "G-8D8SN57CQM"
 };
 
 const app = initializeApp(firebaseConfig);
+getAnalytics(app);
+
 const auth = getAuth();
 const db = getFirestore();
 
@@ -162,36 +164,39 @@ window.mudarNome = () => {
   if(n){
     nome = n;
     localStorage.setItem("nome", nome);
-    nomeUser.innerText = nome;
+    document.getElementById("nomeUser").innerText = nome;
   }
 };
 
 window.logout = () => signOut(auth);
 
 window.enviar = async () => {
-  if(!msg.value) return;
+  let input = document.getElementById("msg");
+  if(!input.value) return;
 
   await addDoc(collection(db,"mensagens"),{
-    texto: msg.value,
+    texto: input.value,
     nome,
     uid: auth.currentUser.uid,
     data: Date.now()
   });
 
-  msg.value="";
+  input.value="";
 };
 
 window.digitando = () => {
+  let status = document.getElementById("status");
   status.innerText = "digitando...";
   setTimeout(()=>status.innerText="online",1000);
 };
 
 onAuthStateChanged(auth, user=>{
   if(user){
-    nomeUser.innerText = nome;
-    status.innerText = "online";
+    document.getElementById("nomeUser").innerText = nome;
+    document.getElementById("status").innerText = "online";
 
     onSnapshot(collection(db,"mensagens"), snap=>{
+      let mensagens = document.getElementById("mensagens");
       mensagens.innerHTML="";
 
       snap.docs.sort((a,b)=>a.data().data-b.data().data)
@@ -216,6 +221,7 @@ onAuthStateChanged(auth, user=>{
     .catch(()=>createUserWithEmailAndPassword(auth,email,senha));
   }
 });
+
 </script>
 
 </body>
