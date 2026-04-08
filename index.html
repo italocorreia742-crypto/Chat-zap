@@ -2,117 +2,125 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Chat Zap Pro</title>
+<title>Chat Ultra Lite</title>
 
 <style>
 body {
-  margin: 0;
-  font-family: Arial;
-  background: #0f172a;
-  color: white;
-  display: flex;
+  margin:0;
+  font-family:Arial;
+  background:#0f172a;
+  color:white;
+  display:flex;
 }
 
+/* SIDEBAR */
 .sidebar {
-  width: 220px;
-  background: #020617;
-  height: 100vh;
-  padding: 10px;
+  width:220px;
+  background:#020617;
+  height:100vh;
+  padding:10px;
 }
-
 .sidebar h2 {
-  text-align: center;
+  text-align:center;
 }
-
 .sidebar button {
-  width: 100%;
-  margin: 5px 0;
-  padding: 10px;
-  background: #1e293b;
-  border: none;
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
+  width:100%;
+  margin:5px 0;
+  padding:10px;
+  background:#1e293b;
+  border:none;
+  color:white;
+  border-radius:8px;
+  cursor:pointer;
+  transition:0.2s;
+}
+.sidebar button:hover {
+  background:#334155;
 }
 
+/* MAIN */
 .main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  flex:1;
+  display:flex;
+  flex-direction:column;
 }
 
+/* TOP */
 .topbar {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px;
-  background: #1e293b;
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  background:#1e293b;
+  align-items:center;
+}
+.status {
+  font-size:12px;
+  opacity:.7;
 }
 
+/* CHAT */
 #mensagens {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
+  flex:1;
+  overflow-y:auto;
+  padding:15px;
+  display:flex;
+  flex-direction:column;
 }
 
+/* MSG */
 .msg {
-  max-width: 60%;
-  margin: 5px 0;
-  padding: 10px;
-  border-radius: 12px;
-  animation: fade 0.2s ease;
+  max-width:60%;
+  margin:5px 0;
+  padding:10px;
+  border-radius:12px;
+  animation:fade .2s;
 }
-
-.eu { background: #22c55e; align-self: flex-end; }
-.outro { background: #334155; align-self: flex-start; }
+.eu {
+  background:#22c55e;
+  align-self:flex-end;
+}
+.outro {
+  background:#334155;
+  align-self:flex-start;
+}
 
 @keyframes fade {
-  from {opacity: 0; transform: translateY(10px);}
-  to {opacity: 1; transform: translateY(0);}
+  from {opacity:0; transform:translateY(10px);}
+  to {opacity:1;}
 }
 
+/* INPUT */
 .bottom {
-  display: flex;
-  padding: 10px;
-  background: #1e293b;
+  display:flex;
+  padding:10px;
+  background:#1e293b;
 }
-
 .bottom input {
-  flex: 1;
-  padding: 10px;
-  border-radius: 10px;
-  border: none;
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:none;
 }
-
 .bottom button {
-  margin-left: 5px;
+  margin-left:5px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
 }
-
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0);
-  background: #020617;
-  padding: 20px;
-  border-radius: 12px;
-  transition: 0.2s;
+.bottom button:hover {
+  background:#16a34a;
 }
-
-.modal.active {
-  transform: translate(-50%, -50%) scale(1);
-}
-
 </style>
 </head>
 
 <body>
 
 <div class="sidebar">
-  <h2>CHAT</h2>
-  <button onclick="abrirConfig()">Config</button>
-  <button onclick="mudarNome()">Mudar Nome</button>
+  <h2>Chat</h2>
+  <button onclick="mudarNome()">Alterar Nome</button>
   <button onclick="logout()">Sair</button>
 </div>
 
@@ -120,38 +128,27 @@ body {
 
 <div class="topbar">
   <span id="nomeUser"></span>
-  <button onclick="abrirConfig()">⚙️</button>
+  <span class="status" id="status">offline</span>
 </div>
 
 <div id="mensagens"></div>
 
 <div class="bottom">
-  <input id="msg" placeholder="Mensagem..." onkeypress="if(event.key==='Enter') enviar()">
+  <input id="msg" placeholder="Digite..." oninput="digitando()" onkeypress="if(event.key==='Enter') enviar()">
   <button onclick="enviar()">Enviar</button>
-  <input type="file" id="file" style="display:none" onchange="uploadImagem()">
-  <button onclick="file.click()">Imagem</button>
 </div>
 
-</div>
-
-<div class="modal" id="modal">
-  <h3>Configurações</h3>
-  <button onclick="limpar()">Limpar chat</button>
-  <button onclick="fecharConfig()">Fechar</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
-  authDomain: "zap-proprio-web.firebaseapp.com",
-  projectId: "zap-proprio-web",
-  storageBucket: "zap-proprio-web.firebasestorage.app",
-  messagingSenderId: "974920784341",
-  appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_AUTH_DOMAIN",
+  projectId: "SEU_PROJECT_ID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -169,68 +166,41 @@ window.mudarNome = () => {
   }
 };
 
-window.abrirConfig = () => modal.classList.add("active");
-window.fecharConfig = () => modal.classList.remove("active");
-
-window.enviar = async () => {
-  let texto = msg.value;
-  if(!texto) return;
-
-  await addDoc(collection(db, "mensagens"), {
-    texto,
-    nome,
-    uid: auth.currentUser.uid,
-    data: Date.now()
-  });
-
-  msg.value = "";
-};
-
-window.uploadImagem = async () => {
-  let file = document.getElementById("file").files[0];
-  if(!file) return;
-
-  let url = URL.createObjectURL(file);
-
-  await addDoc(collection(db, "mensagens"), {
-    imagem: url,
-    nome,
-    uid: auth.currentUser.uid,
-    data: Date.now()
-  });
-};
-
-window.limpar = async () => {
-  let snap = await getDocs(collection(db, "mensagens"));
-  snap.forEach(async d => {
-    await deleteDoc(doc(db, "mensagens", d.id));
-  });
-};
-
 window.logout = () => signOut(auth);
 
-onAuthStateChanged(auth, (user)=>{
+window.enviar = async () => {
+  if(!msg.value) return;
+
+  await addDoc(collection(db,"mensagens"),{
+    texto: msg.value,
+    nome,
+    uid: auth.currentUser.uid,
+    data: Date.now()
+  });
+
+  msg.value="";
+};
+
+window.digitando = () => {
+  status.innerText = "digitando...";
+  setTimeout(()=>status.innerText="online",1000);
+};
+
+onAuthStateChanged(auth, user=>{
   if(user){
     nomeUser.innerText = nome;
+    status.innerText = "online";
 
-    onSnapshot(collection(db, "mensagens"), snap=>{
-      mensagens.innerHTML = "";
+    onSnapshot(collection(db,"mensagens"), snap=>{
+      mensagens.innerHTML="";
 
-      snap.docs.sort((a,b)=>a.data().data - b.data().data)
+      snap.docs.sort((a,b)=>a.data().data-b.data().data)
       .forEach(d=>{
         let m = d.data();
-        let div = document.createElement("div");
+        let div=document.createElement("div");
 
-        div.classList.add("msg");
-        div.classList.add(m.uid === auth.currentUser.uid ? "eu" : "outro");
-
-        if(m.texto){
-          div.innerHTML = `<b>${m.nome}</b><br>${m.texto}`;
-        }
-
-        if(m.imagem){
-          div.innerHTML = `<b>${m.nome}</b><br><img src="${m.imagem}" width="150">`;
-        }
+        div.className="msg "+(m.uid===user.uid?"eu":"outro");
+        div.innerHTML=`<b>${m.nome}</b><br>${m.texto}`;
 
         mensagens.appendChild(div);
       });
@@ -239,7 +209,11 @@ onAuthStateChanged(auth, (user)=>{
     });
 
   } else {
-    alert("Faça login primeiro no código antigo ou adiciona login aqui depois");
+    let email = prompt("Email:");
+    let senha = prompt("Senha:");
+
+    signInWithEmailAndPassword(auth,email,senha)
+    .catch(()=>createUserWithEmailAndPassword(auth,email,senha));
   }
 });
 </script>
