@@ -2,225 +2,164 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Chat do Ítalo 😈</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MVOID Chat</title>
 
 <style>
-body {
-  margin:0;
-  font-family:Arial;
-  background:#0f172a;
-  color:white;
-  display:flex;
-}
-
-.sidebar {
-  width:220px;
-  background:#020617;
-  height:100vh;
-  padding:10px;
-}
-.sidebar h2 {
-  text-align:center;
-}
-.sidebar button {
-  width:100%;
-  margin:5px 0;
-  padding:10px;
-  background:#1e293b;
-  border:none;
-  color:white;
-  border-radius:8px;
-  cursor:pointer;
-}
-.sidebar button:hover {
-  background:#334155;
-}
-
-.main {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
-
-.topbar {
-  display:flex;
-  justify-content:space-between;
-  padding:10px;
-  background:#1e293b;
-}
-
-.status {
-  font-size:12px;
-  opacity:.7;
-}
-
-#mensagens {
-  flex:1;
-  overflow-y:auto;
-  padding:15px;
-  display:flex;
-  flex-direction:column;
-}
-
-.msg {
-  max-width:60%;
-  margin:5px 0;
-  padding:10px;
-  border-radius:12px;
-  animation:fade .2s;
-}
-
-.eu {
-  background:#22c55e;
-  align-self:flex-end;
-}
-
-.outro {
-  background:#334155;
-  align-self:flex-start;
-}
-
-@keyframes fade {
-  from {opacity:0; transform:translateY(10px);}
-  to {opacity:1;}
-}
-
-.bottom {
-  display:flex;
-  padding:10px;
-  background:#1e293b;
-}
-
-.bottom input {
-  flex:1;
-  padding:10px;
-  border-radius:10px;
-  border:none;
-}
-
-.bottom button {
-  margin-left:5px;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  background:#22c55e;
-  color:white;
-  cursor:pointer;
-}
+body{margin:0;font-family:Arial;background:#0f172a;color:white;display:flex;height:100vh;overflow:hidden}
+.sidebar{width:260px;background:#020617;display:flex;flex-direction:column}
+.sidebar h2{padding:15px;margin:0;text-align:center}
+.groups{flex:1;overflow-y:auto}
+.group{padding:10px;cursor:pointer;border-bottom:1px solid #111}
+.group:hover{background:#1e293b}
+.main{flex:1;display:flex;flex-direction:column}
+.topbar{background:#1e293b;padding:10px;display:flex;justify-content:space-between}
+#mensagens{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column}
+.msg{padding:8px;border-radius:10px;margin:5px;max-width:70%}
+.eu{background:#22c55e;align-self:flex-end}
+.outro{background:#334155}
+.bottom{display:flex;padding:10px;background:#1e293b}
+.bottom input{flex:1;padding:10px;border:none;border-radius:10px}
+button{padding:10px;border:none;border-radius:10px;background:#22c55e;color:white;margin-left:5px;cursor:pointer}
+.login{position:absolute;inset:0;background:#020617;display:flex;justify-content:center;align-items:center}
+.loginBox{background:#1e293b;padding:20px;border-radius:15px;display:flex;flex-direction:column;gap:10px}
+input{padding:10px;border-radius:10px;border:none}
+.fade{animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
 </style>
 </head>
 
 <body>
 
+<div class="login" id="login">
+<div class="loginBox">
+<h2>Entrar</h2>
+<input id="nomeInput" placeholder="Nome">
+<input id="senhaInput" placeholder="Senha" type="password">
+<button onclick="entrar()">Entrar</button>
+</div>
+</div>
+
 <div class="sidebar">
-  <h2>Chat Ultra</h2>
-  <button onclick="mudarNome()">Alterar Nome</button>
-  <button onclick="logout()">Sair</button>
+<h2>Grupos</h2>
+<div class="groups" id="groups"></div>
+<button onclick="criarGrupo()" id="btnCriar">+ Grupo</button>
 </div>
 
 <div class="main">
-
 <div class="topbar">
-  <span id="nomeUser"></span>
-  <span class="status" id="status">offline</span>
+<span id="nomeUser"></span>
+<span id="cargo"></span>
 </div>
 
 <div id="mensagens"></div>
 
 <div class="bottom">
-  <input id="msg" placeholder="Digite..." oninput="digitando()" onkeypress="if(event.key==='Enter') enviar()">
-  <button onclick="enviar()">Enviar</button>
+<input id="msg" placeholder="Mensagem" onkeypress="if(event.key==='Enter') enviar()">
+<button onclick="enviar()">Enviar</button>
 </div>
-
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
   authDomain: "zap-proprio-web.firebaseapp.com",
-  projectId: "zap-proprio-web",
-  storageBucket: "zap-proprio-web.firebasestorage.app",
-  messagingSenderId: "974920784341",
-  appId: "1:974920784341:web:8eb8b14928d01a9ed3855c",
-  measurementId: "G-8D8SN57CQM"
+  projectId: "zap-proprio-web"
 };
 
 const app = initializeApp(firebaseConfig);
-getAnalytics(app);
-
-const auth = getAuth();
 const db = getFirestore();
 
-let nome = localStorage.getItem("nome") || "User";
+let nome = localStorage.getItem("nome");
+let senha = localStorage.getItem("senha");
+let grupoAtual = "global";
+let isAdmin = false;
 
-window.mudarNome = () => {
-  let n = prompt("Novo nome:");
-  if(n){
-    nome = n;
-    localStorage.setItem("nome", nome);
-    document.getElementById("nomeUser").innerText = nome;
+window.entrar = () => {
+  nome = nomeInput.value;
+  senha = senhaInput.value;
+  if(!nome || !senha) return;
+
+  localStorage.setItem("nome", nome);
+  localStorage.setItem("senha", senha);
+
+  if(nome === "MVOIDv" && senha === "@italo2021AH2"){
+    isAdmin = true;
   }
-};
 
-window.logout = () => signOut(auth);
+  iniciar();
+}
+
+function iniciar(){
+  login.style.display = "none";
+  nomeUser.innerText = nome;
+  cargo.innerText = isAdmin ? "ADMIN" : "USER";
+
+  carregarGrupos();
+  carregarMensagens();
+}
+
+function carregarGrupos(){
+  groups.innerHTML = "";
+
+  ["global","geral","jogos"].forEach(g=>{
+    let div = document.createElement("div");
+    div.className="group";
+    div.innerText=g;
+    div.onclick=()=>{grupoAtual=g;carregarMensagens()};
+    groups.appendChild(div);
+  });
+}
+
+window.criarGrupo = async () => {
+  if(!isAdmin) return alert("Só admin");
+  let nomeGrupo = prompt("Nome do grupo");
+  if(!nomeGrupo) return;
+
+  let div = document.createElement("div");
+  div.className="group";
+  div.innerText=nomeGrupo;
+  div.onclick=()=>{grupoAtual=nomeGrupo;carregarMensagens()};
+  groups.appendChild(div);
+}
 
 window.enviar = async () => {
-  let input = document.getElementById("msg");
-  if(!input.value) return;
+  if(!msg.value) return;
 
   await addDoc(collection(db,"mensagens"),{
-    texto: input.value,
+    texto: msg.value,
     nome,
-    uid: auth.currentUser.uid,
+    grupo: grupoAtual,
     data: Date.now()
   });
 
-  input.value="";
-};
+  msg.value="";
+}
 
-window.digitando = () => {
-  let status = document.getElementById("status");
-  status.innerText = "digitando...";
-  setTimeout(()=>status.innerText="online",1000);
-};
+function carregarMensagens(){
+  onSnapshot(collection(db,"mensagens"), snap=>{
+    mensagens.innerHTML="";
 
-onAuthStateChanged(auth, user=>{
-  if(user){
-    document.getElementById("nomeUser").innerText = nome;
-    document.getElementById("status").innerText = "online";
-
-    onSnapshot(collection(db,"mensagens"), snap=>{
-      let mensagens = document.getElementById("mensagens");
-      mensagens.innerHTML="";
-
-      snap.docs.sort((a,b)=>a.data().data-b.data().data)
-      .forEach(d=>{
-        let m = d.data();
-        let div=document.createElement("div");
-
-        div.className="msg "+(m.uid===user.uid?"eu":"outro");
-        div.innerHTML=`<b>${m.nome}</b><br>${m.texto}`;
-
-        mensagens.appendChild(div);
-      });
-
-      mensagens.scrollTop = mensagens.scrollHeight;
+    snap.docs
+    .map(d=>d.data())
+    .filter(m=>m.grupo===grupoAtual)
+    .sort((a,b)=>a.data-b.data)
+    .forEach(m=>{
+      let div=document.createElement("div");
+      div.className="msg fade "+(m.nome===nome?"eu":"outro");
+      div.innerHTML=`<b>${m.nome}</b><br>${m.texto}`;
+      mensagens.appendChild(div);
     });
+  });
+}
 
-  } else {
-    let email = prompt("Email:");
-    let senha = prompt("Senha:");
-
-    signInWithEmailAndPassword(auth,email,senha)
-    .catch(()=>createUserWithEmailAndPassword(auth,email,senha));
-  }
-});
+if(nome && senha){
+  if(nome === "MVOIDv" && senha === "@italo2021AH2") isAdmin=true;
+  iniciar();
+}
 
 </script>
 
