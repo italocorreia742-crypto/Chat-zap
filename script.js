@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, setDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
@@ -14,12 +14,11 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ====================== VARIÁVEIS ======================
-let nome = localStorage.getItem("nome") || prompt("Digite seu nome para entrar no chat:");
+let nome = localStorage.getItem("nome") || prompt("Digite seu nome:");
 let meuId = nome ? nome.toLowerCase().replace(/\s/g, '_') : null;
 let grupoAtivo = "global";
 
 if (!nome) window.location.reload();
-
 localStorage.setItem("nome", nome);
 
 const dom = {
@@ -64,7 +63,7 @@ document.querySelectorAll('.tab').forEach(tab => {
         dom.tabTitle.textContent = tab.textContent.toUpperCase();
 
         if (tipo === "grupos") escutarCanais();
-        else if (tipo === "conversas") mostrarVazio("Nenhuma conversa iniciada ainda.");
+        else if (tipo === "conversas") mostrarVazio("Nenhuma conversa iniciada.");
         else if (tipo === "amigos") carregarAmigos();
     });
 });
@@ -91,7 +90,7 @@ function criarItem(texto, valor, ativo = false) {
     div.className = `item ${ativo ? 'active' : ''}`;
     div.textContent = texto;
     div.onclick = () => mudarGrupo(valor);
-    div.ondblclick = () => alert(`Configurações do grupo: ${texto} (em desenvolvimento)`);
+    div.ondblclick = () => abrirOpcoesGrupo(texto, valor);
     return div;
 }
 
@@ -101,21 +100,27 @@ window.mudarGrupo = (grupo) => {
     escutarMensagens();
 };
 
-// ====================== AMIGOS ======================
-function carregarAmigos() {
-    dom.listaItens.innerHTML = `
-        <div class="item" onclick="iniciarDM('João')">👤 João Silva</div>
-        <div class="item" onclick="iniciarDM('Maria')">👤 Maria Santos</div>
-        <div class="item" onclick="iniciarDM('Pedro')">👤 Pedro Costa</div>
-    `;
-}
+// ====================== AMIGOS (Puxando do Firebase) ======================
+async function carregarAmigos() {
+    dom.listaItens.innerHTML = "<div class='item' style='opacity:0.6'>Carregando usuários...</div>";
 
-window.iniciarDM = (usuario) => {
-    alert(`Abrindo conversa privada com ${usuario}... (em breve)`);
-};
+    const snapshot = await getDocs(collection(db, "usuarios"));
+    dom.listaItens.innerHTML = "";
 
-function mostrarVazio(texto) {
-    dom.listaItens.innerHTML = `<div class="item" style="opacity:0.5; text-align:center; padding:30px;">${texto}</div>`;
+    snapshot.forEach(docSnap => {
+        const user = docSnap.data();
+        if (user.nome === nome) return; // não mostrar si mesmo
+
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `👤 ${user.nome}`;
+        div.onclick = () => alert(`Abrir conversa com ${user.nome} (em breve)`);
+        dom.listaItens.appendChild(div);
+    });
+
+    if (dom.listaItens.children.length === 0) {
+        dom.listaItens.innerHTML = "<div class='item' style='opacity:0.6'>Nenhum outro usuário online no momento.</div>";
+    }
 }
 
 // ====================== MENSAGENS ======================
@@ -133,7 +138,7 @@ function escutarMensagens() {
             const div = document.createElement("div");
             div.className = `msg ${msg.nome === nome ? 'eu' : 'outro'}`;
             div.innerHTML = `<b>${msg.nome}</b><span>${msg.texto}</span>`;
-            div.ondblclick = () => mostrarOpcoesMsg(msg, docSnap.id);
+            div.ondblclick = () => mostrarOpcoesMensagem(msg, docSnap.id);
             dom.mensagens.appendChild(div);
         });
         dom.mensagens.scrollTop = dom.mensagens.scrollHeight;
@@ -144,38 +149,35 @@ async function enviarMensagem() {
     const texto = dom.input.value.trim();
     if (!texto) return;
 
-    try {
-        await addDoc(collection(db, "mensagens"), {
-            texto: texto,
-            nome: nome,
-            grupo: grupoAtivo,
-            data: serverTimestamp()
-        });
-        dom.input.value = "";
-    } catch (e) {
-        console.error(e);
-        alert("Erro ao enviar mensagem");
-    }
+    await addDoc(collection(db, "mensagens"), {
+        texto: texto,
+        nome: nome,
+        grupo: grupoAtivo,
+        data: serverTimestamp()
+    });
+    dom.input.value = "";
 }
 
-function mostrarOpcoesMsg(msg, id) {
-    const acao = confirm(`Mensagem de ${msg.nome}:\n\n"${msg.texto}"\n\nO que deseja fazer?\n\nOK = Reagir ❤️\nCancelar = Fechar`);
-    if (acao) alert("Reação adicionada! (em breve)");
+// ====================== OPÇÕES ======================
+function mostrarOpcoesMensagem(msg, msgId) {
+    const opcoes = confirm(`Mensagem de ${msg.nome}:\n\n"${msg.texto}"\n\nOK = Reagir com ❤️\nCancelar = Fechar`);
+    if (opcoes) alert("❤️ Reação enviada!");
+}
+
+function abrirOpcoesGrupo(nomeGrupo, valor) {
+    alert(`Opções do grupo: ${nomeGrupo}\n\n1. Configurações\n2. Membros\n3. Cargos\n(Em breve mais opções)`);
+}
+
+function mostrarVazio(texto) {
+    dom.listaItens.innerHTML = `<div class="item" style="opacity:0.6;text-align:center;padding:40px 20px;">${texto}</div>`;
 }
 
 // ====================== EVENTOS ======================
 document.getElementById("btnEnviar").addEventListener("click", enviarMensagem);
-dom.input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enviarMensagem();
-});
+dom.input.addEventListener("keydown", e => { if (e.key === "Enter") enviarMensagem(); });
 
-document.getElementById("toggleMenu").addEventListener("click", () => {
-    dom.sidebar.classList.toggle("open");
-});
-
-document.getElementById("btnCriar").addEventListener("click", () => {
-    document.getElementById("modalGrupo").style.display = "flex";
-});
+document.getElementById("toggleMenu").addEventListener("click", () => dom.sidebar.classList.toggle("open"));
+document.getElementById("btnCriar").addEventListener("click", () => document.getElementById("modalGrupo").style.display = "flex");
 
 document.getElementById("confirmarGrupo").addEventListener("click", async () => {
     const nomeGrupo = document.getElementById("novoNomeGrupo").value.trim().toLowerCase();
@@ -187,14 +189,11 @@ document.getElementById("confirmarGrupo").addEventListener("click", async () => 
 });
 
 document.getElementById("btnConfig").addEventListener("click", () => {
-    alert("Configurações do usuário (em desenvolvimento)");
+    alert("Configurações do Perfil\n\nNome: " + nome);
 });
 
-// Fechar modais
 document.querySelectorAll(".fechar").forEach(btn => {
-    btn.addEventListener("click", () => {
-        document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
-    });
+    btn.addEventListener("click", () => document.querySelectorAll(".modal").forEach(m => m.style.display = "none"));
 });
 
 iniciar();
