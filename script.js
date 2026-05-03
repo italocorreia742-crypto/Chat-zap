@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, setDoc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
@@ -14,12 +14,12 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ====================== VARIÁVEIS ======================
-let nome = localStorage.getItem("nome") || prompt("Digite seu nome:");
+let nome = localStorage.getItem("nome") || prompt("Digite seu nome para entrar no chat:");
 let meuId = nome ? nome.toLowerCase().replace(/\s/g, '_') : null;
 let grupoAtivo = "global";
-let tipoAtivo = "grupos";
 
 if (!nome) window.location.reload();
+
 localStorage.setItem("nome", nome);
 
 const dom = {
@@ -59,37 +59,39 @@ document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        tipoAtivo = tab.dataset.tab;
+        
+        const tipo = tab.dataset.tab;
         dom.tabTitle.textContent = tab.textContent.toUpperCase();
 
-        if (tipoAtivo === "grupos") escutarCanais();
-        else if (tipoAtivo === "conversas") mostrarMensagemVazia("Nenhuma conversa iniciada ainda");
-        else if (tipoAtivo === "amigos") carregarAmigos();
+        if (tipo === "grupos") escutarCanais();
+        else if (tipo === "conversas") mostrarVazio("Nenhuma conversa iniciada ainda.");
+        else if (tipo === "amigos") carregarAmigos();
     });
 });
 
 // ====================== GRUPOS ======================
 function escutarCanais() {
     dom.listaItens.innerHTML = "";
-    const global = criarItemLista("# global", "global", true);
-    dom.listaItens.appendChild(global);
+    
+    const globalItem = criarItem("# global", "global", true);
+    dom.listaItens.appendChild(globalItem);
 
     onSnapshot(collection(db, "canais"), (snap) => {
         snap.forEach(docSnap => {
             const data = docSnap.data();
             if (data.nome === "global") return;
-            const item = criarItemLista(`# ${data.nome}`, data.nome);
+            const item = criarItem(`# ${data.nome}`, data.nome);
             dom.listaItens.appendChild(item);
         });
     });
 }
 
-function criarItemLista(texto, valor, ativo = false) {
+function criarItem(texto, valor, ativo = false) {
     const div = document.createElement("div");
     div.className = `item ${ativo ? 'active' : ''}`;
     div.textContent = texto;
     div.onclick = () => mudarGrupo(valor);
-    div.ondblclick = () => abrirConfigGrupo(valor); // Double click = config do grupo
+    div.ondblclick = () => alert(`Configurações do grupo: ${texto} (em desenvolvimento)`);
     return div;
 }
 
@@ -99,23 +101,30 @@ window.mudarGrupo = (grupo) => {
     escutarMensagens();
 };
 
-// ====================== AMIGOS (Simulado por enquanto) ======================
+// ====================== AMIGOS ======================
 function carregarAmigos() {
     dom.listaItens.innerHTML = `
-        <div class="item" onclick="iniciarConversaPrivada('João')">👤 João</div>
-        <div class="item" onclick="iniciarConversaPrivada('Maria')">👤 Maria</div>
-        <div class="item" onclick="iniciarConversaPrivada('Pedro')">👤 Pedro</div>
+        <div class="item" onclick="iniciarDM('João')">👤 João Silva</div>
+        <div class="item" onclick="iniciarDM('Maria')">👤 Maria Santos</div>
+        <div class="item" onclick="iniciarDM('Pedro')">👤 Pedro Costa</div>
     `;
 }
 
-window.iniciarConversaPrivada = (usuario) => {
-    alert(`Iniciando conversa privada com ${usuario} (em breve)`);
-    // Futuramente vai mudar para DMs
+window.iniciarDM = (usuario) => {
+    alert(`Abrindo conversa privada com ${usuario}... (em breve)`);
 };
+
+function mostrarVazio(texto) {
+    dom.listaItens.innerHTML = `<div class="item" style="opacity:0.5; text-align:center; padding:30px;">${texto}</div>`;
+}
 
 // ====================== MENSAGENS ======================
 function escutarMensagens() {
-    const q = query(collection(db, "mensagens"), where("grupo", "==", grupoAtivo), orderBy("data", "asc"));
+    const q = query(
+        collection(db, "mensagens"),
+        where("grupo", "==", grupoAtivo),
+        orderBy("data", "asc")
+    );
 
     onSnapshot(q, (snap) => {
         dom.mensagens.innerHTML = "";
@@ -124,7 +133,7 @@ function escutarMensagens() {
             const div = document.createElement("div");
             div.className = `msg ${msg.nome === nome ? 'eu' : 'outro'}`;
             div.innerHTML = `<b>${msg.nome}</b><span>${msg.texto}</span>`;
-            div.ondblclick = () => mostrarOpcoesMensagem(msg, docSnap.id);
+            div.ondblclick = () => mostrarOpcoesMsg(msg, docSnap.id);
             dom.mensagens.appendChild(div);
         });
         dom.mensagens.scrollTop = dom.mensagens.scrollHeight;
@@ -135,39 +144,57 @@ async function enviarMensagem() {
     const texto = dom.input.value.trim();
     if (!texto) return;
 
-    await addDoc(collection(db, "mensagens"), {
-        texto,
-        nome,
-        grupo: grupoAtivo,
-        data: serverTimestamp()
-    });
-    dom.input.value = "";
+    try {
+        await addDoc(collection(db, "mensagens"), {
+            texto: texto,
+            nome: nome,
+            grupo: grupoAtivo,
+            data: serverTimestamp()
+        });
+        dom.input.value = "";
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao enviar mensagem");
+    }
 }
 
-// ====================== FUNÇÕES EXTRAS ======================
-function mostrarMensagemVazia(texto) {
-    dom.listaItens.innerHTML = `<div class="item" style="opacity:0.6">${texto}</div>`;
-}
-
-function mostrarOpcoesMensagem(msg, msgId) {
-    alert(`Opções da mensagem:\n\nDe: ${msg.nome}\n"${msg.texto}"\n\n(Em breve: Apagar, Editar, Reagir...)`);
-}
-
-function abrirConfigGrupo(grupo) {
-    alert(`Configurações do grupo: #${grupo}\n\n(Cargos, cores, permissões em breve)`);
+function mostrarOpcoesMsg(msg, id) {
+    const acao = confirm(`Mensagem de ${msg.nome}:\n\n"${msg.texto}"\n\nO que deseja fazer?\n\nOK = Reagir ❤️\nCancelar = Fechar`);
+    if (acao) alert("Reação adicionada! (em breve)");
 }
 
 // ====================== EVENTOS ======================
 document.getElementById("btnEnviar").addEventListener("click", enviarMensagem);
-dom.input.addEventListener("keydown", e => { if (e.key === "Enter") enviarMensagem(); });
+dom.input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") enviarMensagem();
+});
 
-document.getElementById("toggleMenu").addEventListener("click", () => dom.sidebar.classList.toggle("open"));
-document.getElementById("btnCriar").addEventListener("click", () => document.getElementById("modalGrupo").style.display = "flex");
-document.getElementById("btnConfig").addEventListener("click", () => document.getElementById("modalConfig").style.display = "flex");
+document.getElementById("toggleMenu").addEventListener("click", () => {
+    dom.sidebar.classList.toggle("open");
+});
+
+document.getElementById("btnCriar").addEventListener("click", () => {
+    document.getElementById("modalGrupo").style.display = "flex";
+});
+
+document.getElementById("confirmarGrupo").addEventListener("click", async () => {
+    const nomeGrupo = document.getElementById("novoNomeGrupo").value.trim().toLowerCase();
+    if (nomeGrupo) {
+        await addDoc(collection(db, "canais"), { nome: nomeGrupo });
+        document.getElementById("modalGrupo").style.display = "none";
+        document.getElementById("novoNomeGrupo").value = "";
+    }
+});
+
+document.getElementById("btnConfig").addEventListener("click", () => {
+    alert("Configurações do usuário (em desenvolvimento)");
+});
 
 // Fechar modais
 document.querySelectorAll(".fechar").forEach(btn => {
-    btn.addEventListener("click", () => document.querySelectorAll(".modal").forEach(m => m.style.display = "none"));
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+    });
 });
 
 iniciar();
