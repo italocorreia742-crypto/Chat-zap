@@ -1,76 +1,277 @@
-<!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MVOID Chat ELITE</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MVOID Chat ELITE - FINAL</title>
+<!-- ✅ ICONES FUNCIONANDO -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+&nbsp;&nbsp;&nbsp;&nbsp;:root { --bg-dark: #020617; --bg-main: #0f172a; --accent: #22c55e; --sidebar: #0f172a; --text: #f8fafc; --danger: #ef4444; --card: #1e293b; }
+&nbsp;&nbsp;&nbsp;&nbsp;* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+&nbsp;&nbsp;&nbsp;&nbsp;body { margin:0; font-family:'Segoe UI',sans-serif; background:var(--bg-dark); color:var(--text); display:flex; height:100vh; overflow:hidden; }
+&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;/* Sidebar Comunidades */
+&nbsp;&nbsp;&nbsp;&nbsp;.comunidades { width: 72px; background: #000; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 12px; flex-shrink: 0; }
+&nbsp;&nbsp;&nbsp;&nbsp;.com-icon { width: 48px; height: 48px; background: #334155; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; color: white; position: relative; border: none; }
+&nbsp;&nbsp;&nbsp;&nbsp;.com-icon:hover, .com-icon.active { border-radius: 16px; background: var(--accent); }
+&nbsp;&nbsp;&nbsp;&nbsp;/* Sidebar Canais */
+&nbsp;&nbsp;&nbsp;&nbsp;.sidebar { width: 240px; background: var(--sidebar); display: flex; flex-direction: column; border-right: 1px solid #1e293b; transition: 0.3s; z-index: 10; }
+&nbsp;&nbsp;&nbsp;&nbsp;.side-header { padding: 15px; font-weight: bold; font-size: 14px; color: #94a3b8; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; }
+&nbsp;&nbsp;&nbsp;&nbsp;.group-list { flex: 1; padding: 10px; overflow-y: auto; }
+&nbsp;&nbsp;&nbsp;&nbsp;.group-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; color: #94a3b8; background: rgba(255,255,255,0.02); transition: 0.2s; }
+&nbsp;&nbsp;&nbsp;&nbsp;.group-item:hover { background: rgba(255,255,255,0.08); color: white; }
+&nbsp;&nbsp;&nbsp;&nbsp;.group-item.active { background: #334155; color: white; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+&nbsp;&nbsp;&nbsp;&nbsp;.btn-del { color: var(--danger); border: none; background: none; cursor: pointer; padding: 5px; opacity: 0.6; }
+&nbsp;&nbsp;&nbsp;&nbsp;.btn-del:hover { opacity: 1; }
+&nbsp;&nbsp;&nbsp;&nbsp;/* Main Chat */
+&nbsp;&nbsp;&nbsp;&nbsp;.main { flex: 1; display: flex; flex-direction: column; background: #1e293b; position: relative; min-width: 0; }
+&nbsp;&nbsp;&nbsp;&nbsp;.topbar { height: 55px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; background: #1e293b; border-bottom: 1px solid #0f172a; }
+&nbsp;&nbsp;&nbsp;&nbsp;.menu-mobile { display: none; font-size: 20px; margin-right: 15px; cursor: pointer; color: var(--accent); }
+&nbsp;&nbsp;&nbsp;&nbsp;#mensagens { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+&nbsp;&nbsp;&nbsp;&nbsp;.msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; word-wrap: break-word; animation: msgIn 0.3s ease; }
+&nbsp;&nbsp;&nbsp;&nbsp;@keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+&nbsp;&nbsp;&nbsp;&nbsp;.msg b { display: block; font-size: 11px; margin-bottom: 3px; color: var(--accent); }
+&nbsp;&nbsp;&nbsp;&nbsp;.msg.eu { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
+&nbsp;&nbsp;&nbsp;&nbsp;.msg.outro { align-self: flex-start; background: var(--card); border-bottom-left-radius: 2px; }
+&nbsp;&nbsp;&nbsp;&nbsp;/* Input */
+&nbsp;&nbsp;&nbsp;&nbsp;.bottom { padding: 15px; background: #1e293b; }
+&nbsp;&nbsp;&nbsp;&nbsp;.input-wrapper { background: #334155; border-radius: 12px; display: flex; align-items: center; padding-right: 10px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+&nbsp;&nbsp;&nbsp;&nbsp;#msgInput { flex: 1; background: none; border: none; padding: 14px; color: white; outline: none; font-size: 16px; }
+&nbsp;&nbsp;&nbsp;&nbsp;.btn-send { background: var(--accent); border: none; width: 40px; height: 40px; border-radius: 10px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+&nbsp;&nbsp;&nbsp;&nbsp;/* Modais */
+&nbsp;&nbsp;&nbsp;&nbsp;.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(5px); }
+&nbsp;&nbsp;&nbsp;&nbsp;.modal-content { background: var(--card); padding: 25px; border-radius: 15px; width: 100%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+&nbsp;&nbsp;&nbsp;&nbsp;.modal h3 { margin-top: 0; color: var(--accent); border-bottom: 1px solid #334155; padding-bottom: 10px; }
+&nbsp;&nbsp;&nbsp;&nbsp;.modal input { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; outline: none; }
+&nbsp;&nbsp;&nbsp;&nbsp;.btn-modal { width: 100%; padding: 12px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin-top: 10px; }
+&nbsp;&nbsp;&nbsp;&nbsp;@media (max-width: 768px) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.sidebar { position: absolute; left: -240px; height: 100%; z-index: 99; }
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.sidebar.open { left: 72px; }
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.menu-mobile { display: block; }
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.msg { max-width: 90%; }
+&nbsp;&nbsp;&nbsp;&nbsp;}
+</style>
 </head>
 <body>
-
-    <!-- Comunidades -->
-    <div class="comunidades">
-        <button class="com-icon active"><i class="fas fa-home"></i></button>
-        <button class="com-icon" id="btn-lista-membros"><i class="fas fa-users"></i></button>
-    </div>
-
-    <!-- Sidebar Principal -->
-    <div class="sidebar" id="sidebar">
-        <div class="tabs">
-            <div class="tab active" data-tab="grupos">Grupos</div>
-            <div class="tab" data-tab="conversas">Conversas</div>
-            <div class="tab" data-tab="amigos">Amigos</div>
-        </div>
-
-        <div class="side-header">
-            <span id="tab-title">GRUPOS</span>
-            <span id="btnCriar" class="create-btn">+</span>
-        </div>
-
-        <div class="list" id="listaItens"></div>
-
-        <!-- Perfil -->
-        <div class="perfil-rodape" id="perfil-rodape">
-            <div class="avatar">👤</div>
-            <div class="perfil-info">
-                <div id="userName" class="nome"></div>
-                <div id="userCargo" class="cargo"></div>
-            </div>
-            <i class="fas fa-cog" id="btnConfig"></i>
-        </div>
-    </div>
-
-    <!-- Chat -->
-    <div class="main">
-        <div class="topbar">
-            <div class="top-left">
-                <i class="fas fa-bars menu-mobile" id="toggleMenu"></i>
-                <span id="chat-header"># <span id="nomeGrupoTop">global</span></span>
-            </div>
-            <div id="userNameTop"></div>
-        </div>
-
-        <div id="mensagens"></div>
-
-        <div class="bottom">
-            <div class="input-wrapper">
-                <input id="msgInput" placeholder="Digite sua mensagem..." autocomplete="off">
-                <button class="btn-send" id="btnEnviar"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modais -->
-    <div id="modalGrupo" class="modal">
-        <div class="modal-content">
-            <h3>Novo Grupo</h3>
-            <input id="novoNomeGrupo" placeholder="Nome do grupo" />
-            <button class="btn-modal" id="confirmarGrupo">CRIAR GRUPO</button>
-            <button class="btn-modal fechar">Cancelar</button>
-        </div>
-    </div>
-
-    <script type="module" src="script.js"></script>
+<div class="comunidades">
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="com-icon active" id="com-geral" title="Geral"><i class="fas fa-home"></i></button>
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="com-icon" id="btn-lista-membros" title="Membros"><i class="fas fa-users"></i></button>
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="com-icon" id="btn-painel-admin" title="Admin Panel"><i class="fas fa-user-shield"></i></button>
+</div>
+<div class="sidebar" id="sidebar">
+&nbsp;&nbsp;&nbsp;&nbsp;<div class="side-header">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;CANAIS <span id="btnCriar" style="cursor:pointer; color:var(--accent); font-size: 22px;">+</span>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+&nbsp;&nbsp;&nbsp;&nbsp;<div class="group-list" id="listaGrupos"></div>
+</div>
+<div class="main">
+&nbsp;&nbsp;&nbsp;&nbsp;<div class="topbar">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div style="display:flex; align-items:center">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="fas fa-bars menu-mobile" id="toggleMenu"></i>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div style="font-weight: bold"># <span id="nomeGrupoTop">global</span></div>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div style="display:flex; align-items:center; gap:12px">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="userName" style="font-size:14px; font-weight: bold"></span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i class="fas fa-cog" id="btnConfig" style="cursor:pointer; font-size:18px"></i>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+&nbsp;&nbsp;&nbsp;&nbsp;<div id="mensagens"></div>
+&nbsp;&nbsp;&nbsp;&nbsp;<div class="bottom">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<div class="input-wrapper">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input id="msgInput" placeholder="Sua mensagem..." autocomplete="off">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn-send" id="btnEnviar"><i class="fas fa-paper-plane"></i></button>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+&nbsp;&nbsp;&nbsp;&nbsp;</div>
+</div>
+<!-- Modais -->
+<div id="modalGrupo" class="modal"><div class="modal-content">
+&nbsp;&nbsp;&nbsp;&nbsp;<h3>Novo Canal</h3>
+&nbsp;&nbsp;&nbsp;&nbsp;<input id="novoNomeGrupo" placeholder="Nome do canal">
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn-modal" style="background:var(--accent)" id="confirmarGrupo">CRIAR</button>
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn-modal fechar" style="background:none; color:#94a3b8">Cancelar</button>
+</div></div>
+<div id="modalConfig" class="modal"><div class="modal-content">
+&nbsp;&nbsp;&nbsp;&nbsp;<h3>Perfil</h3>
+&nbsp;&nbsp;&nbsp;&nbsp;<p>Cargo: <b id="userCargo" style="color:var(--accent)"></b></p>
+&nbsp;&nbsp;&nbsp;&nbsp;<input id="editNomeInput" placeholder="Mudar meu nome">
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn-modal" style="background:var(--accent)" id="btnSalvarPerfil">SALVAR NOME</button>
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn-modal" style="background:var(--danger)" id="btnLogout">SAIR DA CONTA</button>
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn-modal fechar" style="background:none; color:#94a3b8">Fechar</button>
+</div></div>
+<div id="modalMembros" class="modal"><div class="modal-content">
+&nbsp;&nbsp;&nbsp;&nbsp;<h3>Membros</h3>
+&nbsp;&nbsp;&nbsp;&nbsp;<div id="membrosListaBox" style="max-height: 250px; overflow-y: auto;"></div>
+&nbsp;&nbsp;&nbsp;&nbsp;<button class="btn-modal fechar" style="background:var(--accent)">Fechar</button>
+</div></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+const firebaseConfig = {
+&nbsp;&nbsp;&nbsp;&nbsp;apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
+&nbsp;&nbsp;&nbsp;&nbsp;authDomain: "zap-proprio-web.firebaseapp.com",
+&nbsp;&nbsp;&nbsp;&nbsp;projectId: "zap-proprio-web",
+&nbsp;&nbsp;&nbsp;&nbsp;storageBucket: "zap-proprio-web.firebasestorage.app",
+&nbsp;&nbsp;&nbsp;&nbsp;messagingSenderId: "974920784341",
+&nbsp;&nbsp;&nbsp;&nbsp;appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+// Inicia Sessão
+let nome = localStorage.getItem("nome") || prompt("Seu Nome:");
+let senha = localStorage.getItem("senha") || prompt("Sua Senha:");
+let meuId = nome ? nome.toLowerCase().replace(/\s/g, '_') : null;
+if(!nome) window.location.reload();
+localStorage.setItem("nome", nome);
+localStorage.setItem("senha", senha);
+let isAdmin = false;
+let grupoAtivo = "global";
+let unsubscribeMsgs = null;
+const dom = {
+&nbsp;&nbsp;&nbsp;&nbsp;lista: document.getElementById("listaGrupos"),
+&nbsp;&nbsp;&nbsp;&nbsp;msgs: document.getElementById("mensagens"),
+&nbsp;&nbsp;&nbsp;&nbsp;input: document.getElementById("msgInput"),
+&nbsp;&nbsp;&nbsp;&nbsp;labelGrupo: document.getElementById("nomeGrupoTop"),
+&nbsp;&nbsp;&nbsp;&nbsp;sidebar: document.getElementById("sidebar")
+};
+async function iniciar() {
+&nbsp;&nbsp;&nbsp;&nbsp;// Sincroniza usuário com banco (Persistência Real)
+&nbsp;&nbsp;&nbsp;&nbsp;const userRef = doc(db, "usuarios", meuId);
+&nbsp;&nbsp;&nbsp;&nbsp;const userDoc = await getDoc(userRef);
+&nbsp;&nbsp;&nbsp;&nbsp;let cargoAtual = isAdmin ? "ADMIN" : "USER";
+&nbsp;&nbsp;&nbsp;&nbsp;if (!userDoc.exists()) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await setDoc(userRef, { nome, cargo: cargoAtual, online: true });
+&nbsp;&nbsp;&nbsp;&nbsp;} else {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cargoAtual = userDoc.data().cargo;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(isAdmin) cargoAtual = "ADMIN"; // Força Admin Mestre
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await updateDoc(userRef, { online: true, cargo: cargoAtual });
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;window.addEventListener("beforeunload", async () => {
+&nbsp;&nbsp;&nbsp;&nbsp;await updateDoc(userRef, { online: false });
+});
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;document.getElementById("userName").innerText = nome;
+&nbsp;&nbsp;&nbsp;&nbsp;document.getElementById("userCargo").innerText = cargoAtual;
+&nbsp;&nbsp;&nbsp;&nbsp;document.getElementById("btnCriar").style.visibility = (cargoAtual === "ADMIN") ? "visible" : "hidden";
+&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;escutarCanais(cargoAtual);
+&nbsp;&nbsp;&nbsp;&nbsp;escutarMensagens();
+}
+// Persistência de Canais no Firestore
+function escutarCanais(cargo) {
+&nbsp;&nbsp;&nbsp;&nbsp;onSnapshot(collection(db, "canais"), (snap) => {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dom.lista.innerHTML = `<div class="group-item ${grupoAtivo === 'global' ? 'active' : ''}" onclick="window.mudarGrupo('global')"># global</div>`;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;snap.forEach(d => {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const g = d.data();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let div = document.createElement("div");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;div.className = `group-item ${g.nome === grupoAtivo ? 'active' : ''}`;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;div.innerHTML = `<span># ${g.nome}</span>`;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(cargo === "ADMIN") {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let del = document.createElement("button");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del.className = "btn-del";
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del.innerHTML = '<i class="fas fa-trash"></i>';
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;del.onclick = async (e) => {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;e.stopPropagation();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if(confirm("Apagar canal?")) await deleteDoc(doc(db, "canais", d.id));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;div.appendChild(del);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;div.onclick = () => window.mudarGrupo(g.nome);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dom.lista.appendChild(div);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});
+&nbsp;&nbsp;&nbsp;&nbsp;});
+}
+window.mudarGrupo = (n) => {
+&nbsp;&nbsp;&nbsp;&nbsp;grupoAtivo = n;
+&nbsp;&nbsp;&nbsp;&nbsp;dom.labelGrupo.innerText = n;
+&nbsp;&nbsp;&nbsp;&nbsp;dom.sidebar.classList.remove("open");
+&nbsp;&nbsp;&nbsp;&nbsp;escutarMensagens();
+};
+async function enviar() {
+&nbsp;&nbsp;&nbsp;&nbsp;let txt = dom.input.value.trim();
+&nbsp;&nbsp;&nbsp;&nbsp;if (!txt) return;
+&nbsp;&nbsp;&nbsp;&nbsp;if (txt.length > 300) return alert("Mensagem muito grande");
+try {
+&nbsp;&nbsp;&nbsp;&nbsp;await addDoc(collection(db, "mensagens"), {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;texto: txt, nome, grupo: grupoAtivo, data: serverTimestamp()
+&nbsp;&nbsp;&nbsp;&nbsp;});
+} catch (e) {
+&nbsp;&nbsp;&nbsp;&nbsp;console.error(e);
+&nbsp;&nbsp;&nbsp;&nbsp;alert("Erro ao enviar mensagem");
+}
+&nbsp;&nbsp;&nbsp;&nbsp;dom.input.value = "";
+&nbsp;&nbsp;&nbsp;&nbsp;dom.input.focus();
+}
+function escutarMensagens() {
+&nbsp;&nbsp;&nbsp;&nbsp;if (unsubscribeMsgs) unsubscribeMsgs();
+&nbsp;&nbsp;&nbsp;&nbsp;const q = query(
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;collection(db, "mensagens"),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;where("grupo", "==", grupoAtivo),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;orderBy("data", "asc")
+&nbsp;&nbsp;&nbsp;&nbsp;);
+&nbsp;&nbsp;&nbsp;&nbsp;unsubscribeMsgs = onSnapshot(q, (snap) => {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dom.msgs.innerHTML = "";
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;snap.docs.forEach(docSnap => {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const m = docSnap.data();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let div = document.createElement("div");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;div.className = "msg " + (m.nome === nome ? "eu" : "outro");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let nomeEl = document.createElement("b");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;nomeEl.textContent = m.nome;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let textoEl = document.createElement("span");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;textoEl.textContent = m.texto;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;div.appendChild(nomeEl);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;div.appendChild(textoEl);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dom.msgs.appendChild(div);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;});
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dom.msgs.scrollTop = dom.msgs.scrollHeight;
+&nbsp;&nbsp;&nbsp;&nbsp;});
+}
+// Botões e Funções Extras
+document.getElementById("btnEnviar").onclick = enviar;
+dom.input.onkeydown = (e) => { if (e.key === "Enter") enviar(); };
+document.getElementById("toggleMenu").onclick = () => dom.sidebar.classList.toggle("open");
+document.getElementById("btnCriar").onclick = () => document.getElementById("modalGrupo").style.display = "flex";
+document.getElementById("btnConfig").onclick = () => document.getElementById("modalConfig").style.display = "flex";
+document.getElementById("confirmarGrupo").onclick = async () => {
+&nbsp;&nbsp;&nbsp;&nbsp;let n = document.getElementById("novoNomeGrupo").value.trim().toLowerCase();
+&nbsp;&nbsp;&nbsp;&nbsp;if(n) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await addDoc(collection(db, "canais"), { nome: n });
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.getElementById("modalGrupo").style.display = "none";
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.getElementById("novoNomeGrupo").value = "";
+&nbsp;&nbsp;&nbsp;&nbsp;}
+};
+document.getElementById("btn-lista-membros").onclick = async () => {
+&nbsp;&nbsp;&nbsp;&nbsp;const snap = await getDocs(collection(db, "usuarios"));
+&nbsp;&nbsp;&nbsp;&nbsp;const box = document.getElementById("membrosListaBox");
+&nbsp;&nbsp;&nbsp;&nbsp;box.innerHTML = "";
+&nbsp;&nbsp;&nbsp;&nbsp;snap.forEach(u => {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const d = u.data();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;box.innerHTML += `<div style="padding:10px; border-bottom:1px solid #334155; display:flex; justify-content:space-between">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span>$$   {d.nome} (<b>   $${d.cargo}</b>)</span>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${isAdmin && d.cargo !== "ADMIN" ? `<button onclick="window.promover('${u.id}')" style="background:var(--accent); border:none; color:white; padding:2px 8px; border-radius:4px; font-size:10px; cursor:pointer">PROMOVER</button>` : ''}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>`;
+&nbsp;&nbsp;&nbsp;&nbsp;});
+&nbsp;&nbsp;&nbsp;&nbsp;document.getElementById("modalMembros").style.display = "flex";
+};
+window.promover = async (id) => {
+&nbsp;&nbsp;&nbsp;&nbsp;if(confirm("Tornar este usuário ADMIN?")) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await updateDoc(doc(db, "usuarios", id), { cargo: "ADMIN" });
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;alert("Usuário promovido!");
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;location.reload();
+&nbsp;&nbsp;&nbsp;&nbsp;}
+};
+document.getElementById("btnSalvarPerfil").onclick = async () => {
+&nbsp;&nbsp;&nbsp;&nbsp;const novo = document.getElementById("editNomeInput").value.trim();
+&nbsp;&nbsp;&nbsp;&nbsp;if(novo) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await updateDoc(doc(db, "usuarios", meuId), { nome: novo });
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;localStorage.setItem("nome", novo);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;location.reload();
+&nbsp;&nbsp;&nbsp;&nbsp;}
+};
+document.getElementById("btnLogout").onclick = () => { localStorage.clear(); window.location.reload(); };
+document.querySelectorAll(".fechar").forEach(b => {
+&nbsp;&nbsp;&nbsp;&nbsp;b.onclick = () => document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+});
+iniciar();
+</script>
 </body>
 </html>
