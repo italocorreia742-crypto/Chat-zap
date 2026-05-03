@@ -1,5 +1,3 @@
-// ====================== SCRIPT.JS - MVOID CHAT ELITE ======================
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, doc, setDoc, updateDoc, deleteDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -16,13 +14,12 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 // ====================== VARIÁVEIS ======================
-let nome = localStorage.getItem("nome") || prompt("Digite seu nome para entrar:");
+let nome = localStorage.getItem("nome") || prompt("Digite seu nome:");
 let meuId = nome ? nome.toLowerCase().replace(/\s/g, '_') : null;
 let grupoAtivo = "global";
 let tipoAtivo = "grupos";
 
 if (!nome) window.location.reload();
-
 localStorage.setItem("nome", nome);
 
 const dom = {
@@ -62,65 +59,72 @@ document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        
         tipoAtivo = tab.dataset.tab;
         dom.tabTitle.textContent = tab.textContent.toUpperCase();
 
-        if (tipoAtivo === "grupos") {
-            escutarCanais();
-        } else {
-            dom.listaItens.innerHTML = `<div class="item">Em breve - ${tab.textContent}</div>`;
-        }
+        if (tipoAtivo === "grupos") escutarCanais();
+        else if (tipoAtivo === "conversas") mostrarMensagemVazia("Nenhuma conversa iniciada ainda");
+        else if (tipoAtivo === "amigos") carregarAmigos();
     });
 });
 
 // ====================== GRUPOS ======================
 function escutarCanais() {
     dom.listaItens.innerHTML = "";
-
-    // Global
-    const globalDiv = criarItem("# global", "global", true);
-    dom.listaItens.appendChild(globalDiv);
+    const global = criarItemLista("# global", "global", true);
+    dom.listaItens.appendChild(global);
 
     onSnapshot(collection(db, "canais"), (snap) => {
-        snap.forEach((docSnap) => {
+        snap.forEach(docSnap => {
             const data = docSnap.data();
             if (data.nome === "global") return;
-            const item = criarItem(`# ${data.nome}`, data.nome);
+            const item = criarItemLista(`# ${data.nome}`, data.nome);
             dom.listaItens.appendChild(item);
         });
     });
 }
 
-function criarItem(texto, nomeGrupo, ativo = false) {
+function criarItemLista(texto, valor, ativo = false) {
     const div = document.createElement("div");
     div.className = `item ${ativo ? 'active' : ''}`;
-    div.innerHTML = `<span>${texto}</span>`;
-    div.onclick = () => mudarGrupo(nomeGrupo);
+    div.textContent = texto;
+    div.onclick = () => mudarGrupo(valor);
+    div.ondblclick = () => abrirConfigGrupo(valor); // Double click = config do grupo
     return div;
 }
 
-window.mudarGrupo = (novoGrupo) => {
-    grupoAtivo = novoGrupo;
-    dom.nomeGrupoTop.textContent = novoGrupo;
+window.mudarGrupo = (grupo) => {
+    grupoAtivo = grupo;
+    dom.nomeGrupoTop.textContent = grupo;
     escutarMensagens();
+};
+
+// ====================== AMIGOS (Simulado por enquanto) ======================
+function carregarAmigos() {
+    dom.listaItens.innerHTML = `
+        <div class="item" onclick="iniciarConversaPrivada('João')">👤 João</div>
+        <div class="item" onclick="iniciarConversaPrivada('Maria')">👤 Maria</div>
+        <div class="item" onclick="iniciarConversaPrivada('Pedro')">👤 Pedro</div>
+    `;
+}
+
+window.iniciarConversaPrivada = (usuario) => {
+    alert(`Iniciando conversa privada com ${usuario} (em breve)`);
+    // Futuramente vai mudar para DMs
 };
 
 // ====================== MENSAGENS ======================
 function escutarMensagens() {
-    const q = query(
-        collection(db, "mensagens"),
-        where("grupo", "==", grupoAtivo),
-        orderBy("data", "asc")
-    );
+    const q = query(collection(db, "mensagens"), where("grupo", "==", grupoAtivo), orderBy("data", "asc"));
 
     onSnapshot(q, (snap) => {
         dom.mensagens.innerHTML = "";
-        snap.forEach((docSnap) => {
+        snap.forEach(docSnap => {
             const msg = docSnap.data();
             const div = document.createElement("div");
             div.className = `msg ${msg.nome === nome ? 'eu' : 'outro'}`;
             div.innerHTML = `<b>${msg.nome}</b><span>${msg.texto}</span>`;
+            div.ondblclick = () => mostrarOpcoesMensagem(msg, docSnap.id);
             dom.mensagens.appendChild(div);
         });
         dom.mensagens.scrollTop = dom.mensagens.scrollHeight;
@@ -130,63 +134,40 @@ function escutarMensagens() {
 async function enviarMensagem() {
     const texto = dom.input.value.trim();
     if (!texto) return;
-    if (texto.length > 500) return alert("Mensagem muito longa!");
 
-    try {
-        await addDoc(collection(db, "mensagens"), {
-            texto: texto,
-            nome: nome,
-            grupo: grupoAtivo,
-            data: serverTimestamp()
-        });
-        dom.input.value = "";
-    } catch (e) {
-        console.error(e);
-        alert("Erro ao enviar!");
-    }
+    await addDoc(collection(db, "mensagens"), {
+        texto,
+        nome,
+        grupo: grupoAtivo,
+        data: serverTimestamp()
+    });
+    dom.input.value = "";
+}
+
+// ====================== FUNÇÕES EXTRAS ======================
+function mostrarMensagemVazia(texto) {
+    dom.listaItens.innerHTML = `<div class="item" style="opacity:0.6">${texto}</div>`;
+}
+
+function mostrarOpcoesMensagem(msg, msgId) {
+    alert(`Opções da mensagem:\n\nDe: ${msg.nome}\n"${msg.texto}"\n\n(Em breve: Apagar, Editar, Reagir...)`);
+}
+
+function abrirConfigGrupo(grupo) {
+    alert(`Configurações do grupo: #${grupo}\n\n(Cargos, cores, permissões em breve)`);
 }
 
 // ====================== EVENTOS ======================
 document.getElementById("btnEnviar").addEventListener("click", enviarMensagem);
+dom.input.addEventListener("keydown", e => { if (e.key === "Enter") enviarMensagem(); });
 
-dom.input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enviarMensagem();
-});
+document.getElementById("toggleMenu").addEventListener("click", () => dom.sidebar.classList.toggle("open"));
+document.getElementById("btnCriar").addEventListener("click", () => document.getElementById("modalGrupo").style.display = "flex");
+document.getElementById("btnConfig").addEventListener("click", () => document.getElementById("modalConfig").style.display = "flex");
 
-document.getElementById("toggleMenu").addEventListener("click", () => {
-    dom.sidebar.classList.toggle("open");
-});
-
-document.getElementById("btnCriar").addEventListener("click", () => {
-    document.getElementById("modalGrupo").style.display = "flex";
-});
-
-// Modais
-document.getElementById("confirmarGrupo").addEventListener("click", async () => {
-    const nomeNovo = document.getElementById("novoNomeGrupo").value.trim().toLowerCase();
-    if (nomeNovo) {
-        await addDoc(collection(db, "canais"), { nome: nomeNovo });
-        document.getElementById("modalGrupo").style.display = "none";
-        document.getElementById("novoNomeGrupo").value = "";
-    }
-});
-
-document.getElementById("btnConfig").addEventListener("click", () => {
-    document.getElementById("modalConfig").style.display = "flex";
-});
-
+// Fechar modais
 document.querySelectorAll(".fechar").forEach(btn => {
-    btn.addEventListener("click", () => {
-        document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
-    });
+    btn.addEventListener("click", () => document.querySelectorAll(".modal").forEach(m => m.style.display = "none"));
 });
 
-document.getElementById("btnLogout").addEventListener("click", () => {
-    if (confirm("Deseja sair da conta?")) {
-        localStorage.clear();
-        window.location.reload();
-    }
-});
-
-// Iniciar aplicação
 iniciar();
