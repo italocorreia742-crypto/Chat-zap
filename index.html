@@ -9,14 +9,11 @@
 </head>
 <body>
 
-    <!-- Sidebar Comunidades -->
     <div class="comunidades">
         <button class="com-icon active"><i class="fas fa-home"></i></button>
         <button class="com-icon" id="btn-lista-membros"><i class="fas fa-users"></i></button>
-        <button class="com-icon" id="btn-painel-admin"><i class="fas fa-user-shield"></i></button>
     </div>
 
-    <!-- Sidebar Principal -->
     <div class="sidebar" id="sidebar">
         <div class="tabs">
             <div class="tab active" data-tab="grupos">Grupos</div>
@@ -31,9 +28,8 @@
 
         <div class="list" id="listaItens"></div>
 
-        <!-- Perfil Rodapé -->
         <div class="perfil-rodape" id="perfil-rodape">
-            <div class="avatar" id="avatar-user">👤</div>
+            <div class="avatar">👤</div>
             <div class="perfil-info">
                 <div id="userName" class="nome"></div>
                 <div id="userCargo" class="cargo"></div>
@@ -42,7 +38,6 @@
         </div>
     </div>
 
-    <!-- Chat Principal -->
     <div class="main">
         <div class="topbar">
             <div class="top-left">
@@ -63,12 +58,14 @@
     </div>
 
     <!-- Modais -->
-    <div id="modalGrupo" class="modal"> ... (vou manter simples por enquanto) </div>
-    <div id="modalConfig" class="modal"> ... </div>
-    <div id="modalMembros" class="modal"> ... </div>
-
-    <!-- Modal de Opções de Mensagem -->
-    <div id="modalMsgOptions" class="modal"></div>
+    <div id="modalGrupo" class="modal">
+        <div class="modal-content">
+            <h3>Novo Grupo</h3>
+            <input id="novoNomeGrupo" placeholder="Nome do grupo">
+            <button class="btn-modal" id="confirmarGrupo">CRIAR</button>
+            <button class="btn-modal fechar">Cancelar</button>
+        </div>
+    </div>
 
     <script type="module" src="script.js"></script>
 </body>
