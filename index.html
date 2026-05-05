@@ -1,221 +1,759 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MVOID Chat ULTRA</title>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Zap/Discord 3.0 — Chat completo com Firebase Modular</title>
 <style>
-:root {
-    --bg: #020617;
-    --card: #0f172a;
-    --accent: #22c55e;
-    --text: #f8fafc;
-}
+  /* Reset e estilo base */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  body, html {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    background: #181a2a;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+  }
+  header, footer {
+    background: #262a48;
+    text-align: center;
+    padding: 15px;
+    user-select: none;
+  }
+  header h1 {
+    letter-spacing: 1.3px;
+  }
+  #app {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    height: calc(100vh - 100px);
+  }
+  /* Sidebar */
+  #sidebar {
+    width: 280px;
+    background: #22263e;
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar header {
+    padding: 20px;
+    border-bottom: 1px solid #3c4163;
+    text-align: center;
+    font-weight: 600;
+    font-size: 22px;
+    color: #61dafb;
+  }
+  #channels, #usersOnline {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 15px;
+  }
+  /* Canais */
+  .channels-title, .users-title {
+    font-weight: 700;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #3c4163;
+    padding-bottom: 6px;
+    text-transform: uppercase;
+    font-size: 14px;
+    color: #9ab1d9;
+  }
+  .channel, .user {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    background: #2e3250;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    transition: background-color 0.2s ease;
+  }
+  .channel:hover, .user:hover {
+    background: #4d56a5;
+  }
+  .channel.selected {
+    background-color: #61dafb;
+    color: #22263e;
+    font-weight: 700;
+  }
+  .channel.private::after {
+    content: "🔒";
+    margin-left: 6px;
+  }
+  /* Usuário que está online - bolinha colorida */
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  .status-online { background: #6bd16d; }
+  .status-away { background: #e0be6a; }
+  .status-busy { background: #e95f62; }
+  .status-offline { background: #878787; }
 
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin:0;
-    font-family: Arial;
-    background: var(--bg);
-    color: var(--text);
-    display:flex;
-    height:100vh;
-}
-
-/* Layout */
-.sidebar {
-    width: 220px;
-    background: var(--card);
-    padding: 10px;
-    overflow-y:auto;
-}
-
-.channel {
-    padding:10px;
-    border-radius:10px;
+  /* Main chat area */
+  #chatArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #282c4a;
+  }
+  /* Chat Header */
+  #chatHeader {
+    padding: 18px 20px;
+    font-weight: 600;
+    font-size: 20px;
+    color: #61dafb;
+    border-bottom: 1px solid #3c4163;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #chatHeader .channelType {
+    font-size: 14px;
+    font-weight: 600;
+    font-style: italic;
+    color: #a2a6b1;
+  }
+  /* Chat messages */
+  #messages {
+    flex: 1;
+    padding: 18px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .message {
+    background: #3e427b;
+    color: white;
+    padding: 14px 18px;
+    border-radius: 12px;
+    max-width: 70%;
+    position: relative;
+    font-size: 16px;
+    word-wrap: break-word;
+  }
+  .message.own {
+    background: #61dafb;
+    color: #22263e;
+    align-self: flex-end;
+  }
+  .message .meta {
+    font-size: 12px;
+    color: #ccd6f6cc;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .message .text {
+    white-space: pre-wrap;
+  }
+  .mention {
+    color: #82d4ff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  /* Reactions container */
+  .reactions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  /* Reaction button */
+  .reaction {
+    background: #555aa3;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 15px;
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s ease;
+  }
+  .reaction:hover {
+    background: #82d4ff;
+    color: #22263e;
+  }
+  /* Input area */
+  #inputArea {
+    padding: 16px 20px;
+    background: #22263e;
+    display: flex;
+    align-items: center;
+  }
+  #messageInput {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: 30px;
+    border: none;
+    font-size: 17px;
+    outline: none;
+    background: #3c4163;
+    color: white;
+    font-weight: 500;
+  }
+  #sendButton {
+    margin-left: 16px;
+    background: #61dafb;
+    border: none;
+    color: #22263e;
+    font-weight: 700;
+    font-size: 17px;
+    border-radius: 30px;
+    padding: 12px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  #sendButton:disabled {
+    background: #4a90e29e;
+    cursor: not-allowed;
+  }
+  #sendButton:hover:not(:disabled) {
+    background: #4db8ff;
+  }
+  /* Form login/register */
+  #loginRegisterWrapper {
+    position: fixed;
+    inset: 0;
+    background: #181a2acc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  #loginRegisterBox {
+    background: #22263e;
+    padding: 28px 36px;
+    border-radius: 14px;
+    width: 360px;
+  }
+  #loginRegisterBox h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #61dafb;
+  }
+  #loginRegisterBox input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #3c4163;
+    color: white;
+    font-size: 17px;
+  }
+  #loginRegisterBox button {
+    width: 100%;
+    background: #61dafb;
+    color: #22263e;
+    font-weight: 700;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 14px 0;
+    user-select: none;
+  }
+  #loginRegisterError {
+    color: #db5a5a;
+    font-weight: 600;
+    margin-bottom: 12px;
+    height: 20px;
+    text-align: center;
+  }
+  #switchForm {
+    margin-top: 18px;
+    text-align: center;
+    color: #9ab1d9;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+  }
+  #switchForm:hover {
+    color: #61dafb;
+  }
+  /* Upload de imagem prévia */
+  #imagePreview {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 16px;
+    margin-left: 20px;
+    object-fit: cover;
+    border: 2px solid #61dafb;
+    display: none;
     cursor:pointer;
-    transition:0.2s;
-}
-
-.channel:hover {
-    background: rgba(255,255,255,0.1);
-}
-
-.channel.active {
-    background: var(--accent);
-}
-
-/* Chat */
-.main {
-    flex:1;
-    display:flex;
-    flex-direction:column;
-}
-
-.messages {
-    flex:1;
-    padding:15px;
-    overflow-y:auto;
-}
-
-.msg {
-    margin-bottom:10px;
-    padding:10px;
-    border-radius:12px;
-    background: var(--card);
-    animation: fade 0.3s ease;
-}
-
-.msg.me {
-    background: var(--accent);
-}
-
-@keyframes fade {
-    from {opacity:0; transform:translateY(10px)}
-    to {opacity:1}
-}
-
-/* Input */
-.input {
-    display:flex;
-    padding:10px;
-}
-
-input {
-    flex:1;
-    padding:10px;
-    border-radius:10px;
-    border:none;
-    outline:none;
-}
-
-button {
-    margin-left:10px;
-    padding:10px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
-}
-
-/* Animations */
-.channel, .msg, button {
-    transition: all 0.2s ease;
-}
-
-button:hover {
-    transform: scale(1.05);
-}
+  }
 </style>
 </head>
-
 <body>
 
-<div class="sidebar" id="channels"></div>
+<header>
+  <h1>Zap/Discord 3.0</h1>
+</header>
 
-<div class="main">
-    <div class="messages" id="messages"></div>
+<div id="app" style="display:none;">
+  <aside id="sidebar">
+    <header>Canais</header>
+    <div id="channels"></div>
+    <button id="btnNewChannel" title="Criar canal">➕ Criar Canal</button>
 
-    <div class="input">
-        <input id="input" placeholder="Mensagem...">
-        <button onclick="send()">Enviar</button>
+    <header style="margin-top:16px;">Usuários Online</header>
+    <div id="usersOnline"></div>
+  </aside>
+
+  <main id="chatArea" aria-live="polite" aria-relevant="additions" role="region">
+    <div id="chatHeader">
+      <span id="channelName">Nenhum canal selecionado</span>
+      <span id="channelType" style="font-style:italic; font-size:14px; color:#9ab1d9;"></span>
     </div>
+    <div id="messages"></div>
+
+    <div id="inputArea">
+      <input type="file" id="imageInput" accept="image/*" style="display:none;" />
+      <img id="imagePreview" alt="Preview imagem" title="Clique para remover imagem"/>
+      <input type="text" id="messageInput" placeholder="Digite sua mensagem..." autocomplete="off" />
+      <button id="sendButton" disabled>Enviar</button>
+      <button id="btnUploadImage" title="Enviar imagem" style="margin-left:10px; background:#4a90e2; border:none; color:white; border-radius:50%; width:36px; height:36px; cursor:pointer;">📷</button>
+    </div>
+  </main>
 </div>
 
-<script>
-let user = localStorage.getItem("user") || prompt("Seu nome:");
-localStorage.setItem("user", user);
+<!-- Login/Register Modal -->
+<div id="loginRegisterWrapper" role="dialog" aria-modal="true" aria-labelledby="loginRegisterTitle">
+  <div id="loginRegisterBox">
+    <h2 id="loginRegisterTitle">Entrar no Zap/Discord</h2>
+    <div id="loginRegisterError"></div>
+    <input type="email" id="emailInput" placeholder="Email" autocomplete="username" />
+    <input type="password" id="passwordInput" placeholder="Senha" autocomplete="current-password" />
+    <button id="btnLogin">Entrar</button>
+    <div id="switchForm">Não tem conta? <span style="color:#61dafb; cursor:pointer;">Registrar</span></div>
+  </div>
+</div>
 
-let current = "global";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, doc, updateDoc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
-let channels = ["global"];
+  // === Config Firebase ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
+    authDomain: "zap-proprio-web.firebaseapp.com",
+    projectId: "zap-proprio-web",
+    storageBucket: "zap-proprio-web.firebasestorage.app",
+    messagingSenderId: "974920784341",
+    appId: "1:974920784341:web:8eb8b14928d01a9ed3855c",
+    measurementId: "G-8D8SN57CQM"
+  };
 
-function renderChannels(){
-    let el = document.getElementById("channels");
-    el.innerHTML = "";
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
 
-    channels.forEach(c => {
-        let div = document.createElement("div");
-        div.className = "channel " + (c===current ? "active":"");
-        div.innerText = "# " + c;
-        div.onclick = () => {
-            current = c;
-            renderChannels();
-            renderMessages();
-        };
-        el.appendChild(div);
+  // Elementos do DOM
+  const appDiv = document.getElementById("app");
+  const loginWrapper = document.getElementById("loginRegisterWrapper");
+  const loginError = document.getElementById("loginRegisterError");
+  const emailInput = document.getElementById("emailInput");
+  const passwordInput = document.getElementById("passwordInput");
+  const btnLogin = document.getElementById("btnLogin");
+  const switchForm = document.getElementById("switchForm");
+
+  const channelsDiv = document.getElementById("channels");
+  const usersOnlineDiv = document.getElementById("usersOnline");
+  const channelNameSpan = document.getElementById("channelName");
+  const channelTypeSpan = document.getElementById("channelType");
+  const messagesDiv = document.getElementById("messages");
+  const messageInput = document.getElementById("messageInput");
+  const sendButton = document.getElementById("sendButton");
+  const btnNewChannel = document.getElementById("btnNewChannel");
+
+  const imageInput = document.getElementById("imageInput");
+  const imagePreview = document.getElementById("imagePreview");
+  const btnUploadImage = document.getElementById("btnUploadImage");
+
+  let currentUser = null;
+  let currentChannel = null;
+  let unsubscribeMessages = null;
+  let uploadImageFile = null;
+
+  // Login/Register switch
+  let registerMode = false;
+  switchForm.addEventListener("click", () => {
+    registerMode = !registerMode;
+    loginError.textContent = "";
+    if(registerMode){
+      btnLogin.textContent = "Registrar";
+      switchForm.innerHTML = 'Já tem conta? <span style="color:#61dafb; cursor:pointer;">Entrar</span>';
+    } else {
+      btnLogin.textContent = "Entrar";
+      switchForm.innerHTML = 'Não tem conta? <span style="color:#61dafb; cursor:pointer;">Registrar</span>';
+    }
+  });
+
+  // Login/Register button
+  btnLogin.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    loginError.textContent = "";
+
+    if(!email || !password){
+      loginError.textContent = "Preencha email e senha";
+      return;
+    }
+
+    try {
+      if(registerMode){
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    } catch(e){
+      loginError.textContent = `Erro: ${e.message}`;
+    }
+  });
+
+  // Observa mudança de autenticação (login/logout)
+  onAuthStateChanged(auth, user => {
+    if(user){
+      currentUser = user;
+      loginWrapper.style.display = "none";
+      appDiv.style.display = "flex";
+      initAfterLogin();
+    } else {
+      currentUser = null;
+      appDiv.style.display = "none";
+      loginWrapper.style.display = "flex";
+      channelsDiv.innerHTML = "";
+      usersOnlineDiv.innerHTML = "";
+      messagesDiv.innerHTML = "";
+      channelNameSpan.textContent = "Nenhum canal selecionado";
+      channelTypeSpan.textContent = "";
+      if(unsubscribeMessages) unsubscribeMessages();
+    }
+  });
+
+  // Atualiza lista de usuários online (simulado aqui)
+  function renderUsersOnline() {
+    // Aqui voce deve puxar real estado dos usuários com presença no Firebase Realtime Database ou Firestore (offline, online, busy etc)
+    // Exemplo fixo temporário só para UI
+    const usersFake = [
+      { id: "u1", name: "Alice", status: "online" },
+      { id: "u2", name: "Bob", status: "away" },
+      { id: "u3", name: "Ana Clara", status: "busy" },
+      { id: "u4", name: "Carlos", status: "offline" }
+    ];
+
+    usersOnlineDiv.innerHTML = "";
+    usersFake.forEach(u => {
+      const div = document.createElement("div");
+      div.className = "user";
+      const dot = document.createElement("span");
+      dot.classList.add("status-dot");
+      dot.classList.add(`status-${u.status}`);
+      div.appendChild(dot);
+
+      const span = document.createElement("span");
+      span.textContent = u.name;
+      div.appendChild(span);
+      usersOnlineDiv.appendChild(div);
     });
-}
+  }
 
-function getMsgs(){
-    return JSON.parse(localStorage.getItem("msgs_"+current) || "[]");
-}
+  // Carrega canais com categorias e tipo
+  async function loadChannels() {
+    const q = query(collection(db, "canais"), orderBy("nome"));
+    const snap = await getDocs(q);
+    channelsDiv.innerHTML = "";
+    let channels = [];
 
-function saveMsgs(msgs){
-    localStorage.setItem("msgs_"+current, JSON.stringify(msgs));
-}
-
-function renderMessages(){
-    let el = document.getElementById("messages");
-    el.innerHTML = "";
-
-    getMsgs().forEach((m,i)=>{
-        let div = document.createElement("div");
-        div.className = "msg " + (m.user===user ? "me":"");
-        div.innerHTML = "<b>"+m.user+"</b><br>"+m.text;
-
-        // editar
-        div.ondblclick = ()=>{
-            let novo = prompt("Editar:", m.text);
-            if(novo){
-                let msgs = getMsgs();
-                msgs[i].text = novo;
-                saveMsgs(msgs);
-                renderMessages();
-            }
-        };
-
-        // apagar
-        div.oncontextmenu = (e)=>{
-            e.preventDefault();
-            if(confirm("Apagar?")){
-                let msgs = getMsgs();
-                msgs.splice(i,1);
-                saveMsgs(msgs);
-                renderMessages();
-            }
-        };
-
-        el.appendChild(div);
+    snap.forEach(doc => {
+      let data = doc.data();
+      channels.push({ id: doc.id, ...data });
     });
 
-    el.scrollTop = el.scrollHeight;
-}
+    if(channels.length === 0){
+      channels = [
+        { id: "demo1", nome:"geral", categoria:"Comunicação", tipo:"publico" },
+        { id: "demo2", nome:"vip", categoria:"Privado", tipo:"privado" }
+      ];
+    }
 
-function send(){
-    let input = document.getElementById("input");
-    let text = input.value.trim();
-    if(!text) return;
+    channels.forEach(ch => {
+      let div = document.createElement("div");
+      div.className = "channel" + (ch.id === currentChannel ? " selected" : "");
+      if(ch.tipo === "privado") div.classList.add("private");
+      div.textContent = `# ${ch.nome}`;
+      div.title = `Categoria: ${ch.categoria} - Tipo: ${ch.tipo}`;
+      div.addEventListener("click", () => selectChannel(ch));
+      channelsDiv.appendChild(div);
+    });
+  }
 
-    let msgs = getMsgs();
-    msgs.push({user, text});
-    saveMsgs(msgs);
+  // Seleciona canal, mostra cabeçalho e mensagens
+  async function selectChannel(channel) {
+    if(unsubscribeMessages) unsubscribeMessages();
+    currentChannel = channel.id;
+    channelNameSpan.textContent = channel.nome;
+    channelTypeSpan.textContent = channel.tipo.toUpperCase();
 
-    input.value = "";
-    renderMessages();
-}
+    // Atualiza seleção visual dos canais
+    [...channelsDiv.children].forEach(chDiv =>{
+      chDiv.classList.toggle("selected", chDiv.textContent.includes(channel.nome));
+    });
 
-document.getElementById("input").addEventListener("keydown", e=>{
-    if(e.key==="Enter") send();
-});
+    loadMessages(channel.id);
+  }
 
-renderChannels();
-renderMessages();
+  // Carrega mensagens do canal em tempo real
+  function loadMessages(channelId){
+    messagesDiv.innerHTML = "Carregando mensagens...";
+
+    const msgsCollection = collection(db, "mensagens");
+    const q = query(msgsCollection, where("canalId", "==", channelId), orderBy("timestamp", "asc"));
+
+    unsubscribeMessages = onSnapshot(q, snap => {
+      messagesDiv.innerHTML = "";
+      snap.forEach(doc => {
+        let msg = doc.data();
+        let div = createMessageElement(msg, doc.id);
+        messagesDiv.appendChild(div);
+      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    });
+  }
+
+  // Criar elemento de mensagem com avatar, texto, hora, reações e botões editar/apagar
+  function createMessageElement(msg, id){
+    let div = document.createElement("div");
+    div.className = "message";
+    if(msg.userId === currentUser.uid) div.classList.add("own");
+
+    let metaSpan = document.createElement("div");
+    metaSpan.className = "meta";
+    let dateStr = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleTimeString() : "";
+    metaSpan.textContent = `${msg.userName || "Usuário"} - ${dateStr}`;
+    div.appendChild(metaSpan);
+
+    let textDiv = document.createElement("div");
+    textDiv.className = "text";
+    textDiv.innerHTML = parseMentions(msg.text);
+    div.appendChild(textDiv);
+
+    // Reactions container
+    if(msg.reactions){
+      let reactionsDiv = document.createElement("div");
+      reactionsDiv.className = "reactions";
+
+      for(const emoji in msg.reactions){
+        let btn = document.createElement("button");
+        btn.className = "reaction";
+        btn.textContent = emoji + " " + msg.reactions[emoji].length;
+        btn.title = "Clique para reagir";
+        btn.onclick = () => toggleReaction(id, emoji);
+        reactionsDiv.appendChild(btn);
+      }
+      div.appendChild(reactionsDiv);
+    }
+
+    // Botões de edição/apagar para mensagens próprias
+    if(msg.userId === currentUser.uid){
+      let btnEdit = document.createElement("button");
+      btnEdit.textContent = "✏️";
+      btnEdit.title = "Editar mensagem";
+      btnEdit.style.marginLeft = "10px";
+      btnEdit.onclick = () => editMessage(id, msg.text);
+      div.appendChild(btnEdit);
+
+      let btnDel = document.createElement("button");
+      btnDel.textContent = "🗑️";
+      btnDel.title = "Apagar mensagem";
+      btnDel.style.marginLeft = "6px";
+      btnDel.onclick = () => deleteMessage(id);
+      div.appendChild(btnDel);
+    }
+
+    // Se tem imagem na mensagem, mostra abaixo
+    if(msg.imageURL){
+      let img = document.createElement("img");
+      img.src = msg.imageURL;
+      img.style.maxWidth = "100%";
+      img.style.marginTop = "10px";
+      img.style.borderRadius = "12px";
+      div.appendChild(img);
+    }
+
+    return div;
+  }
+
+  // Parseia texto para destacar menções @nome
+  function parseMentions(text){
+    if(!text) return "";
+    return text.replace(/@(\w+)/g, `<span class="mention" tabindex="0" title="Mencionado: @$1">@${"$1"}</span>`);
+  }
+
+  // Envia mensagem (texto + imagem opcional)
+  async function sendMessage(){
+    if(!messageInput.value.trim() && !uploadImageFile) return;
+
+    sendButton.disabled = true;
+
+    let imageURL = null;
+    if(uploadImageFile){
+      try {
+        const storageRef = ref(storage, `imagens/${currentUser.uid}_${Date.now()}_${uploadImageFile.name}`);
+        const snapshot = await uploadBytes(storageRef, uploadImageFile);
+        imageURL = await getDownloadURL(snapshot.ref);
+      } catch(e){
+        alert("Erro ao enviar imagem");
+        console.error(e);
+      }
+    }
+
+    try {
+      await addDoc(collection(db, "mensagens"), {
+        canalId: currentChannel,
+        userId: currentUser.uid,
+        userName: currentUser.email.split("@")[0],
+        text: messageInput.value.trim(),
+        timestamp: serverTimestamp(),
+        reactions: {},
+        imageURL: imageURL || null
+      });
+
+      messageInput.value = "";
+      clearImagePreview();
+    } catch(e) {
+      alert("Erro ao enviar mensagem");
+      console.error(e);
+    }
+    sendButton.disabled = false;
+  }
+
+  // Controla upload imagem preview
+  btnUploadImage.addEventListener("click", () => imageInput.click());
+  imageInput.addEventListener("change", () => {
+    const file = imageInput.files[0];
+    if(!file) return;
+    if(!file.type.startsWith("image/")){
+      alert("Apenas imagens são permitidas!");
+      return;
+    }
+    uploadImageFile = file;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      imagePreview.src = e.target.result;
+      imagePreview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  imagePreview.addEventListener("click", () => {
+    clearImagePreview();
+  });
+
+  function clearImagePreview(){
+    uploadImageFile = null;
+    imagePreview.src = "";
+    imagePreview.style.display = "none";
+    imageInput.value = "";
+  }
+
+  // Funções para edição e apagar mensagens da própria pessoa
+  async function editMessage(id, oldText){
+    const newText = prompt("Editar mensagem:", oldText);
+    if(newText && newText.trim() !== oldText){
+      const msgRef = doc(db, "mensagens", id);
+      await updateDoc(msgRef, { text: newText.trim() });
+    }
+  }
+
+  async function deleteMessage(id){
+    if(confirm("Tem certeza que quer apagar essa mensagem?")){
+      const msgRef = doc(db, "mensagens", id);
+      await deleteDoc(msgRef);
+    }
+  }
+
+  // Reagir a mensagens (toggle emoji)
+  async function toggleReaction(messageId, emoji){
+    const msgRef = doc(db, "mensagens", messageId);
+    const docSnap = await getDoc(msgRef);
+
+    if(!docSnap.exists()) return;
+
+    let data = docSnap.data();
+    let reactions = data.reactions || {};
+
+    if(!reactions[emoji]) reactions[emoji] = [];
+
+    const index = reactions[emoji].indexOf(currentUser.uid);
+    if(index === -1){
+      reactions[emoji].push(currentUser.uid);
+    }else{
+      reactions[emoji].splice(index,1);
+      if(reactions[emoji].length === 0) delete reactions[emoji];
+    }
+
+    await updateDoc(msgRef, { reactions });
+  }
+
+  // Criar canal com nome, categoria, tipo
+  btnNewChannel.addEventListener("click", async () => {
+    const nome = prompt("Nome do canal:");
+    if(!nome) return;
+    const categoria = prompt("Categoria:", "Comunicação") || "Comunicação";
+    const tipo = prompt("Tipo (publico / privado / admin):", "publico") || "publico";
+
+    try {
+      await addDoc(collection(db, "canais"), { nome, categoria, tipo });
+      await loadChannels();
+    } catch(e) {
+      alert("Erro ao criar canal");
+      console.error(e);
+    }
+  });
+
+  // Ativa ou desativa o botão enviar conforme input
+  messageInput.addEventListener("input", () => {
+    sendButton.disabled = messageInput.value.trim().length === 0 && !uploadImageFile;
+  });
+
+  // Envio com enter (não com shift+enter)
+  messageInput.addEventListener("keydown", e => {
+    if(e.key === "Enter" && !e.shiftKey){
+      e.preventDefault();
+      if(!sendButton.disabled) sendMessage();
+    }
+  });
+
+  // Inicializar após login: carregar canais, usuários e etc
+  async function initAfterLogin(){
+    await loadChannels();
+    renderUsersOnline();
+    sendButton.disabled = true;
+  }
 </script>
 
+<footer>
+  <small>© 2024 Zap/Discord 3.0 — Chat moderno com Firebase Modular</small>
+</footer>
 </body>
 </html>
