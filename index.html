@@ -3,95 +3,352 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Zap/Discord 3.0 Real - Tudo em um</title>
+<title>Zap/Discord 3.0 Real - Chat Completo Firebase</title>
 <style>
-  /* === Estilo Embutido === */
-  * { margin:0; padding:0; box-sizing: border-box; }
-  body, html { font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; height: 100vh; background: #181a2a; color: #eee; display: flex; flex-direction: column; }
-  header, footer { background: #262a48; text-align: center; padding: 15px; user-select: none; }
-  #app { flex: 1; display: flex; overflow: hidden; height: calc(100vh - 100px); }
-  #sidebar { width: 280px; background: #22263e; display: flex; flex-direction: column; }
-  #sidebar header { padding: 20px; border-bottom: 1px solid #3c4163; font-weight: 600; font-size: 22px; color: #61dafb; user-select: none; }
-  #channels, #usersOnline { flex: 1; overflow-y: auto; padding: 10px 15px; }
-  .channel, .user {
-    padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; background: #2e3250; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; transition: background-color 0.2s ease;
+  /* === Estilos embutidos === */
+  * {
+    margin:0; padding:0; box-sizing: border-box;
   }
-  .channel:hover, .user:hover { background: #4d56a5; }
-  .channel.selected { background-color: #61dafb; color: #22263e; font-weight: 700; }
-  .channel.private::after { content: "🔒"; margin-left: 6px; }
-  .status-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 10px; }
+  body, html {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    height: 100vh;
+    background: #181a2a;
+    color: #eee;
+    display: flex;
+    flex-direction: column;
+  }
+  header, footer {
+    background: #262a48;
+    text-align: center;
+    padding: 15px;
+    user-select: none;
+  }
+  #app {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    height: calc(100vh - 100px);
+  }
+  #sidebar {
+    width: 280px;
+    background: #22263e;
+    display: flex;
+    flex-direction: column;
+  }
+  #sidebar header {
+    padding: 20px;
+    border-bottom: 1px solid #3c4163;
+    font-weight: 600;
+    font-size: 22px;
+    color: #61dafb;
+    user-select: none;
+  }
+  #channels, #usersOnline {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 15px;
+  }
+  .channel, .user {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    background: #2e3250;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    transition: background-color 0.2s ease;
+  }
+  .channel:hover, .user:hover {
+    background: #4d56a5;
+  }
+  .channel.selected {
+    background-color: #61dafb;
+    color: #22263e;
+    font-weight: 700;
+  }
+  .channel.private::after {
+    content: "🔒";
+    margin-left: 6px;
+  }
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
   .status-online { background: #6bd16d; }
   .status-away { background: #e0be6a; }
   .status-busy { background: #e95f62; }
   .status-offline { background: #878787; }
-  #chatArea { flex: 1; display: flex; flex-direction: column; background: #282c4a; }
-  #chatHeader { padding: 18px 20px; font-weight: 600; font-size: 20px; color: #61dafb; border-bottom: 1px solid #3c4163; display: flex; justify-content: space-between; align-items: center; }
-  #chatHeader .channelType { font-size: 14px; font-weight: 600; font-style: italic; color: #a2a6b1; }
-  #messages { flex: 1; padding: 18px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+  #chatArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #282c4a;
+  }
+  #chatHeader {
+    padding: 18px 20px;
+    font-weight: 600;
+    font-size: 20px;
+    color: #61dafb;
+    border-bottom: 1px solid #3c4163;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #chatHeader .channelType {
+    font-size: 14px;
+    font-weight: 600;
+    font-style: italic;
+    color: #a2a6b1;
+  }
+  #messages {
+    flex: 1;
+    padding: 18px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
   .message {
-    background: #3e427b; color: white; padding: 14px 18px; border-radius: 12px; max-width: 70%; position: relative; font-size: 16px; word-wrap: break-word;
+    background: #3e427b;
+    color: white;
+    padding: 14px 18px;
+    border-radius: 12px;
+    max-width: 70%;
+    word-wrap: break-word;
+    position: relative;
+    font-size: 16px;
   }
-  .message.own { background: #61dafb; color: #22263e; align-self: flex-end; }
-  .message .meta { font-size: 12px; color: #ccd6f6cc; margin-bottom: 6px; font-weight: 600; }
-  .message .text { white-space: pre-wrap; cursor: pointer; }
-  .mention { color: #82d4ff; font-weight: 700; cursor: pointer; }
-  .message .reply { border-left: 3px solid #fff59d; margin-bottom: 6px; padding-left: 8px; font-size: 14px; color: #fff59d; }
-  .reactions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .message.own {
+    background: #61dafb;
+    color: #22263e;
+    align-self: flex-end;
+  }
+  .message .meta {
+    font-size: 12px;
+    color: #ccd6f6cc;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .message .text {
+    white-space: pre-wrap;
+    cursor: pointer;
+  }
+  .mention {
+    color: #82d4ff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .message .reply {
+    border-left: 3px solid #fff59d;
+    margin-bottom: 6px;
+    padding-left: 8px;
+    font-size: 14px;
+    color: #fff59d;
+  }
+  .reactions {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
   .reaction {
-    background: #555aa3; padding: 4px 10px; border-radius: 20px; font-size: 15px; cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 5px; transition: background-color 0.3s ease;
+    background: #555aa3;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 15px;
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s ease;
   }
-  .reaction:hover { background: #82d4ff; color: #22263e; }
-  #inputArea { padding: 16px 20px; background: #22263e; display: flex; align-items: center; }
-  #messageInput { flex: 1; padding: 12px 18px; border-radius: 30px; border: none; font-size: 17px; outline: none; background: #3c4163; color: white; font-weight: 500; }
-  #sendButton { margin-left: 16px; background: #61dafb; border: none; color: #22263e; font-weight: 700; font-size: 17px; border-radius: 30px; padding: 12px 20px; cursor: pointer; user-select: none; transition: background-color 0.3s ease; }
-  #sendButton:disabled { background: #4a90e29e; cursor: not-allowed; }
-  #sendButton:hover:not(:disabled) { background: #4db8ff; }
-  #btnNewChannel { margin: 10px; background: #61dafb; border: none; padding: 10px; border-radius: 10px; font-weight: 600; cursor: pointer; }
-  #btnUploadImage { margin-left: 10px; background: #4a90e2; border: none; color: white; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+  .reaction:hover {
+    background: #82d4ff;
+    color: #22263e;
+  }
+  #inputArea {
+    padding: 16px 20px;
+    background: #22263e;
+    display: flex;
+    align-items: center;
+  }
+  #messageInput {
+    flex: 1;
+    padding: 12px 18px;
+    border-radius: 30px;
+    border: none;
+    font-size: 17px;
+    outline: none;
+    background: #3c4163;
+    color: white;
+    font-weight: 500;
+  }
+  #sendButton {
+    margin-left: 16px;
+    background: #61dafb;
+    border: none;
+    color: #22263e;
+    font-weight: 700;
+    font-size: 17px;
+    border-radius: 30px;
+    padding: 12px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.3s ease;
+  }
+  #sendButton:disabled {
+    background: #4a90e29e;
+    cursor: not-allowed;
+  }
+  #sendButton:hover:not(:disabled) {
+    background: #4db8ff;
+  }
+  #btnNewChannel {
+    margin: 10px;
+    background: #61dafb;
+    border: none;
+    padding: 10px;
+    color: #22263e;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  #btnUploadImage {
+    margin-left: 10px;
+    background: #4a90e2;
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
   #imagePreview {
-    max-width: 100px; max-height: 100px; border-radius: 16px; margin-left: 20px; object-fit: cover; border: 2px solid #61dafb; display: none; cursor: pointer;
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 16px;
+    margin-left: 20px;
+    object-fit: cover;
+    border: 2px solid #61dafb;
+    display: none;
+    cursor: pointer;
   }
   #loginWrapper {
-    position: fixed; inset: 0; background: #181a2acc; display: flex; justify-content: center; align-items: center; z-index: 99999; flex-direction: column;
+    position: fixed;
+    inset: 0;
+    background: #181a2acc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
   }
   #loginRegisterBox {
-    background: #22263e; padding: 28px 36px; border-radius: 14px; width: 360px; display: flex; flex-direction: column; gap: 12px;
+    background: #22263e;
+    padding: 28px 36px;
+    border-radius: 14px;
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
   #loginRegisterBox h2 {
-    text-align: center; color: #61dafb;
+    text-align: center;
+    color: #61dafb;
   }
   #loginRegisterBox input {
-    width: 100%; padding: 14px 18px; border-radius: 12px; border: none; background: #3c4163; color: white; font-size: 17px;
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: none;
+    background: #3c4163;
+    color: white;
+    font-size: 17px;
   }
   #loginRegisterBox button {
-    width: 100%; background: #61dafb; color: #22263e; font-weight: 700; font-size: 18px; border: none; border-radius: 12px; cursor: pointer; padding: 14px 0; user-select: none;
+    width: 100%;
+    background: #61dafb;
+    color: #22263e;
+    font-weight: 700;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    padding: 14px 0;
+    user-select: none;
   }
   #loginRegisterError {
-    color: #db5a5a; font-weight: 600; height: 20px; text-align: center;
+    color: #db5a5a;
+    font-weight: 600;
+    height: 20px;
+    text-align: center;
   }
   #switchForm {
-    text-align: center; color: #9ab1d9; cursor: pointer; user-select: none; font-weight: 600;
+    text-align: center;
+    color: #9ab1d9;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
   }
-  #switchForm:hover { color: #61dafb; }
-
-  /* Modal editar perfil */
+  #switchForm:hover {
+    color: #61dafb;
+  }
+  /* Modal para editar perfil */
   #editProfileModal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 100000;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
   }
   #editProfileContent {
-    background: #22263e; padding: 25px; border-radius: 14px; width: 360px; display: flex; flex-direction: column; gap: 14px;
+    background: #22263e;
+    padding: 25px;
+    border-radius: 14px;
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
   #editProfileContent input, #editProfileContent textarea {
-    padding: 10px; border-radius: 12px; border: none; background: #3c4163; color: white; font-size: 16px; resize: none;
+    padding: 10px;
+    border-radius: 12px;
+    border: none;
+    background: #3c4163;
+    color: white;
+    font-size: 16px;
+    resize: none;
   }
   #editProfileButtons {
-    display: flex; justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
   }
   #editProfileButtons button {
-    padding: 12px 20px; border: none; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
   }
-  #btnSaveProfile { background: #61dafb; color: #22263e; }
-  #btnCancelProfile { background: #4a90e2; color: white; }
+  #btnSaveProfile {
+    background: #61dafb;
+    color: #22263e;
+  }
+  #btnCancelProfile {
+    background: #4a90e2;
+    color: white;
+  }
 </style>
 </head>
 <body>
@@ -156,22 +413,20 @@
 </div>
 
 <script type="module">
-
-// ===== Import Firebase Modules =====
+// Import Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { getFirestore, collection, doc, addDoc, getDoc, onSnapshot, query, where, orderBy, updateDoc, deleteDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
-// ===== Firebase Config - Substitua pelas suas =====
+// Firebase configuration - substitua pelas suas credenciais
 const firebaseConfig = {
   apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
-  authDomain: "Szap-proprio-web.firebaseapp.com",
+  authDomain: "zap-proprio-web.firebaseapp.com",
   projectId: "zap-proprio-web",
   storageBucket: "zap-proprio-web.firebasestorage.app",
   messagingSenderId: "974920784341",
   appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
-  measurementId: "G-8D8SN57CQM"
 };
 
 // Initialize Firebase
@@ -180,7 +435,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// ===== DOM Elements =====
+// DOM Elements
 const loginWrapper = document.getElementById("loginWrapper"),
   emailInput = document.getElementById("emailInput"),
   passwordInput = document.getElementById("passwordInput"),
@@ -211,7 +466,7 @@ const editProfileModal = document.getElementById("editProfileModal"),
   btnSaveProfile = document.getElementById("btnSaveProfile"),
   btnCancelProfile = document.getElementById("btnCancelProfile");
 
-// ===== State =====
+// State variables
 let currentUser = null,
   currentChannel = null,
   unsubscribeMessages = null,
@@ -222,8 +477,7 @@ let currentUser = null,
   replyText = null,
   registerMode = false;
 
-// ===== Funções e configuração =====
-
+// Switch login/register
 switchForm.addEventListener("click", () => {
   registerMode = !registerMode;
   loginRegisterError.textContent = "";
@@ -236,6 +490,7 @@ switchForm.addEventListener("click", () => {
   }
 });
 
+// Login/Register handler
 btnLogin.addEventListener("click", async () => {
   const email = emailInput.value.trim();
   const password = passwordInput.value.trim();
@@ -247,7 +502,6 @@ btnLogin.addEventListener("click", async () => {
   try {
     if (registerMode) {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // Criar documento usuário com padrão
       await setDoc(doc(db, "usuarios", userCredential.user.uid), {
         email,
         nome: email.split("@")[0],
@@ -263,6 +517,7 @@ btnLogin.addEventListener("click", async () => {
   }
 });
 
+// Detect auth state changes
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
@@ -291,19 +546,22 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// Logout
 btnLogout.onclick = () => {
   signOut(auth);
 };
 
+// Edit Profile modal open
 btnEditProfile.onclick = () => {
-  // Abrir modal editar perfil
   openEditProfileModal();
 };
 
+// Cancel profile modal
 btnCancelProfile.onclick = () => {
   editProfileModal.style.display = "none";
 };
 
+// Save profile edit
 btnSaveProfile.onclick = async () => {
   try {
     const newName = profileNameInput.value.trim();
@@ -318,6 +576,7 @@ btnSaveProfile.onclick = async () => {
   }
 };
 
+// New channel creation
 btnNewChannel.onclick = async () => {
   const nome = prompt("Nome do canal:");
   if (!nome || !nome.trim()) return;
@@ -331,10 +590,12 @@ btnNewChannel.onclick = async () => {
   }
 };
 
+// Upload image button click
 btnUploadImage.onclick = () => {
   imageInput.click();
 };
 
+// Image input change
 imageInput.addEventListener("change", () => {
   const file = imageInput.files[0];
   if (!file) return;
@@ -357,9 +618,9 @@ imagePreview.addEventListener("click", () => {
   updateSendButton();
 });
 
+// Message input events
 messageInput.addEventListener("input", updateSendButton);
 sendButton.addEventListener("click", sendMessage);
-
 messageInput.addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
@@ -367,28 +628,12 @@ messageInput.addEventListener("keydown", e => {
   }
 });
 
-// Funções auxiliares, mensagens, channels, presença e UI
-// ...
-
-// Aqui termina a primeira parte do arquivo.
-
-// Devido ao limite do texto, vou enviar a segunda parte com todas essas funções implementadas e explicações.
-// Quer que eu continue com a segunda parte com toda funcionalidade implementada?
-
-</script>
-
-<footer>
-  <small>© 2024 Zap/Discord 3.0 — Chat completo no Firebase com interface própria</small>
-</footer>
-
-// ---- CONTINUAÇÃO DO SCRIPT ----
-
-// Atualiza estado do botão enviar
+// Enable/disable send button
 function updateSendButton() {
   sendButton.disabled = messageInput.value.trim().length === 0 && !uploadImageFile;
 }
 
-// Função para resetar o preview da imagem
+// Reset image preview
 function resetImagePreview() {
   uploadImageFile = null;
   imagePreview.style.display = "none";
@@ -396,7 +641,7 @@ function resetImagePreview() {
   imageInput.value = "";
 }
 
-// Configura presença online/offline no Firestore (simples)
+// Setup online presence
 function setupPresence(uid) {
   const userRef = doc(db, "usuarios", uid);
   updateDoc(userRef, { online: true }).catch(() => {});
@@ -405,7 +650,7 @@ function setupPresence(uid) {
   });
 }
 
-// Carrega canais e escuta em tempo real
+// Load channels realtime
 function loadChannelsRealtime() {
   const canaisRef = collection(db, "canais");
   unsubscribeChannels = onSnapshot(canaisRef, (snapshot) => {
@@ -423,7 +668,7 @@ function loadChannelsRealtime() {
   });
 }
 
-// Selecionar canal e carregar mensagens
+// Select channel
 function selectChannel(channel) {
   if (unsubscribeMessages) unsubscribeMessages();
   currentChannel = channel;
@@ -433,7 +678,6 @@ function selectChannel(channel) {
   clearReply();
   resetImagePreview();
   messagesDiv.innerHTML = "Carregando mensagens...";
-  // Escuta mensagens do canal em tempo real
   const mensagensRef = collection(db, "canais", channel.id, "mensagens");
   const q = query(mensagensRef, orderBy("timestamp"));
   unsubscribeMessages = onSnapshot(q, snapshot => {
@@ -446,7 +690,7 @@ function selectChannel(channel) {
   });
 }
 
-// Cria elemento da mensagem com todas funcionalidades
+// Create message element
 function createMessageElement(msg) {
   const div = document.createElement("div");
   div.className = "message";
@@ -458,7 +702,6 @@ function createMessageElement(msg) {
   meta.textContent = `${msg.usuarioNome || "Usuário"} - ${dateObj.toLocaleTimeString()}`;
   div.appendChild(meta);
 
-  // Se for resposta a outra mensagem
   if (msg.respostaId && msg.respostaTexto) {
     const replyDiv = document.createElement("div");
     replyDiv.className = "reply";
@@ -471,7 +714,6 @@ function createMessageElement(msg) {
   textDiv.innerHTML = highlightMentions(escapeHtml(msg.texto || ""));
   div.appendChild(textDiv);
 
-  // Se tiver imagem
   if (msg.imageURL) {
     const img = document.createElement("img");
     img.src = msg.imageURL;
@@ -496,7 +738,7 @@ function createMessageElement(msg) {
   }
   div.appendChild(reactionsDiv);
 
-  // Botões edição/apagar só para mensagens próprias
+  // Buttons for own message
   if (msg.usuarioId === currentUser.uid) {
     const btnEdit = document.createElement("button");
     btnEdit.textContent = "✏️";
@@ -513,15 +755,15 @@ function createMessageElement(msg) {
     div.appendChild(btnDel);
   }
 
-  // Clique no texto para iniciar resposta
+  // Click on text starts reply
   textDiv.onclick = () => startReply(msg.id, msg.texto);
 
   return div;
 }
 
-// Escapa caracteres especiais para evitar HTML injection
+// Escape HTML
 function escapeHtml(text) {
-  return text.replace(/[&<>"']/g, (m) => ({
+  return text.replace(/[&<>"']/g, m => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
@@ -530,12 +772,12 @@ function escapeHtml(text) {
   })[m]);
 }
 
-// Destaca menções @username
+// Highlight mentions
 function highlightMentions(text) {
   return text.replace(/@(\w+)/g, `<span class="mention">@$1</span>`);
 }
 
-// Inicia o modo resposta a uma mensagem
+// Start reply mode
 function startReply(id, texto) {
   replyTo = id;
   replyText = texto.length > 40 ? texto.slice(0, 40) + "..." : texto;
@@ -543,19 +785,18 @@ function startReply(id, texto) {
   messageInput.focus();
 }
 
-// Limpar resposta no input
+// Clear reply input
 function clearReply() {
   replyTo = null;
   replyText = null;
   messageInput.placeholder = "Digite sua mensagem...";
 }
 
-// Enviar mensagem (texto e imagem opcional)
+// Send message with optional image
 async function sendMessage() {
   if (sendButton.disabled) return;
   const texto = messageInput.value.trim();
   if (!texto && !uploadImageFile) return;
-
   sendButton.disabled = true;
 
   let imageURL = null;
@@ -597,7 +838,7 @@ async function sendMessage() {
   sendButton.disabled = false;
 }
 
-// Editar mensagem pelo id
+// Edit message
 async function editMessage(msgId, oldText) {
   const newText = prompt("Editar mensagem:", oldText);
   if (!newText || newText.trim() === oldText) return;
@@ -605,14 +846,14 @@ async function editMessage(msgId, oldText) {
   await updateDoc(msgRef, { texto: newText.trim() });
 }
 
-// Apagar mensagem pelo id
+// Delete message
 async function deleteMessage(msgId) {
   if (!confirm("Tem certeza que quer apagar essa mensagem?")) return;
   const msgRef = doc(db, "canais", currentChannel.id, "mensagens", msgId);
   await deleteDoc(msgRef);
 }
 
-// Alternar reação emoji
+// Toggle reaction
 async function toggleReaction(msgId, emoji) {
   const msgRef = doc(db, "canais", currentChannel.id, "mensagens", msgId);
   const docSnap = await getDoc(msgRef);
@@ -633,13 +874,13 @@ async function toggleReaction(msgId, emoji) {
   await updateDoc(msgRef, { reactions });
 }
 
-// Desabilita ou habilita o campo de mensagem e botão enviar
+// Disable/enable input
 function disableInput(disabled) {
   messageInput.disabled = disabled;
   sendButton.disabled = disabled || messageInput.value.trim().length === 0;
 }
 
-// Carrega usuários online/offline em tempo real, mostra status na sidebar
+// Load users online/offline
 function loadUsersOnlineRealtime() {
   const usuariosRef = collection(db, "usuarios");
   unsubscribeUsers = onSnapshot(usuariosRef, snapshot => {
@@ -660,7 +901,7 @@ function loadUsersOnlineRealtime() {
   });
 }
 
-// Abrir modal de editar perfil e preencher campos
+// Open edit profile modal and set inputs
 async function openEditProfileModal() {
   const userDoc = doc(db, "usuarios", currentUser.uid);
   const userSnap = await getDoc(userDoc);
@@ -672,6 +913,18 @@ async function openEditProfileModal() {
   editProfileModal.style.display = "flex";
 }
 
-</scirpt>
+// Cancel reply with Esc key
+messageInput.addEventListener('keydown', e => {
+  if (e.key === "Escape" && replyTo) {
+    clearReply();
+  }
+});
+
+</script>
+
+<footer>
+  <small>© 2024 Zap/Discord 3.0 — Chat completo no Firebase com interface própria</small>
+</footer>
+
 </body>
 </html>
