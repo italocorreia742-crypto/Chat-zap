@@ -3,255 +3,54 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Zap/Discord 3.0 — Chat Completo</title>
+<title>Zap/Discord 3.0 com Firebase Real</title>
 <style>
-  /* Reset e estilo base */
-  * {
-    margin: 0; padding: 0; box-sizing: border-box;
-  }
-  body, html {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    height: 100vh;
-    background: #181a2a;
-    color: #eee;
-    display: flex;
-    flex-direction: column;
-  }
-  header, footer {
-    background: #262a48;
-    text-align: center;
-    padding: 15px;
-    user-select: none;
-  }
-  header h1 {
-    letter-spacing: 1.3px;
-  }
-  #app {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
-    height: calc(100vh - 100px);
-  }
-  /* Sidebar */
-  #sidebar {
-    width: 280px;
-    background: #22263e;
-    display: flex;
-    flex-direction: column;
-  }
-  #sidebar header {
-    padding: 20px;
-    border-bottom: 1px solid #3c4163;
-    text-align: center;
-    font-weight: 600;
-    font-size: 22px;
-    color: #61dafb;
-    user-select: none;
-  }
-  #channels, #usersOnline {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px 15px;
-  }
-  /* Canais */
-  .channels-title, .users-title {
-    font-weight: 700;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #3c4163;
-    padding-bottom: 6px;
-    text-transform: uppercase;
-    font-size: 14px;
-    color: #9ab1d9;
-  }
-  .channel, .user {
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-bottom: 6px;
-    background: #2e3250;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    user-select: none;
-    transition: background-color 0.2s ease;
-  }
-  .channel:hover, .user:hover {
-    background: #4d56a5;
-  }
-  .channel.selected {
-    background-color: #61dafb;
-    color: #22263e;
-    font-weight: 700;
-  }
-  .channel.private::after {
-    content: "🔒";
-    margin-left: 6px;
-  }
-  /* Status usuário */
-  .status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  .status-online { background: #6bd16d; }
-  .status-away { background: #e0be6a; }
-  .status-busy { background: #e95f62; }
-  .status-offline { background: #878787; }
-  /* Main chat area */
-  #chatArea {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #282c4a;
-  }
-  /* Chat Header */
-  #chatHeader {
-    padding: 18px 20px;
-    font-weight: 600;
-    font-size: 20px;
-    color: #61dafb;
-    border-bottom: 1px solid #3c4163;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  #chatHeader .channelType {
-    font-size: 14px;
-    font-weight: 600;
-    font-style: italic;
-    color: #a2a6b1;
-  }
-  /* Chat messages */
-  #messages {
-    flex: 1;
-    padding: 18px 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .message {
-    background: #3e427b;
-    color: white;
-    padding: 14px 18px;
-    border-radius: 12px;
-    max-width: 70%;
-    position: relative;
-    font-size: 16px;
-    word-wrap: break-word;
-  }
-  .message.own {
-    background: #61dafb;
-    color: #22263e;
-    align-self: flex-end;
-  }
-  .message .meta {
-    font-size: 12px;
-    color: #ccd6f6cc;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-  .message .text {
-    white-space: pre-wrap;
-  }
-  .mention {
-    color: #82d4ff;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  /* Reactions container */
-  .reactions {
-    margin-top: 8px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .reaction {
-    background: #555aa3;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 15px;
-    cursor: pointer;
-    user-select: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: background-color 0.3s ease;
-  }
-  .reaction:hover {
-    background: #82d4ff;
-    color: #22263e;
-  }
-  /* Input area */
-  #inputArea {
-    padding: 16px 20px;
-    background: #22263e;
-    display: flex;
-    align-items: center;
-  }
-  #messageInput {
-    flex: 1;
-    padding: 12px 18px;
-    border-radius: 30px;
-    border: none;
-    font-size: 17px;
-    outline: none;
-    background: #3c4163;
-    color: white;
-    font-weight: 500;
-  }
-  #sendButton {
-    margin-left: 16px;
-    background: #61dafb;
-    border: none;
-    color: #22263e;
-    font-weight: 700;
-    font-size: 17px;
-    border-radius: 30px;
-    padding: 12px 20px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s ease;
-  }
-  #sendButton:disabled {
-    background: #4a90e29e;
-    cursor: not-allowed;
-  }
-  #sendButton:hover:not(:disabled) {
-    background: #4db8ff;
-  }
-  /* Upload image preview */
-  #imagePreview {
-    max-width: 100px;
-    max-height: 100px;
-    border-radius: 16px;
-    margin-left: 20px;
-    object-fit: cover;
-    border: 2px solid #61dafb;
-    display: none;
-    cursor:pointer;
-  }
+  /* (Use o CSS do seu projeto original para manter estilo) */
+  body,html { margin:0; padding:0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background:#181a2a; color:#eee; height:100vh; display:flex; flex-direction:column;}
+  header,footer {background:#262a48; padding:15px; text-align:center; user-select:none;}
+  #app {flex:1; display:flex; overflow:hidden;}
+  #sidebar {width:280px; background:#22263e; display:flex; flex-direction:column;}
+  #channels, #usersOnline {flex:1; overflow-y:auto; padding:10px 15px;}
+  .channel, .user {padding:8px 12px; border-radius:6px; margin-bottom:6px; background:#2e3250; cursor:pointer; display:flex; align-items:center; justify-content:space-between; user-select:none; transition:background-color 0.2s ease;}
+  .channel.selected {background:#61dafb; color:#22263e; font-weight:700;}
+  .status-dot {width:10px; height:10px; border-radius:50%; margin-right:10px;}
+  .status-online {background:#6bd16d;}
+  .status-offline {background:#878787;}
+  #chatArea {flex:1; display:flex; flex-direction:column; background:#282c4a;}
+  #chatHeader {padding:18px 20px; font-weight:600; font-size:20px; color:#61dafb; border-bottom:1px solid #3c4163; display:flex; justify-content:space-between; align-items:center;}
+  #messages {flex:1; padding:18px 20px; overflow-y:auto; display:flex; flex-direction:column; gap:14px;}
+  .message {background:#3e427b; color:white; padding:14px 18px; border-radius:12px; max-width:70%; font-size:16px; word-wrap:break-word; position:relative;}
+  .message.own {background:#61dafb; color:#22263e; align-self:flex-end;}
+  .message .meta {font-size:12px; color:#ccd6f6cc; margin-bottom:6px;font-weight:600;}
+  .message .text {white-space:pre-wrap; cursor: pointer;}
+  .mention {color:#82d4ff; font-weight:700; cursor:pointer;}
+  .message .reply {border-left: 3px solid #fff59d; margin-bottom: 6px; padding-left: 8px; font-size: 14px; color: #fff59d;}
+  #inputArea {padding:16px 20px; background:#22263e; display:flex; align-items:center;}
+  #messageInput {flex:1; padding:12px 18px; border-radius:30px; border:none; font-size:17px; outline:none; background:#3c4163; color:white; font-weight:500;}
+  #sendButton {margin-left:16px; background:#61dafb; border:none; color:#22263e; font-weight:700; font-size:17px; border-radius:30px; padding:12px 20px; cursor:pointer; user-select:none; transition:background-color 0.3s ease;}
+  #sendButton:disabled {background:#4a90e29e; cursor:not-allowed;}
+  #sendButton:hover:not(:disabled) {background:#4db8ff;}
+  #btnNewChannel, #btnUploadImage {cursor:pointer;}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Zap/Discord 3.0</h1>
+  <h1>Zap/Discord 3.0 com Firebase Real</h1>
+  <div id="userInfo" style="margin-top:5px;">
+    <span id="userName"></span>
+    <button id="btnEditProfile">Editar Perfil</button>
+    <button id="btnLogout">Sair</button>
+  </div>
 </header>
 
-<div id="app">
+<div id="app" style="display:none;">
   <aside id="sidebar">
     <header>Canais</header>
-    <div id="channels">
-      <!-- Canais serão carregados aqui -->
-    </div>
-    <button id="btnNewChannel" title="Criar canal" style="margin:10px;">➕ Criar Canal</button>
-
+    <div id="channels"></div>
+    <button id="btnNewChannel" title="Criar canal">➕ Criar Canal</button>
     <header style="margin-top:16px;">Usuários Online</header>
-    <div id="usersOnline">
-      <!-- Usuários online -->
-    </div>
+    <div id="usersOnline"></div>
   </aside>
 
   <main id="chatArea" aria-live="polite" aria-relevant="additions" role="region">
@@ -260,348 +59,377 @@
       <span id="channelType" style="font-style:italic; font-size:14px; color:#9ab1d9;"></span>
     </div>
     <div id="messages">Selecione um canal para começar a conversar.</div>
-
     <div id="inputArea">
-      <input type="file" id="imageInput" accept="image/*" style="display:none;" />
-      <img id="imagePreview" alt="Preview imagem" title="Clique para remover imagem"/>
-      <input type="text" id="messageInput" placeholder="Digite sua mensagem..." autocomplete="off" disabled />
+      <input type="text" id="messageInput" placeholder="Digite sua mensagem..." autocomplete="off" />
       <button id="sendButton" disabled>Enviar</button>
-      <button id="btnUploadImage" title="Enviar imagem" style="margin-left:10px; background:#4a90e2; border:none; color:white; border-radius:50%; width:36px; height:36px; cursor:pointer;">📷</button>
     </div>
   </main>
 </div>
 
-<footer>
-  <small>© 2024 Zap/Discord 3.0 — Chat moderno com Interface Própria</small>
-</footer>
+<!-- Login Modal -->
+<div id="loginWrapper">
+  <h2>Entrar no Zap/Discord</h2>
+  <input type="email" id="emailInput" placeholder="Email" autocomplete="username" /><br>
+  <input type="password" id="passwordInput" placeholder="Senha" autocomplete="current-password" /><br>
+  <button id="btnLogin">Entrar</button>
+  <div id="loginError" style="color:#db5a5a; margin-top:10px;"></div>
 
+  <p>Não tem conta? <a href="#" id="linkRegister">Registrar</a></p>
+</div>
 
-<script>
-(() => {
-  // Simulação em memória para canais, usuários e mensagens para interface própria
-  const channels = [
-    { id: "demo1", nome:"geral", categoria:"Comunicação", tipo:"publico" },
-    { id: "demo2", nome:"vip", categoria:"Privado", tipo:"privado" }
-  ];
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" style="display:none; position:fixed; inset:0; background: rgba(0,0,0,0.8); justify-content:center; align-items:center;">
+  <div style="background:#22263e; padding:20px; border-radius:8px; width:300px;">
+    <h3>Editar Perfil</h3>
+    <input type="text" id="profileName" placeholder="Seu nome" style="width:100%; padding:8px; margin-bottom:10px;" />
+    <textarea id="profileNote" placeholder="Sua nota/descrição" style="width:100%; height:80px; padding:8px; resize:none;"></textarea>
+    <button id="btnSaveProfile" style="margin-top:10px;">Salvar</button>
+    <button id="btnCancelProfile" style="margin-top:10px; margin-left:10px;">Cancelar</button>
+  </div>
+</div>
 
-  const users = [
-    { id: "u1", name: "Alice", status: "online" },
-    { id: "u2", name: "Bob", status: "away" },
-    { id: "u3", name: "Ana Clara", status: "busy" },
-    { id: "u4", name: "Carlos", status: "offline" }
-  ];
+<script type="module">
+// Importe Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, collection, doc, addDoc, getDoc, onSnapshot, query, where, orderBy, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  let messages = {
-    demo1: [
-      { id: "m1", userId: "u1", userName:"Alice", text:"Olá, mundo!", timestamp: new Date(), reactions: {}, imageURL: null },
-      { id: "m2", userId: "u2", userName:"Bob", text:"Seja bem-vindo ao canal geral", timestamp: new Date(), reactions: {}, imageURL: null }
-    ],
-    demo2: [
-      { id: "m3", userId: "u3", userName:"Ana Clara", text:"Canal VIP só para convidados!", timestamp: new Date(), reactions: {}, imageURL: null }
-    ]
-  };
+// Config Firebase (substitua pelas suas)
+const firebaseConfig = {
+  apiKey: "SUA_APIKEY",
+  authDomain: "SEU_AUTHDOMAIN",
+  projectId: "SEU_PROJECTID",
+  storageBucket: "SEU_BUCKET",
+  messagingSenderId: "SEU_SENDERID",
+  appId: "SEU_APPID"
+};
 
-  // Usuário atual fixo para interface (sem login real)
-  const currentUser = { uid: "u1", name: "Alice", email: "alice@example.com" };
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  // Elementos DOM
-  const appDiv = document.getElementById("app");
-  const channelsDiv = document.getElementById("channels");
-  const usersOnlineDiv = document.getElementById("usersOnline");
-  const channelNameSpan = document.getElementById("channelName");
-  const channelTypeSpan = document.getElementById("channelType");
-  const messagesDiv = document.getElementById("messages");
-  const messageInput = document.getElementById("messageInput");
-  const sendButton = document.getElementById("sendButton");
-  const btnNewChannel = document.getElementById("btnNewChannel");
-  const imageInput = document.getElementById("imageInput");
-  const imagePreview = document.getElementById("imagePreview");
-  const btnUploadImage = document.getElementById("btnUploadImage");
+// Elementos DOM
+const loginWrapper = document.getElementById("loginWrapper");
+const emailInput = document.getElementById("emailInput");
+const passwordInput = document.getElementById("passwordInput");
+const btnLogin = document.getElementById("btnLogin");
+const loginError = document.getElementById("loginError");
 
-  let currentChannelId = null;
-  let uploadImageFile = null;
+const appDiv = document.getElementById('app');
+const userNameDisplay = document.getElementById('userName');
+const btnLogout = document.getElementById('btnLogout');
+const btnEditProfile = document.getElementById('btnEditProfile');
 
-  // Renderiza canais na sidebar
-  function renderChannels() {
+const channelsDiv = document.getElementById('channels');
+const usersOnlineDiv = document.getElementById('usersOnline');
+const channelNameSpan = document.getElementById('channelName');
+const channelTypeSpan = document.getElementById('channelType');
+const messagesDiv = document.getElementById('messages');
+const messageInput = document.getElementById('messageInput');
+const sendButton = document.getElementById('sendButton');
+const btnNewChannel = document.getElementById('btnNewChannel');
+
+const editProfileModal = document.getElementById('editProfileModal');
+const profileNameInput = document.getElementById('profileName');
+const profileNoteInput = document.getElementById('profileNote');
+const btnSaveProfile = document.getElementById('btnSaveProfile');
+const btnCancelProfile = document.getElementById('btnCancelProfile');
+
+let currentUser = null;
+let currentChannel = null;
+let unsubscribeMessages = null;
+let unsubscribeChannels = null;
+let unsubscribeUsers = null;
+
+// Autenticação e UI
+btnLogin.onclick = async () => {
+  loginError.textContent = "";
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+  if (!email || !password) {
+    loginError.textContent = "Preencha email e senha";
+    return;
+  }
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (error) {
+    if(error.code === 'auth/user-not-found'){
+      // Auto registro
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        loginError.textContent = err.message;
+      }
+    } else {
+      loginError.textContent = error.message;
+    }
+  }
+};
+
+onAuthStateChanged(auth, user => {
+  if (user) {
+    currentUser = user;
+    loginWrapper.style.display = "none";
+    appDiv.style.display = "flex";
+    userNameDisplay.textContent = user.email;
+    setupPresence();
+    loadChannelsRealtime();
+    loadUsersOnlineRealtime();
+    disableInput(true);
+  } else {
+    currentUser = null;
+    loginWrapper.style.display = "block";
+    appDiv.style.display = "none";
+    channelNameSpan.textContent = "Nenhum canal selecionado";
+    channelTypeSpan.textContent = "";
+    messagesDiv.innerHTML = "";
     channelsDiv.innerHTML = "";
-    channels.forEach(ch => {
+    usersOnlineDiv.innerHTML = "";
+    disableInput(true);
+    if (unsubscribeMessages) unsubscribeMessages();
+    if (unsubscribeChannels) unsubscribeChannels();
+    if (unsubscribeUsers) unsubscribeUsers();
+  }
+});
+
+btnLogout.onclick = () => {
+  signOut(auth);
+};
+
+// Controle campo de mensagem
+messageInput.addEventListener('input', () => {
+  sendButton.disabled = !(messageInput.value.trim().length > 0);
+});
+
+sendButton.onclick = sendMessage;
+messageInput.addEventListener("keydown", e => {
+  if(e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    if (!sendButton.disabled) sendMessage();
+  }
+});
+
+// Controla input habilitado
+function disableInput(disabled) {
+  messageInput.disabled = disabled;
+  sendButton.disabled = disabled || messageInput.value.trim().length === 0;
+}
+
+// Canais - usando listener geral
+function loadChannelsRealtime(){
+  const canaisRef = collection(db, "canais");
+  unsubscribeChannels = onSnapshot(canaisRef, querySnapshot => {
+    channelsDiv.innerHTML = "";
+    querySnapshot.forEach(docSnap => {
+      const ch = docSnap.data();
       const div = document.createElement("div");
-      div.className = "channel" + (ch.id === currentChannelId ? " selected" : "");
-      if (ch.tipo === "privado") div.classList.add("private");
+      div.className = "channel";
+      if(ch.id === currentChannel?.id) div.classList.add("selected");
       div.textContent = `# ${ch.nome}`;
-      div.title = `Categoria: ${ch.categoria} - Tipo: ${ch.tipo}`;
-      div.addEventListener("click", () => selectChannel(ch));
+      div.title = `Descrição: ${ch.descricao || ''}\nTipo: ${ch.tipo}`;
+      div.onclick = () => selectChannel(docSnap.id, ch);
       channelsDiv.appendChild(div);
     });
-  }
+  });
+}
 
-  // Renderiza usuários online com status
-  function renderUsersOnline() {
-    usersOnlineDiv.innerHTML = "";
-    users.forEach(u => {
-      const div = document.createElement("div");
-      div.className = "user";
-      const dot = document.createElement("span");
-      dot.classList.add("status-dot", `status-${u.status}`);
-      div.appendChild(dot);
+async function selectChannel(channelId, channelData){
+  if(unsubscribeMessages) unsubscribeMessages();
+  currentChannel = {id: channelId, ...channelData};
+  channelNameSpan.textContent = channelData.nome;
+  channelTypeSpan.textContent = channelData.tipo.toUpperCase();
+  messagesDiv.innerHTML = "Carregando mensagens...";
+  disableInput(false);
+  loadMessagesRealtime(channelId);
+}
 
-      const span = document.createElement("span");
-      span.textContent = u.name;
-      div.appendChild(span);
-      usersOnlineDiv.appendChild(div);
-    });
-  }
-
-  // Renderiza mensagens do canal atual
-  function renderMessages() {
- messagesDiv.innerHTML = "";
-    if (!currentChannelId) {
-      messagesDiv.textContent = "Selecione um canal para começar a conversar.";
-      return;
-    }
-    const msgs = messages[currentChannelId] || [];
-    if (msgs.length === 0) {
-      messagesDiv.textContent = "Nenhuma mensagem neste canal.";
-      return;
-    }
-    msgs.forEach(msg => {
+function loadMessagesRealtime(channelId){
+  const mensagensRef = collection(db, "canais", channelId, "mensagens");
+  const q = query(mensagensRef, orderBy("timestamp"));
+  unsubscribeMessages = onSnapshot(q, querySnap => {
+    messagesDiv.innerHTML = "";
+    querySnap.forEach(docSnap => {
+      const msg = docSnap.data();
+      msg.id = docSnap.id;
       messagesDiv.appendChild(createMessageElement(msg));
     });
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  });
+}
+
+function createMessageElement(msg){
+  const div = document.createElement('div');
+  div.className = "message";
+  if(msg.usuarioId === currentUser.uid) div.classList.add("own");
+
+  const meta = document.createElement('div');
+  meta.className= "meta";
+  const date = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
+  meta.textContent = `${msg.usuarioNome || 'Usuário'} - ${date.toLocaleTimeString()}`;
+  div.appendChild(meta);
+
+  if(msg.respostaId){
+    const respostaWrap = document.createElement('div');
+    respostaWrap.className = "reply";
+    respostaWrap.textContent = `Resposta a: ${msg.respostaTexto || '(texto não encontrado)'}`;
+    div.appendChild(respostaWrap);
   }
 
-  // Cria elemento de mensagem
-  function createMessageElement(msg) {
-    const div = document.createElement("div");
-    div.className = "message";
-    if (msg.userId === currentUser.uid) div.classList.add("own");
+  const texto = document.createElement('div');
+  texto.className = 'text';
+  texto.innerHTML = highlightMentions(msg.texto || "");
+  div.appendChild(texto);
 
-    const metaSpan = document.createElement("div");
-    metaSpan.className = "meta";
-    metaSpan.textContent = `${msg.userName || "Usuário"} - ${msg.timestamp.toLocaleTimeString()}`;
-    div.appendChild(metaSpan);
+  // Botões edição/exclusão para próprias mensagens
+  if(msg.usuarioId === currentUser.uid){
+    const btnEdit = document.createElement('button');
+    btnEdit.textContent = "✏️";
+    btnEdit.title = "Editar mensagem";
+    btnEdit.style.marginLeft = "10px";
+    btnEdit.onclick = () => editMessage(msg.id);
+    div.appendChild(btnEdit);
 
-    const textDiv = document.createElement("div");
-    textDiv.className = "text";
-    textDiv.innerHTML = parseMentions(msg.text);
-    div.appendChild(textDiv);
-
-    // Reactions container
-    if (msg.reactions && Object.keys(msg.reactions).length) {
-      const reactionsDiv = document.createElement("div");
-      reactionsDiv.className = "reactions";
-      for (const emoji in msg.reactions) {
-        const btn = document.createElement("button");
-        btn.className = "reaction";
-        btn.textContent = emoji + " " + msg.reactions[emoji].length;
-        btn.title = "Clique para reagir";
-        btn.onclick = () => toggleReaction(msg.id, emoji);
-        reactionsDiv.appendChild(btn);
-      }
-      div.appendChild(reactionsDiv);
-    }
-
-    // Editar e apagar só para própria mensagem
-    if (msg.userId === currentUser.uid) {
-      const btnEdit = document.createElement("button");
-      btnEdit.textContent = "✏️";
-      btnEdit.title = "Editar mensagem";
-      btnEdit.style.marginLeft = "10px";
-      btnEdit.onclick = () => editMessage(msg.id);
-      div.appendChild(btnEdit);
-
-      const btnDel = document.createElement("button");
-      btnDel.textContent = "🗑️";
-      btnDel.title = "Apagar mensagem";
-      btnDel.style.marginLeft = "6px";
-      btnDel.onclick = () => deleteMessage(msg.id);
-      div.appendChild(btnDel);
-    }
-
-    if (msg.imageURL) {
-      const img = document.createElement("img");
-      img.src = msg.imageURL;
-      img.style.maxWidth = "100%";
-      img.style.marginTop = "10px";
-      img.style.borderRadius = "12px";
-      div.appendChild(img);
-    }
-
-    return div;
+    const btnDel = document.createElement('button');
+    btnDel.textContent = "🗑️";
+    btnDel.title = "Apagar mensagem";
+    btnDel.style.marginLeft = "6px";
+    btnDel.onclick = () => deleteMessage(msg.id);
+    div.appendChild(btnDel);
   }
 
-  // Parse menções @usuario (estático)
-  function parseMentions(text){
-    if(!text) return "";
-    return text.replace(/@(\w+)/g, `<span class="mention" tabindex="0" title="Mencionado: @$1">@${"$1"}</span>`);
+  // Clique em mensagem para responder
+  texto.onclick = () => startReplying(msg.id, msg.texto);
+
+  return div;
+}
+
+function highlightMentions(text){
+  return text.replace(/@(\w+)/g, `<span class="mention">@${"$1"}</span>`);
+}
+
+// Funções enviar/edit/delete mensagens
+async function sendMessage(){
+  const texto = messageInput.value.trim();
+  if (!texto || !currentChannel) return;
+
+  let mensagem = {
+    texto,
+    usuarioId: currentUser.uid,
+    usuarioNome: currentUser.displayName || currentUser.email.split('@')[0],
+    timestamp: serverTimestamp()
+  };
+
+  // Se estiver respondendo a alguma mensagem
+  if (replyTo && replyText) {
+    mensagem.respostaId = replyTo;
+    mensagem.respostaTexto = replyText;
   }
 
-  // Seleciona canal
-  function selectChannel(channel){
-    currentChannelId = channel.id;
-    channelNameSpan.textContent = channel.nome;
-    channelTypeSpan.textContent = channel.tipo.toUpperCase();
-    messageInput.disabled = false;
+  try {
+    const mensagensRef = collection(db, 'canais', currentChannel.id, 'mensagens');
+    await addDoc(mensagensRef, mensagem);
     messageInput.value = "";
     sendButton.disabled = true;
-    uploadImageFile = null;
-    imagePreview.style.display = "none";
-    renderChannels();
-    renderMessages();
+    clearReply();
+  } catch (error) {
+    alert('Erro ao enviar mensagem: ' + error.message);
   }
+}
 
-  // Envia mensagem (texto + imagem simulada)
-  function sendMessage(){
-    if (!messageInput.value.trim() && !uploadImageFile) return;
+async function editMessage(msgId) {
+  const newText = prompt('Editar mensagem:');
+  if (!newText) return;
+  const msgDoc = doc(db, 'canais', currentChannel.id, 'mensagens', msgId);
+  await updateDoc(msgDoc, { texto: newText });
+}
 
-    let imageURL = null;
-    if (uploadImageFile) {
-      // Simular upload e gerar URL base64
-      imageURL = imagePreview.src;
-    }
+async function deleteMessage(msgId) {
+  if (!confirm('Tem certeza que quer apagar essa mensagem?')) return;
+  const msgDoc = doc(db, 'canais', currentChannel.id, 'mensagens', msgId);
+  await deleteDoc(msgDoc);
+}
 
-    const newMsg = {
-      id: "m" + Date.now(),
-      userId: currentUser.uid,
-      userName: currentUser.name,
-      text: messageInput.value.trim(),
-      timestamp: new Date(),
-      reactions: {},
-      imageURL: imageURL
-    };
+// Reply controls
+let replyTo = null;
+let replyText = null;
 
-    if (!messages[currentChannelId]) messages[currentChannelId] = [];
-    messages[currentChannelId].push(newMsg);
+function startReplying(msgId, text) {
+  replyTo = msgId;
+  replyText = text;
+  messageInput.placeholder = `Respondendo: "${text}" (pressione Esc para cancelar)`;
+  messageInput.focus();
+}
 
-    messageInput.value = "";
-    clearImagePreview();
-    renderMessages();
-    sendButton.disabled = true;
+function clearReply() {
+  replyTo = null;
+  replyText = null;
+  messageInput.placeholder = "Digite sua mensagem...";
+}
+
+// Cancelar resposta com Esc
+messageInput.addEventListener('keydown', e => {
+  if(e.key === "Escape" && replyTo){
+    clearReply();
   }
+});
 
-  // Toggle reação (adiciona/remove emoji)
-  function toggleReaction(messageId, emoji) {
-    const msgs = messages[currentChannelId];
-    if (!msgs) return;
-
-    const msg = msgs.find(m => m.id === messageId);
-    if (!msg) return;
-
-    if (!msg.reactions) msg.reactions = {};
-    if (!msg.reactions[emoji]) msg.reactions[emoji] = [];
-
-    const idx = msg.reactions[emoji].indexOf(currentUser.uid);
-    if (idx === -1) {
-      msg.reactions[emoji].push(currentUser.uid);
-    } else {
-      msg.reactions[emoji].splice(idx, 1);
-      if (msg.reactions[emoji].length === 0) delete msg.reactions[emoji];
-    }
-    renderMessages();
-  }
-
-  // Edita mensagem
-  function editMessage(messageId){
-    const msgs = messages[currentChannelId];
-    if (!msgs) return;
-
-    const msg = msgs.find(m => m.id === messageId);
-    if (!msg) return;
-
-    const newText = prompt("Editar mensagem:", msg.text);
-    if (newText !== null && newText.trim() !== msg.text) {
-      msg.text = newText.trim();
-      renderMessages();
-    }
-  }
-
-  // Apaga mensagem
-  function deleteMessage(messageId){
-    if (!confirm("Tem certeza que quer apagar essa mensagem?")) return;
-
-    const msgs = messages[currentChannelId];
-    if (!msgs) return;
-
-    const index = msgs.findIndex(m => m.id === messageId);
-    if (index !== -1) {
-      msgs.splice(index, 1);
-      renderMessages();
-    }
-  }
-
-  // Upload imagem preview
-  btnUploadImage.addEventListener("click", () => imageInput.click());
-  imageInput.addEventListener("change", () => {
-    const file = imageInput.files[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      alert("Apenas imagens são permitidas!");
-      return;
-    }
-    uploadImageFile = file;
-
-    const reader = new FileReader();
-    reader.onload = e => {
-      imagePreview.src = e.target.result;
-      imagePreview.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-    updateSendButton();
+// Carrega usuários online (simples)
+function loadUsersOnlineRealtime(){
+  const usuariosRef = collection(db, "usuarios");
+  unsubscribeUsers = onSnapshot(usuariosRef, querySnap => {
+    usersOnlineDiv.innerHTML = "";
+    querySnap.forEach(docSnap => {
+      const u = docSnap.data();
+      const div = document.createElement('div');
+      div.className = 'user';
+      const dot = document.createElement('span');
+      dot.className = 'status-dot ' + (u.online ? 'status-online' : 'status-offline');
+      div.appendChild(dot);
+      const span = document.createElement('span');
+      span.textContent = u.nome || u.email || 'Usuário';
+      div.appendChild(span);
+      usersOnlineDiv.appendChild(div);
+    });
   });
+}
 
-  imagePreview.addEventListener("click", clearImagePreview);
+// Presença simples
+function setupPresence(){
+  if(!currentUser) return;
+  const userDoc = doc(db, 'usuarios', currentUser.uid);
+  const userRef = userDoc;
+  const setOnline = () => updateDoc(userRef, { online: true, ultimoLogin: serverTimestamp() }).catch(() => {});
+  const setOffline = () => updateDoc(userRef, { online: false }).catch(() => {});
 
-  function clearImagePreview(){
-    uploadImageFile = null;
-    imagePreview.src = "";
-    imagePreview.style.display = "none";
-    imageInput.value = "";
-    updateSendButton();
+  setOnline();
+  window.addEventListener('beforeunload', setOffline);
+  // Pode melhorar usando RealtimeDatabase onDisconnect para offline confiável
+}
+
+// Editar perfil
+btnEditProfile.onclick = () => {
+  profileNameInput.value = currentUser.displayName || "";
+  // Para exemplo, nota salvo localmente
+  profileNoteInput.value = localStorage.getItem(`${currentUser.uid}-note`) || "";
+  editProfileModal.style.display = 'flex';
+};
+
+btnCancelProfile.onclick = () => editProfileModal.style.display = 'none';
+
+btnSaveProfile.onclick = async () => {
+  const newName = profileNameInput.value.trim();
+  const newNote = profileNoteInput.value.trim();
+  if(!newName) return alert('Nome não pode ser vazio');
+  try {
+    await updateProfile(currentUser, { displayName: newName });
+    localStorage.setItem(`${currentUser.uid}-note`, newNote);
+    userNameDisplay.textContent = newName;
+    editProfileModal.style.display = 'none';
+  } catch(e) {
+    alert('Erro ao salvar perfil: ' + e.message);
   }
-
-  // Atualiza estado botão enviar
-  function updateSendButton(){
-    sendButton.disabled = messageInput.value.trim().length === 0 && !uploadImageFile;
-  }
-
-  messageInput.addEventListener("input", updateSendButton);
-
-  // Enviar mensagem ao pressionar Enter sem Shift
-  messageInput.addEventListener("keydown", e => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (!sendButton.disabled) sendMessage();
-    }
-  });
-
-  btnNewChannel.addEventListener("click", () => {
-    const nome = prompt("Nome do canal:");
-    if (!nome || !nome.trim()) return;
-    const categoria = prompt("Categoria:", "Comunicação") || "Comunicação";
-    const tipoInput = prompt("Tipo (publico / privado / admin):", "publico") || "publico";
-    const tipo = ["publico","privado","admin"].includes(tipoInput.toLowerCase()) ? tipoInput.toLowerCase() : "publico";
-
-    const newChannel = {
-      id: "ch" + Date.now(),
-      nome: nome.trim(),
-      categoria,
-      tipo
-    };
-    channels.push(newChannel);
-    renderChannels();
-  });
-
-  // Inicialização
-  function init() {
-    renderChannels();
-    renderUsersOnline();
-    // Desativa entrada até canal selecionado
-    messageInput.disabled = true;
-    sendButton.disabled = true;
-  }
-
-  init();
-})();
+};
 </script>
 
 </body>
