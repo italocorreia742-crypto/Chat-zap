@@ -1,930 +1,290 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Zap/Discord(BETA)</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Wrocket</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <style>
-  /* === Estilos embutidos === */
-  * {
-    margin:0; padding:0; box-sizing: border-box;
-  }
-  body, html {
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+:root {
+    --bg-dark: #020617;
+    --bg-main: #0f172a;
+    --accent: #22c55e;
+    --sidebar: #0f172a;
+    --text: #f8fafc;
+    --danger: #ef4444;
+    --card: #1e293b;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    display: flex;
     height: 100vh;
-    background: #181a2a;
-    color: #eee;
-    display: flex;
-    flex-direction: column;
-  }
-  header, footer {
-    background: #262a48;
-    text-align: center;
-    padding: 15px;
-    user-select: none;
-  }
-  #app {
-    flex: 1;
-    display: flex;
     overflow: hidden;
-    height: calc(100vh - 100px);
-  }
-  #sidebar {
-    width: 280px;
-    background: #22263e;
+}
+
+.comunidades {
+    width: 72px;
+    background: #000;
     display: flex;
     flex-direction: column;
-  }
-  #sidebar header {
-    padding: 20px;
-    border-bottom: 1px solid #3c4163;
-    font-weight: 600;
-    font-size: 22px;
-    color: #61dafb;
-    user-select: none;
-  }
-  #channels, #usersOnline {
-    flex: 1;
-    overflow-y: auto;
-    padding: 10px 15px;
-  }
-  .channel, .user {
-    padding: 8px 12px;
-    border-radius: 6px;
-    margin-bottom: 6px;
-    background: #2e3250;
-    cursor: pointer;
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    user-select: none;
-    transition: background-color 0.2s ease;
-  }
-  .channel:hover, .user:hover {
-    background: #4d56a5;
-  }
-  .channel.selected {
-    background-color: #61dafb;
-    color: #22263e;
-    font-weight: 700;
-  }
-  .channel.private::after {
-    content: "🔒";
-    margin-left: 6px;
-  }
-  .status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  .status-online { background: #6bd16d; }
-  .status-away { background: #e0be6a; }
-  .status-busy { background: #e95f62; }
-  .status-offline { background: #878787; }
-  #chatArea {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #282c4a;
-  }
-  #chatHeader {
-    padding: 18px 20px;
-    font-weight: 600;
-    font-size: 20px;
-    color: #61dafb;
-    border-bottom: 1px solid #3c4163;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  #chatHeader .channelType {
-    font-size: 14px;
-    font-weight: 600;
-    font-style: italic;
-    color: #a2a6b1;
-  }
-  #messages {
-    flex: 1;
-    padding: 18px 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .message {
-    background: #3e427b;
-    color: white;
-    padding: 14px 18px;
-    border-radius: 12px;
-    max-width: 70%;
-    word-wrap: break-word;
-    position: relative;
-    font-size: 16px;
-  }
-  .message.own {
-    background: #61dafb;
-    color: #22263e;
-    align-self: flex-end;
-  }
-  .message .meta {
-    font-size: 12px;
-    color: #ccd6f6cc;
-    margin-bottom: 6px;
-    font-weight: 600;
-  }
-  .message .text {
-    white-space: pre-wrap;
-    cursor: pointer;
-  }
-  .mention {
-    color: #82d4ff;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .message .reply {
-    border-left: 3px solid #fff59d;
-    margin-bottom: 6px;
-    padding-left: 8px;
-    font-size: 14px;
-    color: #fff59d;
-  }
-  .reactions {
-    margin-top: 8px;
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  .reaction {
-    background: #555aa3;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 15px;
-    cursor: pointer;
-    user-select: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: background-color 0.3s ease;
-  }
-  .reaction:hover {
-    background: #82d4ff;
-    color: #22263e;
-  }
-  #inputArea {
-    padding: 16px 20px;
-    background: #22263e;
-    display: flex;
-    align-items: center;
-  }
-  #messageInput {
-    flex: 1;
-    padding: 12px 18px;
-    border-radius: 30px;
-    border: none;
-    font-size: 17px;
-    outline: none;
-    background: #3c4163;
-    color: white;
-    font-weight: 500;
-  }
-  #sendButton {
-    margin-left: 16px;
-    background: #61dafb;
-    border: none;
-    color: #22263e;
-    font-weight: 700;
-    font-size: 17px;
-    border-radius: 30px;
-    padding: 12px 20px;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s ease;
-  }
-  #sendButton:disabled {
-    background: #4a90e29e;
-    cursor: not-allowed;
-  }
-  #sendButton:hover:not(:disabled) {
-    background: #4db8ff;
-  }
-  #btnNewChannel {
-    margin: 10px;
-    background: #61dafb;
-    border: none;
-    padding: 10px;
-    color: #22263e;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-  }
-  #btnUploadImage {
-    margin-left: 10px;
-    background: #4a90e2;
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    font-size: 22px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  #imagePreview {
-    max-width: 100px;
-    max-height: 100px;
-    border-radius: 16px;
-    margin-left: 20px;
-    object-fit: cover;
-    border: 2px solid #61dafb;
-    display: none;
-    cursor: pointer;
-  }
-  #loginWrapper {
-    position: fixed;
-    inset: 0;
-    background: #181a2acc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
-  #loginRegisterBox {
-    background: #22263e;
-    padding: 28px 36px;
-    border-radius: 14px;
-    width: 360px;
-    display: flex;
-    flex-direction: column;
+    padding-top: 12px;
     gap: 12px;
-  }
-  #loginRegisterBox h2 {
-    text-align: center;
-    color: #61dafb;
-  }
-  #loginRegisterBox input {
-    width: 100%;
-    padding: 14px 18px;
-    border-radius: 12px;
-    border: none;
-    background: #3c4163;
-    color: white;
-    font-size: 17px;
-  }
-  #loginRegisterBox button {
-    width: 100%;
-    background: #61dafb;
-    color: #22263e;
-    font-weight: 700;
-    font-size: 18px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    padding: 14px 0;
-    user-select: none;
-  }
-  #loginRegisterError {
-    color: #db5a5a;
-    font-weight: 600;
-    height: 20px;
-    text-align: center;
-  }
-  #switchForm {
-    text-align: center;
-    color: #9ab1d9;
-    cursor: pointer;
-    user-select: none;
-    font-weight: 600;
-  }
-  #switchForm:hover {
-    color: #61dafb;
-  }
-  /* Modal para editar perfil */
-  #editProfileModal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    display: none;
-    justify-content: center;
+    flex-shrink: 0;
+}
+
+.com-icon {
+    width: 48px;
+    height: 48px;
+    background: #334155;
+    border-radius: 50%;
+    display: flex;
     align-items: center;
-    z-index: 99999;
-  }
-  #editProfileContent {
-    background: #22263e;
-    padding: 25px;
-    border-radius: 14px;
-    width: 360px;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s;
+    color: white;
+    border: none;
+}
+
+.com-icon:hover,
+.com-icon.active {
+    border-radius: 16px;
+    background: var(--accent);
+}
+
+.sidebar {
+    width: 240px;
+    background: var(--sidebar);
     display: flex;
     flex-direction: column;
-    gap: 14px;
-  }
-  #editProfileContent input, #editProfileContent textarea {
-    padding: 10px;
-    border-radius: 12px;
-    border: none;
-    background: #3c4163;
-    color: white;
-    font-size: 16px;
-    resize: none;
-  }
-  #editProfileButtons {
+    border-right: 1px solid #1e293b;
+}
+
+.side-header {
+    padding: 15px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #94a3b8;
     display: flex;
     justify-content: space-between;
-  }
-  #editProfileButtons button {
-    padding: 12px 20px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 16px;
+    align-items: center;
+    border-bottom: 1px solid #1e293b;
+}
+
+.group-list {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.group-item {
+    padding: 10px 12px;
+    border-radius: 10px;
     cursor: pointer;
-  }
-  #btnSaveProfile {
-    background: #61dafb;
-    color: #22263e;
-  }
-  #btnCancelProfile {
-    background: #4a90e2;
+    margin-bottom: 6px;
+    background: rgba(255,255,255,0.03);
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #1e293b;
+}
+
+.topbar {
+    height: 55px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #0f172a;
+}
+
+#mensagens {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg {
+    padding: 12px;
+    border-radius: 14px;
+    max-width: 85%;
+}
+
+.msg.eu {
+    align-self: flex-end;
+    background: var(--accent);
+}
+
+.msg.outro {
+    align-self: flex-start;
+    background: var(--card);
+}
+
+.bottom {
+    padding: 15px;
+}
+
+.input-wrapper {
+    background: #334155;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+}
+
+#msgInput {
+    flex: 1;
+    background: none;
+    border: none;
+    padding: 14px;
     color: white;
-  }
+    outline: none;
+}
+
+.btn-send {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    margin-right: 8px;
+}
 </style>
 </head>
+
 <body>
 
-<header>
-  <h1>Zap/Discord 3.0 Real</h1>
-  <div style="margin-top:5px; display:flex; gap:15px; justify-content:center; align-items:center;">
-    <span id="loggedUserName" style="font-weight:600;"></span>
-    <button id="btnEditProfile">Editar Perfil</button>
-    <button id="btnLogout">Sair</button>
-  </div>
-</header>
-
-<div id="app" style="display:none;">
-  <aside id="sidebar">
-    <header>Canais</header>
-    <div id="channels"></div>
-    <button id="btnNewChannel">➕ Criar Canal</button>
-    <header style="margin-top:16px;">Usuários Online</header>
-    <div id="usersOnline"></div>
-  </aside>
-
-  <main id="chatArea" aria-live="polite" aria-relevant="additions" role="region">
-    <div id="chatHeader">
-      <span id="channelName">Nenhum canal selecionado</span>
-      <span id="channelType"></span>
-    </div>
-    <div id="messages">Selecione um canal.</div>
-    <div id="inputArea">
-      <input type="file" id="imageInput" accept="image/*" style="display:none;" />
-      <img id="imagePreview" alt="Preview Imagem" title="Clique para remover imagem" />
-      <input type="text" id="messageInput" placeholder="Digite sua mensagem..." autocomplete="off" />
-      <button id="sendButton" disabled>Enviar</button>
-      <button id="btnUploadImage" title="Enviar imagem">📷</button>
-    </div>
-  </main>
+<div class="comunidades">
+    <button class="com-icon active">
+        <i class="fas fa-home"></i>
+    </button>
 </div>
 
-<!-- Modal Login/Register -->
-<div id="loginWrapper">
-  <div id="loginRegisterBox">
-    <h2 id="loginRegisterTitle">Entrar no Zap/Discord</h2>
-    <div id="loginRegisterError"></div>
-    <input type="email" id="emailInput" placeholder="Email" autocomplete="username" />
-    <input type="password" id="passwordInput" placeholder="Senha" autocomplete="current-password" />
-    <button id="btnLogin">Entrar</button>
-    <div id="switchForm">Não tem conta? <span style="color:#61dafb; cursor:pointer;">Registrar</span></div>
-  </div>
+<div class="sidebar">
+    <div class="side-header">
+        CANAIS
+    </div>
+
+    <div class="group-list" id="listaGrupos"></div>
 </div>
 
-<!-- Modal Editar Perfil -->
-<div id="editProfileModal">
-  <div id="editProfileContent">
-    <h3>Editar Perfil</h3>
-    <input type="text" id="profileName" placeholder="Seu nome" />
-    <textarea id="profileNote" placeholder="Sua nota/descrição" rows="4"></textarea>
-    <div id="editProfileButtons">
-      <button id="btnSaveProfile">Salvar</button>
-      <button id="btnCancelProfile">Cancelar</button>
+<div class="main">
+
+    <div class="topbar">
+        <div># global</div>
     </div>
-  </div>
+
+    <div id="mensagens"></div>
+
+    <div class="bottom">
+        <div class="input-wrapper">
+            <input id="msgInput" placeholder="Sua mensagem..." autocomplete="off">
+
+            <button class="btn-send" id="btnEnviar">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
 </div>
 
 <script type="module">
-// Import Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, getDoc, onSnapshot, query, where, orderBy, updateDoc, deleteDoc, serverTimestamp, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-// Firebase configuration - substitua pelas suas credenciais
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    onSnapshot,
+    query,
+    orderBy,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
-  authDomain: "zap-proprio-web.firebaseapp.com",
-  projectId: "zap-proprio-web",
-  storageBucket: "zap-proprio-web.firebasestorage.app",
-  messagingSenderId: "974920784341",
-  appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
+    apiKey: "AIzaSyAHdmvUzkJBqd0nBLL2rWIb30LFEeWtnbw",
+    authDomain: "zap-proprio-web.firebaseapp.com",
+    projectId: "zap-proprio-web",
+    storageBucket: "zap-proprio-web.firebasestorage.app",
+    messagingSenderId: "974920784341",
+    appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
-// DOM Elements
-const loginWrapper = document.getElementById("loginWrapper"),
-  emailInput = document.getElementById("emailInput"),
-  passwordInput = document.getElementById("passwordInput"),
-  btnLogin = document.getElementById("btnLogin"),
-  loginRegisterError = document.getElementById("loginRegisterError"),
-  switchForm = document.getElementById("switchForm");
+const mensagens = document.getElementById("mensagens");
+const input = document.getElementById("msgInput");
 
-const appDiv = document.getElementById("app"),
-  loggedUserName = document.getElementById("loggedUserName"),
-  btnLogout = document.getElementById("btnLogout"),
-  btnEditProfile = document.getElementById("btnEditProfile");
+let nome = localStorage.getItem("nome") || prompt("Seu Nome:");
 
-const channelsDiv = document.getElementById("channels"),
-  usersOnlineDiv = document.getElementById("usersOnline"),
-  channelNameSpan = document.getElementById("channelName"),
-  channelTypeSpan = document.getElementById("channelType"),
-  messagesDiv = document.getElementById("messages"),
-  messageInput = document.getElementById("messageInput"),
-  sendButton = document.getElementById("sendButton"),
-  btnNewChannel = document.getElementById("btnNewChannel"),
-  imageInput = document.getElementById("imageInput"),
-  imagePreview = document.getElementById("imagePreview"),
-  btnUploadImage = document.getElementById("btnUploadImage");
+localStorage.setItem("nome", nome);
 
-const editProfileModal = document.getElementById("editProfileModal"),
-  profileNameInput = document.getElementById("profileName"),
-  profileNoteInput = document.getElementById("profileNote"),
-  btnSaveProfile = document.getElementById("btnSaveProfile"),
-  btnCancelProfile = document.getElementById("btnCancelProfile");
+async function enviar() {
+    let texto = input.value.trim();
 
-// State variables
-let currentUser = null,
-  currentChannel = null,
-  unsubscribeMessages = null,
-  unsubscribeChannels = null,
-  unsubscribeUsers = null,
-  uploadImageFile = null,
-  replyTo = null,
-  replyText = null,
-  registerMode = false;
+    if (!texto) return;
 
-// Switch login/register
-switchForm.addEventListener("click", () => {
-  registerMode = !registerMode;
-  loginRegisterError.textContent = "";
-  if (registerMode) {
-    btnLogin.textContent = "Registrar";
-    switchForm.innerHTML = 'Já tem conta? <span style="color:#61dafb; cursor:pointer;">Entrar</span>';
-  } else {
-    btnLogin.textContent = "Entrar";
-    switchForm.innerHTML = 'Não tem conta? <span style="color:#61dafb; cursor:pointer;">Registrar</span>';
-  }
-});
-
-// Login/Register handler
-btnLogin.addEventListener("click", async () => {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value.trim();
-  loginRegisterError.textContent = "";
-  if (!email || !password) {
-    loginRegisterError.textContent = "Preencha email e senha";
-    return;
-  }
-  try {
-    if (registerMode) {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await setDoc(doc(db, "usuarios", userCredential.user.uid), {
-        email,
-        nome: email.split("@")[0],
-        online: true,
-        nota: "",
-        criadoEm: serverTimestamp()
-      });
-    } else {
-      await signInWithEmailAndPassword(auth, email, password);
-    }
-  } catch (error) {
-    loginRegisterError.textContent = error.message || "Erro desconhecido";
-  }
-});
-
-// Detect auth state changes
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    currentUser = user;
-    loginWrapper.style.display = "none";
-    appDiv.style.display = "flex";
-    loggedUserName.textContent = user.displayName || user.email.split("@")[0];
-    setupPresence(user.uid);
-    loadChannelsRealtime();
-    loadUsersOnlineRealtime();
-    disableInput(true);
-    clearReply();
-    resetImagePreview();
-  } else {
-    currentUser = null;
-    loginWrapper.style.display = "flex";
-    appDiv.style.display = "none";
-    channelNameSpan.textContent = "Nenhum canal selecionado";
-    channelTypeSpan.textContent = "";
-    messagesDiv.innerHTML = "";
-    channelsDiv.innerHTML = "";
-    usersOnlineDiv.innerHTML = "";
-    disableInput(true);
-    if (unsubscribeMessages) unsubscribeMessages();
-    if (unsubscribeChannels) unsubscribeChannels();
-    if (unsubscribeUsers) unsubscribeUsers();
-  }
-});
-
-// Logout
-btnLogout.onclick = () => {
-  signOut(auth);
-};
-
-// Edit Profile modal open
-btnEditProfile.onclick = () => {
-  openEditProfileModal();
-};
-
-// Cancel profile modal
-btnCancelProfile.onclick = () => {
-  editProfileModal.style.display = "none";
-};
-
-// Save profile edit
-btnSaveProfile.onclick = async () => {
-  try {
-    const newName = profileNameInput.value.trim();
-    const newNote = profileNoteInput.value.trim();
-    if (!newName) return alert("Nome não pode ser vazio");
-    await updateProfile(currentUser, { displayName: newName });
-    await updateDoc(doc(db, "usuarios", currentUser.uid), { nome: newName, nota: newNote || "" });
-    loggedUserName.textContent = newName;
-    editProfileModal.style.display = "none";
-  } catch (error) {
-    alert("Erro ao salvar perfil: " + error.message);
-  }
-};
-
-// New channel creation
-btnNewChannel.onclick = async () => {
-  const nome = prompt("Nome do canal:");
-  if (!nome || !nome.trim()) return;
-  const descricao = prompt("Descrição do canal:", "") || "";
-  const tipoRaw = prompt("Tipo (publico / privado / admin):", "publico") || "publico";
-  const tipo = ["publico", "privado", "admin"].includes(tipoRaw.toLowerCase()) ? tipoRaw.toLowerCase() : "publico";
-  try {
-    await addDoc(collection(db, "canais"), { nome: nome.trim(), descricao, tipo, criadoPor: currentUser.uid, criadoEm: serverTimestamp() });
-  } catch (e) {
-    alert("Erro ao criar canal: " + e.message);
-  }
-};
-
-// Upload image button click
-btnUploadImage.onclick = () => {
-  imageInput.click();
-};
-
-// Image input change
-imageInput.addEventListener("change", () => {
-  const file = imageInput.files[0];
-  if (!file) return;
-  if (!file.type.startsWith("image/")) {
-    alert("Apenas imagens são permitidas!");
-    return;
-  }
-  uploadImageFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    imagePreview.src = e.target.result;
-    imagePreview.style.display = "block";
-  };
-  reader.readAsDataURL(file);
-  updateSendButton();
-});
-
-imagePreview.addEventListener("click", () => {
-  resetImagePreview();
-  updateSendButton();
-});
-
-// Message input events
-messageInput.addEventListener("input", updateSendButton);
-sendButton.addEventListener("click", sendMessage);
-messageInput.addEventListener("keydown", e => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    if (!sendButton.disabled) sendMessage();
-  }
-});
-
-// Enable/disable send button
-function updateSendButton() {
-  sendButton.disabled = messageInput.value.trim().length === 0 && !uploadImageFile;
-}
-
-// Reset image preview
-function resetImagePreview() {
-  uploadImageFile = null;
-  imagePreview.style.display = "none";
-  imagePreview.src = "";
-  imageInput.value = "";
-}
-
-// Setup online presence
-function setupPresence(uid) {
-  const userRef = doc(db, "usuarios", uid);
-  updateDoc(userRef, { online: true }).catch(() => {});
-  window.addEventListener('beforeunload', () => {
-    updateDoc(userRef, { online: false }).catch(() => {});
-  });
-}
-
-// Load channels realtime
-function loadChannelsRealtime() {
-  const canaisRef = collection(db, "canais");
-  unsubscribeChannels = onSnapshot(canaisRef, (snapshot) => {
-    channelsDiv.innerHTML = "";
-    snapshot.forEach(docSnap => {
-      const ch = { id: docSnap.id, ...docSnap.data() };
-      const div = document.createElement("div");
-      div.className = "channel" + (currentChannel?.id === ch.id ? " selected" : "");
-      if (ch.tipo === "privado") div.classList.add("private");
-      div.textContent = `# ${ch.nome}`;
-      div.title = `${ch.descricao || ''} (${ch.tipo})`;
-      div.onclick = () => selectChannel(ch);
-      channelsDiv.appendChild(div);
+    await addDoc(collection(db, "mensagens"), {
+        nome,
+        texto,
+        data: serverTimestamp()
     });
-  });
+
+    input.value = "";
 }
 
-// Select channel
-function selectChannel(channel) {
-  if (unsubscribeMessages) unsubscribeMessages();
-  currentChannel = channel;
-  channelNameSpan.textContent = channel.nome;
-  channelTypeSpan.textContent = channel.tipo.toUpperCase();
-  disableInput(false);
-  clearReply();
-  resetImagePreview();
-  messagesDiv.innerHTML = "Carregando mensagens...";
-  const mensagensRef = collection(db, "canais", channel.id, "mensagens");
-  const q = query(mensagensRef, orderBy("timestamp"));
-  unsubscribeMessages = onSnapshot(q, snapshot => {
-    messagesDiv.innerHTML = "";
-    snapshot.forEach(docSnap => {
-      const msg = { id: docSnap.id, ...docSnap.data() };
-      messagesDiv.appendChild(createMessageElement(msg));
-    });
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  });
-}
+document.getElementById("btnEnviar").onclick = enviar;
 
-// Create message element
-function createMessageElement(msg) {
-  const div = document.createElement("div");
-  div.className = "message";
-  if (msg.usuarioId === currentUser.uid) div.classList.add("own");
-
-  const meta = document.createElement("div");
-  meta.className = "meta";
-  const dateObj = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date();
-  meta.textContent = `${msg.usuarioNome || "Usuário"} - ${dateObj.toLocaleTimeString()}`;
-  div.appendChild(meta);
-
-  if (msg.respostaId && msg.respostaTexto) {
-    const replyDiv = document.createElement("div");
-    replyDiv.className = "reply";
-    replyDiv.textContent = msg.respostaTexto.length > 50 ? msg.respostaTexto.substring(0, 50) + "..." : msg.respostaTexto;
-    div.appendChild(replyDiv);
-  }
-
-  const textDiv = document.createElement("div");
-  textDiv.className = "text";
-  textDiv.innerHTML = highlightMentions(escapeHtml(msg.texto || ""));
-  div.appendChild(textDiv);
-
-  if (msg.imageURL) {
-    const img = document.createElement("img");
-    img.src = msg.imageURL;
-    img.style.maxWidth = "100%";
-    img.style.marginTop = "10px";
-    img.style.borderRadius = "12px";
-    div.appendChild(img);
-  }
-
-  // Reactions container
-  const reactionsDiv = document.createElement("div");
-  reactionsDiv.className = "reactions";
-  if (msg.reactions) {
-    for (const emoji in msg.reactions) {
-      const btn = document.createElement("button");
-      btn.className = "reaction";
-      btn.textContent = `${emoji} ${msg.reactions[emoji].length}`;
-      btn.title = "Clique para reagir";
-      btn.onclick = () => toggleReaction(msg.id, emoji);
-      reactionsDiv.appendChild(btn);
-    }
-  }
-  div.appendChild(reactionsDiv);
-
-  // Buttons for own message
-  if (msg.usuarioId === currentUser.uid) {
-    const btnEdit = document.createElement("button");
-    btnEdit.textContent = "✏️";
-    btnEdit.title = "Editar mensagem";
-    btnEdit.style.marginLeft = "10px";
-    btnEdit.onclick = () => editMessage(msg.id, msg.texto);
-    div.appendChild(btnEdit);
-
-    const btnDel = document.createElement("button");
-    btnDel.textContent = "🗑️";
-    btnDel.title = "Apagar mensagem";
-    btnDel.style.marginLeft = "6px";
-    btnDel.onclick = () => deleteMessage(msg.id);
-    div.appendChild(btnDel);
-  }
-
-  // Click on text starts reply
-  textDiv.onclick = () => startReply(msg.id, msg.texto);
-
-  return div;
-}
-
-// Escape HTML
-function escapeHtml(text) {
-  return text.replace(/[&<>"']/g, m => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[m]);
-}
-
-// Highlight mentions
-function highlightMentions(text) {
-  return text.replace(/@(\w+)/g, `<span class="mention">@$1</span>`);
-}
-
-// Start reply mode
-function startReply(id, texto) {
-  replyTo = id;
-  replyText = texto.length > 40 ? texto.slice(0, 40) + "..." : texto;
-  messageInput.placeholder = `Respondendo: "${replyText}" (Esc para cancelar)`;
-  messageInput.focus();
-}
-
-// Clear reply input
-function clearReply() {
-  replyTo = null;
-  replyText = null;
-  messageInput.placeholder = "Digite sua mensagem...";
-}
-
-// Send message with optional image
-async function sendMessage() {
-  if (sendButton.disabled) return;
-  const texto = messageInput.value.trim();
-  if (!texto && !uploadImageFile) return;
-  sendButton.disabled = true;
-
-  let imageURL = null;
-  if (uploadImageFile) {
-    try {
-      const storageRef = ref(storage, `imagens/${currentUser.uid}_${Date.now()}_${uploadImageFile.name}`);
-      const snapshot = await uploadBytes(storageRef, uploadImageFile);
-      imageURL = await getDownloadURL(snapshot.ref);
-    } catch (err) {
-      alert("Erro ao enviar imagem");
-    }
-  }
-
-  const msgData = {
-    texto,
-    usuarioId: currentUser.uid,
-    usuarioNome: currentUser.displayName || currentUser.email.split("@")[0],
-    timestamp: serverTimestamp(),
-    imageURL: imageURL || null,
-    reactions: {}
-  };
-
-  if (replyTo && replyText) {
-    msgData.respostaId = replyTo;
-    msgData.respostaTexto = replyText;
-  }
-
-  try {
-    await addDoc(collection(db, "canais", currentChannel.id, "mensagens"), msgData);
-    messageInput.value = "";
-    resetImagePreview();
-    updateSendButton();
-    clearReply();
-  } catch (err) {
-    alert("Erro ao enviar mensagem");
-    console.error(err);
-  }
-
-  sendButton.disabled = false;
-}
-
-// Edit message
-async function editMessage(msgId, oldText) {
-  const newText = prompt("Editar mensagem:", oldText);
-  if (!newText || newText.trim() === oldText) return;
-  const msgRef = doc(db, "canais", currentChannel.id, "mensagens", msgId);
-  await updateDoc(msgRef, { texto: newText.trim() });
-}
-
-// Delete message
-async function deleteMessage(msgId) {
-  if (!confirm("Tem certeza que quer apagar essa mensagem?")) return;
-  const msgRef = doc(db, "canais", currentChannel.id, "mensagens", msgId);
-  await deleteDoc(msgRef);
-}
-
-// Toggle reaction
-async function toggleReaction(msgId, emoji) {
-  const msgRef = doc(db, "canais", currentChannel.id, "mensagens", msgId);
-  const docSnap = await getDoc(msgRef);
-  if (!docSnap.exists()) return;
-
-  let data = docSnap.data();
-  let reactions = data.reactions || {};
-  if (!reactions[emoji]) reactions[emoji] = [];
-
-  const idx = reactions[emoji].indexOf(currentUser.uid);
-  if (idx === -1) {
-    reactions[emoji].push(currentUser.uid);
-  } else {
-    reactions[emoji].splice(idx, 1);
-    if (reactions[emoji].length === 0) delete reactions[emoji];
-  }
-
-  await updateDoc(msgRef, { reactions });
-}
-
-// Disable/enable input
-function disableInput(disabled) {
-  messageInput.disabled = disabled;
-  sendButton.disabled = disabled || messageInput.value.trim().length === 0;
-}
-
-// Load users online/offline
-function loadUsersOnlineRealtime() {
-  const usuariosRef = collection(db, "usuarios");
-  unsubscribeUsers = onSnapshot(usuariosRef, snapshot => {
-    usersOnlineDiv.innerHTML = "";
-    snapshot.forEach(docSnap => {
-      const u = docSnap.data();
-      const div = document.createElement("div");
-      div.className = "user";
-      const dot = document.createElement("span");
-      dot.classList.add("status-dot", u.online ? "status-online" : "status-offline");
-      div.appendChild(dot);
-
-      const span = document.createElement("span");
-      span.textContent = u.nome || u.email.split("@")[0];
-      div.appendChild(span);
-      usersOnlineDiv.appendChild(div);
-    });
-  });
-}
-
-// Open edit profile modal and set inputs
-async function openEditProfileModal() {
-  const userDoc = doc(db, "usuarios", currentUser.uid);
-  const userSnap = await getDoc(userDoc);
-  let userData = {};
-  if (userSnap.exists()) userData = userSnap.data();
-
-  profileNameInput.value = currentUser.displayName || userData.nome || "";
-  profileNoteInput.value = userData.nota || "";
-  editProfileModal.style.display = "flex";
-}
-
-// Cancel reply with Esc key
-messageInput.addEventListener('keydown', e => {
-  if (e.key === "Escape" && replyTo) {
-    clearReply();
-  }
+input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") enviar();
 });
 
+const q = query(
+    collection(db, "mensagens"),
+    orderBy("data", "asc")
+);
+
+onSnapshot(q, (snap) => {
+    mensagens.innerHTML = "";
+
+    snap.forEach((docSnap) => {
+        const m = docSnap.data();
+
+        const div = document.createElement("div");
+
+        div.className = "msg " + (m.nome === nome ? "eu" : "outro");
+
+        div.innerHTML = `
+            <b>${m.nome}</b>
+            <div>${m.texto}</div>
+        `;
+
+        mensagens.appendChild(div);
+    });
+
+    mensagens.scrollTop = mensagens.scrollHeight;
+});
 </script>
-
-<footer>
-  <small>© 2024 Zap/Discord 3.0 — Chat completo no Firebase com interface própria</small>
-</footer>
 
 </body>
 </html>
