@@ -64,12 +64,33 @@ body {
     background: var(--accent);
 }
 
+.plus-btn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 18px;
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
+    transition: 0.25s ease;
+}
+
+.plus-btn:hover {
+    transform: scale(1.08) rotate(90deg);
+    border-radius: 14px;
+    box-shadow: 0 0 25px rgba(34, 197, 94, 0.8);
+}
+
+.plus-btn i {
+    font-size: 18px;
+}
+
 .sidebar {
+    background: rgba(15,23,42,0.85);
     width: 240px;
-    background: var(--sidebar);
     display: flex;
     flex-direction: column;
     border-right: 1px solid #1e293b;
+    border-top-right-radius: 18px;
+border-bottom-right-radius: 18px;
+
+backdrop-filter: blur(10px);
 }
 
 .side-header {
@@ -95,6 +116,13 @@ body {
     cursor: pointer;
     margin-bottom: 6px;
     background: rgba(255,255,255,0.03);
+    transition: 0.15s;
+}
+
+.group-item:hover {
+    background: rgba(255,255,255,0.08);
+
+    transform: translateX(4px);
 }
 
 .main {
@@ -111,6 +139,8 @@ body {
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid #0f172a;
+    backdrop-filter: blur(12px);
+    background: rgba(15,23,42,0.7);
 }
 
 #mensagens {
@@ -120,12 +150,16 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    scroll-behavior: smooth;
 }
 
 .msg {
     padding: 12px;
     border-radius: 14px;
     max-width: 85%;
+    animation: msgSpawn 0.18s ease;
+    transition: 0.15s;
+    word-break: break-word;
 }
 
 .msg.eu {
@@ -138,8 +172,65 @@ body {
     background: var(--card);
 }
 
+.msg:hover {
+    transform: scale(1.01);
+}
+
 .bottom {
     padding: 15px;
+    background: #1e293b;
+    border-top: 1px solid #334155;
+}
+
+.user-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 14px;
+
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-weight: bold;
+    font-size: 18px;
+
+    color: white;
+
+    box-shadow:
+        0 0 15px rgba(34, 197, 94, 0.4),
+        inset 0 0 10px rgba(255,255,255,0.1);
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-info span {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+}
+
+.user-info small {
+    color: #94a3b8;
+    font-size: 11px;
 }
 
 .input-wrapper {
@@ -147,10 +238,24 @@ body {
     border-radius: 14px;
     display: flex;
     align-items: center;
+    padding-right: 10px;
+
+    box-shadow:
+        inset 0 2px 4px rgba(0,0,0,0.2),
+        0 0 10px rgba(0,0,0,0.15);
+}
+
+.input-wrapper:focus-within {
+
+    border: 1px solid rgba(34,197,94,0.4);
+
+    box-shadow:
+        0 0 0 3px rgba(34,197,94,0.12);
 }
 
 #msgInput {
     flex: 1;
+    min-width: 0;
     background: none;
     border: none;
     padding: 14px;
@@ -158,7 +263,12 @@ body {
     outline: none;
 }
 
+#msgInput::placeholder {
+    color: #94a3b8;
+}
+
 .btn-send {
+    transition: 0.15s;
     width: 42px;
     height: 42px;
     border-radius: 12px;
@@ -167,16 +277,341 @@ body {
     color: white;
     cursor: pointer;
     margin-right: 8px;
+    flex-shrink: 0;
 }
+
+.btn-send:hover {
+    transform: scale(1.05);
+}
+
+/* MODAL CRIAR GRUPO */
+
+.modal-criar {
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0,0,0,0.55);
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 999;
+
+    backdrop-filter: blur(6px);
+}
+
+.modal-criar.active {
+    display: flex;
+}
+
+.modal-box {
+    overscroll-behavior: contain;
+    max-height: 90vh;
+    overflow-y: auto;
+    width: 90%;
+    max-width: 420px;
+
+    background: #0f172a;
+
+    border: 1px solid rgba(255,255,255,0.05);
+
+    border-radius: 28px;
+
+    padding: 24px;
+
+    animation: modalSpawn 0.18s ease;
+
+    box-shadow:
+        0 0 40px rgba(0,0,0,0.5),
+        0 0 20px rgba(34,197,94,0.12);
+}
+
+@keyframes modalSpawn {
+
+    from {
+        opacity: 0;
+        transform: scale(0.88);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-box h2 {
+    margin-bottom: 18px;
+
+    font-size: 24px;
+
+    color: white;
+}
+
+.modal-box input,
+.modal-box textarea {
+    width: 100%;
+
+    background: #1e293b;
+
+    border: none;
+
+    outline: none;
+
+    color: white;
+
+    padding: 14px;
+
+    border-radius: 18px;
+
+    margin-bottom: 14px;
+
+    resize: none;
+}
+
+.modal-box textarea {
+    min-height: 100px;
+}
+
+.privado-area {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 18px;
+
+    color: white;
+}
+
+.switch {
+    position: relative;
+
+    width: 52px;
+    height: 28px;
+}
+
+.switch input {
+    display: none;
+}
+
+.slider {
+    position: absolute;
+    inset: 0;
+
+    background: #334155;
+
+    border-radius: 999px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.slider::before {
+    content: "";
+
+    position: absolute;
+
+    width: 22px;
+    height: 22px;
+
+    left: 3px;
+    top: 3px;
+
+    background: white;
+
+    border-radius: 50%;
+
+    transition: 0.2s;
+}
+
+.switch input:checked + .slider {
+    background: #22c55e;
+}
+
+.switch input:checked + .slider::before {
+    transform: translateX(24px);
+}
+
+.lista-usuarios {
+    display: none;
+
+    background: #1e293b;
+
+    border-radius: 18px;
+
+    padding: 10px;
+
+    max-height: 160px;
+
+    overflow-y: auto;
+
+    margin-bottom: 16px;
+}
+
+.lista-usuarios.active {
+    display: block;
+}
+
+.user-select {
+    padding: 10px;
+
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition: 0.15s;
+
+    color: white;
+}
+
+.user-select:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-buttons button {
+    flex: 1;
+
+    border: none;
+
+    padding: 14px;
+
+    border-radius: 18px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: 0.15s;
+}
+
+#btnCancelarGrupo {
+    background: #334155;
+    color: white;
+}
+
+#btnCriarGrupoFinal {
+    background: #22c55e;
+    color: white;
+}
+
+#btnCriarGrupoFinal:hover {
+    transform: scale(1.03);
+}
+
+#btnCancelarGrupo:hover,
+#btnCriarGrupoFinal:hover {
+
+    filter: brightness(1.08);
+
+    transform: translateY(-1px);
+}
+
+@keyframes msgSpawn {
+
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+    .sidebar {
+        width: 200px;
+    }
+
+    .comunidades {
+        width: 62px;
+    }
+
+    .msg {
+        word-break: break-word;
+        max-width: 95%;
+    }
+
+    .avatar {
+        width: 38px;
+        height: 38px;
+    }
+
+    .modal-box {
+        overscroll-behavior: contain;
+        width: 95%;
+        padding: 20px;
+        border-radius: 24px;
+    }
+
+    .modal-box h2 {
+        font-size: 20px;
+    }
+
+    .modal-buttons {
+        flex-direction: column;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 999px;
+}
+
+.status-dot {
+
+    width: 10px;
+    height: 10px;
+
+    background: #22c55e;
+
+    border-radius: 50%;
+
+    box-shadow:
+        0 0 10px #22c55e;
+    flex-shrink: 0;
+    margin-left: -4px;
+}
+
+.group-item.active {
+
+    background: rgba(34,197,94,0.18);
+
+    border: 1px solid rgba(34,197,94,0.25);
+
+    box-shadow:
+        0 0 12px rgba(34,197,94,0.15);
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="comunidades">
+
     <button class="com-icon active">
         <i class="fas fa-home"></i>
     </button>
+
+    <button class="com-icon plus-btn" id="btn-add">
+        <i class="fas fa-plus"></i>
+    </button>
+
 </div>
 
 <div class="sidebar">
@@ -190,20 +625,100 @@ body {
 <div class="main">
 
     <div class="topbar">
-        <div># global</div>
+        <div id="canalNomeTopo"># canal</div>
     </div>
 
     <div id="mensagens"></div>
 
-    <div class="bottom">
-        <div class="input-wrapper">
-            <input id="msgInput" placeholder="Sua mensagem..." autocomplete="off">
+<div class="bottom">
 
-            <button class="btn-send" id="btnEnviar">
-                <i class="fas fa-paper-plane"></i>
-            </button>
+    <div class="user-bar">
+
+        <div class="user-profile">
+
+            <div class="avatar">
+                M
+            </div>
+
+            <div class="status-dot"></div>
+
+            <div class="user-info">
+                <span id="userNameBottom">MVOIDv</span>
+                <small>Online</small>
+            </div>
+
         </div>
+
     </div>
+
+    <div class="input-wrapper">
+
+        <input
+            id="msgInput"
+            placeholder="Sua mensagem..."
+            autocomplete="off"
+        >
+
+        <button class="btn-send" id="btnEnviar">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+
+    </div>
+
+</div>
+
+<!-- MODAL CRIAR GRUPO -->
+
+<div class="modal-criar" id="modalCriarGrupo">
+
+    <div class="modal-box">
+
+        <h2>Criar Grupo</h2>
+
+        <input
+            type="text"
+            id="grupoNome"
+            placeholder="Nome do grupo"
+        >
+
+        <textarea
+            id="grupoDescricao"
+            placeholder="Informe sua descrição aqui (opcional)"
+        ></textarea>
+
+        <div class="privado-area">
+
+            <span>Privado</span>
+
+            <label class="switch">
+
+                <input type="checkbox" id="grupoPrivado">
+
+                <span class="slider"></span>
+
+            </label>
+
+        </div>
+
+        <div id="listaUsuarios" class="lista-usuarios">
+
+        </div>
+
+        <div class="modal-buttons">
+
+            <button id="btnCancelarGrupo">
+                Cancelar
+            </button>
+
+            <button id="btnCriarGrupoFinal">
+                Criar
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 
 </div>
 
@@ -235,55 +750,252 @@ const db = getFirestore(app);
 const mensagens = document.getElementById("mensagens");
 const input = document.getElementById("msgInput");
 
-let nome = localStorage.getItem("nome") || prompt("Seu Nome:");
+let nome = localStorage.getItem("nome");
+
+if (!nome) {
+    nome = prompt("Seu Nome:");
+
+    if (!nome || nome.trim() === "") {
+        nome = "User";
+    }
+
+    localStorage.setItem("nome", nome);
+}
+
+window.addEventListener("load", () => {
+
+    const userNameBottom = document.getElementById("userNameBottom");
+
+    if(userNameBottom) {
+        userNameBottom.innerText = nome;
+    }
+
+    const avatar = document.querySelector(".avatar");
+
+    if(avatar && nome) {
+        avatar.innerText = nome.charAt(0).toUpperCase();
+    }
+
+});
 
 localStorage.setItem("nome", nome);
 
+let canalAtual = null;
+
 async function enviar() {
+
+    if (!canalAtual) return;
+
     let texto = input.value.trim();
 
     if (!texto) return;
 
-    await addDoc(collection(db, "mensagens"), {
-        nome,
-        texto,
-        data: serverTimestamp()
-    });
+    await addDoc(
+        collection(db, "canais", canalAtual, "mensagens"),
+        {
+            nome,
+            texto,
+            data: serverTimestamp()
+        }
+    );
 
     input.value = "";
 }
 
+let unsubscribeMensagens = null;
+
+function carregarMensagens() {
+
+    if (unsubscribeMensagens) {
+        unsubscribeMensagens();
+    }
+
+    const q = query(
+        collection(db, "canais", canalAtual, "mensagens"),
+        orderBy("data", "asc")
+    );
+
+    unsubscribeMensagens = onSnapshot(q, (snap) => {
+
+        mensagens.innerHTML = "";
+
+        snap.forEach((docSnap) => {
+
+            const m = docSnap.data();
+
+            const div = document.createElement("div");
+
+            div.className =
+                "msg " + (m.nome === nome ? "eu" : "outro");
+
+            div.innerHTML = `
+                <b>${m.nome}</b>
+                <div>${m.texto}</div>
+            `;
+
+            mensagens.appendChild(div);
+
+        });
+
+        mensagens.scrollTop = mensagens.scrollHeight;
+
+    });
+
+}
+
+const listaGrupos =
+    document.getElementById("listaGrupos");
+
+onSnapshot(collection(db, "canais"), (snap) => {
+
+    listaGrupos.innerHTML = "";
+
+    snap.forEach((docSnap) => {
+
+        const canal = docSnap.data();
+
+const div = document.createElement("div");
+
+div.className = "group-item";
+
+div.innerHTML = `
+    <i class="fas fa-hashtag"></i>
+    ${canal.nome}
+`;
+
+if (!canalAtual) {
+
+    canalAtual = docSnap.id;
+
+    div.classList.add("active");
+
+    carregarMensagens();
+
+}
+
+div.onclick = () => {
+
+    document
+        .querySelectorAll(".group-item")
+        .forEach(el => el.classList.remove("active"));
+
+    div.classList.add("active");
+
+    canalAtual = docSnap.id;
+
+    document.getElementById("canalNomeTopo").innerText =
+        "# " + canal.nome;
+
+    carregarMensagens();
+
+};
+
+listaGrupos.appendChild(div);
+
+    });
+
+});
+
+const modalCriarGrupo =
+    document.getElementById("modalCriarGrupo");
+
+const btnAdd =
+    document.getElementById("btn-add");
+
+const fecharGrupo =
+    document.getElementById("btnCancelarGrupo");
+
+const privadoToggle =
+    document.getElementById("grupoPrivado");
+
+const listaUsuarios =
+    document.getElementById("listaUsuarios");
+
+btnAdd.onclick = () => {
+
+    modalCriarGrupo.classList.add("active");
+
+};
+
+fecharGrupo.onclick = () => {
+
+    modalCriarGrupo.classList.remove("active");
+
+};
+
+modalCriarGrupo.onclick = (e) => {
+
+    if(e.target === modalCriarGrupo) {
+
+        modalCriarGrupo.classList.remove("active");
+
+    }
+
+};
+
+privadoToggle.onchange = () => {
+
+    if(privadoToggle.checked) {
+
+        listaUsuarios.classList.add("active");
+
+    } else {
+
+        listaUsuarios.classList.remove("active");
+
+    }
+
+};
+
+document.getElementById("btnCriarGrupoFinal").onclick = async () => {
+
+    const nomeGrupo =
+        document.getElementById("grupoNome")
+        .value
+        .trim();
+
+    const descricao =
+        document.getElementById("grupoDescricao")
+        .value
+        .trim();
+
+    const privado =
+        document.getElementById("grupoPrivado")
+        .checked;
+
+    if(!nomeGrupo) return;
+
+    await addDoc(collection(db, "canais"), {
+
+        nome: nomeGrupo,
+        descricao: descricao,
+        privado: privado,
+        criadoPor: nome,
+        data: serverTimestamp()
+
+    });
+
+    modalCriarGrupo.classList.remove("active");
+
+    document.getElementById("grupoNome").value = "";
+    document.getElementById("grupoDescricao").value = "";
+
+};
+
 document.getElementById("btnEnviar").onclick = enviar;
 
 input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") enviar();
+
+    if (e.key === "Enter" && !e.shiftKey) {
+
+        e.preventDefault();
+
+        enviar();
+
+    }
+
 });
 
-const q = query(
-    collection(db, "mensagens"),
-    orderBy("data", "asc")
-);
-
-onSnapshot(q, (snap) => {
-    mensagens.innerHTML = "";
-
-    snap.forEach((docSnap) => {
-        const m = docSnap.data();
-
-        const div = document.createElement("div");
-
-        div.className = "msg " + (m.nome === nome ? "eu" : "outro");
-
-        div.innerHTML = `
-            <b>${m.nome}</b>
-            <div>${m.texto}</div>
-        `;
-
-        mensagens.appendChild(div);
-    });
-
-    mensagens.scrollTop = mensagens.scrollHeight;
-});
 </script>
 
 </body>
