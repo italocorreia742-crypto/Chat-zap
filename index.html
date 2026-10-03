@@ -34,7 +34,7 @@ body {
     overflow: hidden;
 }
 
-/* ===== TELA DE LOGIN ===== */
+/* LOGIN */
 #telaLogin {
     position: fixed;
     inset: 0;
@@ -54,18 +54,8 @@ body {
     border: 1px solid #1f2937;
 }
 
-.login-box h1 {
-    font-size: 24px;
-    margin-bottom: 6px;
-    text-align: center;
-}
-
-.login-box p {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 13px;
-    margin-bottom: 22px;
-}
+.login-box h1 { font-size: 24px; margin-bottom: 6px; text-align: center; }
+.login-box p { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 22px; }
 
 .login-box input {
     width: 100%;
@@ -79,7 +69,6 @@ body {
     outline: none;
     font-family: inherit;
 }
-
 .login-box input:focus { border-color: var(--accent); }
 
 .login-box button {
@@ -94,31 +83,15 @@ body {
     cursor: pointer;
     margin-top: 6px;
 }
-
 .login-box button:hover { background: var(--accent-hover); }
 
-.login-toggle {
-    text-align: center;
-    margin-top: 16px;
-    font-size: 13px;
-    color: var(--text-muted);
-    cursor: pointer;
-}
-
+.login-toggle { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
 .login-toggle span { color: var(--accent); }
+.erro-login { color: #f87171; font-size: 13px; text-align: center; margin-bottom: 10px; display: none; }
 
-.erro-login {
-    color: #f87171;
-    font-size: 13px;
-    text-align: center;
-    margin-bottom: 10px;
-    display: none;
-}
-
-/* ===== APP ===== */
+/* APP */
 #app { display: none; width: 100%; height: 100%; }
 
-/* ===== COMUNIDADES ===== */
 .comunidades {
     width: 68px;
     background: #020617;
@@ -144,18 +117,9 @@ body {
     transition: all 0.2s;
     font-size: 17px;
 }
+.com-icon:hover, .com-icon.active { background: var(--accent); border-radius: 12px; }
+.plus-btn { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 0 12px rgba(34,197,94,0.35); }
 
-.com-icon:hover, .com-icon.active {
-    background: var(--accent);
-    border-radius: 12px;
-}
-
-.plus-btn {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    box-shadow: 0 0 12px rgba(34,197,94,0.35);
-}
-
-/* ===== SIDEBAR ===== */
 .sidebar {
     width: 260px;
     background: var(--sidebar);
@@ -192,31 +156,11 @@ body {
     transition: 0.15s;
     user-select: none;
 }
+.group-item:hover, .user-item:hover, .admin-item:hover { background: rgba(255,255,255,0.05); color: white; }
+.group-item.active { background: rgba(34,197,94,0.13); color: var(--accent); font-weight: 500; }
+.group-item .criador { font-size: 11px; opacity: 0.55; margin-left: auto; }
 
-.group-item:hover, .user-item:hover, .admin-item:hover {
-    background: rgba(255,255,255,0.05);
-    color: white;
-}
-
-.group-item.active {
-    background: rgba(34,197,94,0.13);
-    color: var(--accent);
-    font-weight: 500;
-}
-
-.group-item .criador {
-    font-size: 11px;
-    opacity: 0.55;
-    margin-left: auto;
-}
-
-/* ===== MAIN ===== */
-.main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
 .topbar {
     height: 54px;
@@ -227,7 +171,6 @@ body {
     border-bottom: 1px solid var(--border);
     background: rgba(11,15,25,0.9);
 }
-
 #canalNomeTopo { font-weight: 600; font-size: 15px; }
 #canalInfo { font-size: 12px; color: var(--text-muted); }
 
@@ -239,14 +182,7 @@ body {
     flex-direction: column;
     gap: 10px;
 }
-
-.empty-state {
-    margin: auto;
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 14px;
-    line-height: 1.5;
-}
+.empty-state { margin: auto; text-align: center; color: var(--text-muted); font-size: 14px; line-height: 1.5; }
 
 .msg {
     max-width: 72%;
@@ -258,284 +194,121 @@ body {
     position: relative;
     animation: fadeIn 0.15s ease;
 }
-
-.msg.eu {
-    align-self: flex-end;
-    background: var(--msg-me);
-    border-bottom-right-radius: 4px;
-}
-
-.msg.outro {
-    align-self: flex-start;
-    background: var(--msg-other);
-    border-bottom-left-radius: 4px;
-}
-
+.msg.eu { align-self: flex-end; background: var(--msg-me); border-bottom-right-radius: 4px; }
+.msg.outro { align-self: flex-start; background: var(--msg-other); border-bottom-left-radius: 4px; }
 .msg b { font-size: 12.5px; display: block; margin-bottom: 2px; opacity: 0.85; }
 .msg .time { font-size: 11px; opacity: 0.5; margin-top: 3px; text-align: right; }
-.msg .reacoes {
-    display: flex;
-    gap: 4px;
-    margin-top: 4px;
-    flex-wrap: wrap;
-}
-.msg .reacao {
-    background: rgba(0,0,0,0.25);
-    padding: 2px 6px;
-    border-radius: 10px;
-    font-size: 12px;
-}
+.msg .reacoes { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.msg .reacao { background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 10px; font-size: 12px; }
 
-/* ===== BOTTOM ===== */
 .bottom {
     padding: 10px 14px 14px;
     border-top: 1px solid var(--border);
     background: var(--sidebar);
 }
-
-.user-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    cursor: pointer;
-}
-
+.user-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.user-profile { display: flex; align-items: center; gap: 9px; cursor: pointer; }
 .avatar {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
+    width: 34px; height: 34px; border-radius: 9px;
     background: linear-gradient(135deg, #22c55e, #16a34a);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 14px;
 }
-
 .user-info span { font-size: 13px; font-weight: 500; }
 .user-info small { font-size: 11px; color: var(--text-muted); }
 
 .input-wrapper {
-    display: flex;
-    align-items: center;
-    background: #1e293b;
-    border-radius: 11px;
-    padding: 3px 5px 3px 3px;
-    border: 1px solid transparent;
+    display: flex; align-items: center;
+    background: #1e293b; border-radius: 11px;
+    padding: 3px 5px 3px 3px; border: 1px solid transparent;
 }
-
 .input-wrapper:focus-within { border-color: rgba(34,197,94,0.4); }
-
 #msgInput {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: white;
-    padding: 10px 11px;
-    font-size: 14.5px;
-    font-family: inherit;
+    flex: 1; background: transparent; border: none; outline: none;
+    color: white; padding: 10px 11px; font-size: 14.5px; font-family: inherit;
 }
-
 #msgInput::placeholder { color: #64748b; }
-
 .btn-send {
-    width: 36px;
-    height: 36px;
-    border-radius: 9px;
-    border: none;
-    background: var(--accent);
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.15s;
+    width: 36px; height: 36px; border-radius: 9px; border: none;
+    background: var(--accent); color: white; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; transition: 0.15s;
 }
-
 .btn-send:hover { background: var(--accent-hover); transform: scale(1.05); }
 
-/* ===== MODAIS ===== */
+/* MODAIS */
 .modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.65);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    backdrop-filter: blur(5px);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    display: none; align-items: center; justify-content: center;
+    z-index: 200; backdrop-filter: blur(5px);
 }
-
 .modal.active { display: flex; }
-
 .modal-box {
-    width: 92%;
-    max-width: 420px;
-    max-height: 88vh;
-    overflow-y: auto;
-    background: #111827;
-    border-radius: 18px;
-    padding: 22px;
-    border: 1px solid #1f2937;
-    animation: modalIn 0.2s ease;
+    width: 92%; max-width: 420px; max-height: 88vh; overflow-y: auto;
+    background: #111827; border-radius: 18px; padding: 22px;
+    border: 1px solid #1f2937; animation: modalIn 0.2s ease;
 }
-
 .modal-box h2 { font-size: 18px; margin-bottom: 16px; font-weight: 600; }
-
 .modal-box input, .modal-box textarea, .modal-box select {
-    width: 100%;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 11px;
-    padding: 11px 13px;
-    color: white;
-    font-size: 14px;
-    font-family: inherit;
-    margin-bottom: 11px;
-    outline: none;
-    resize: none;
+    width: 100%; background: #1e293b; border: 1px solid #334155;
+    border-radius: 11px; padding: 11px 13px; color: white;
+    font-size: 14px; font-family: inherit; margin-bottom: 11px; outline: none; resize: none;
 }
-
 .modal-box input:focus, .modal-box textarea:focus { border-color: var(--accent); }
 .modal-box textarea { min-height: 80px; }
 
-.privado-area {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 12px 0 18px;
-    font-size: 14px;
-}
-
+.privado-area { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 18px; font-size: 14px; }
 .switch { position: relative; width: 44px; height: 24px; }
 .switch input { display: none; }
-.slider {
-    position: absolute; inset: 0;
-    background: #334155;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.slider::before {
-    content: "";
-    position: absolute;
-    width: 18px; height: 18px;
-    left: 3px; top: 3px;
-    background: white;
-    border-radius: 50%;
-    transition: 0.2s;
-}
+.slider { position: absolute; inset: 0; background: #334155; border-radius: 999px; cursor: pointer; transition: 0.2s; }
+.slider::before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s; }
 .switch input:checked + .slider { background: var(--accent); }
 .switch input:checked + .slider::before { transform: translateX(20px); }
 
 .modal-buttons { display: flex; gap: 9px; margin-top: 8px; }
 .modal-buttons button {
-    flex: 1;
-    padding: 11px;
-    border-radius: 11px;
-    border: none;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
+    flex: 1; padding: 11px; border-radius: 11px; border: none;
+    font-weight: 600; font-size: 14px; cursor: pointer;
 }
-
 .btn-cancel { background: #1e293b; color: white; }
 .btn-confirm { background: var(--accent); color: white; }
 .btn-confirm:hover { background: var(--accent-hover); }
 .btn-danger { background: var(--danger); color: white; }
 
-.membro-item, .perm-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 10px;
-    border-radius: 9px;
-    background: #1e293b;
-    margin-bottom: 6px;
-    font-size: 13.5px;
+.membro-item, .perm-item, .cargo-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; border-radius: 9px; background: #1e293b;
+    margin-bottom: 6px; font-size: 13.5px;
+}
+.membro-item button, .perm-item button, .cargo-item button {
+    background: none; border: none; color: #f87171; cursor: pointer; font-size: 13px;
 }
 
-.membro-item button, .perm-item button {
-    background: none;
-    border: none;
-    color: #f87171;
-    cursor: pointer;
-    font-size: 13px;
-}
-
-.perm-check {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 8px 0;
-    font-size: 13.5px;
-}
-
+.perm-check { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 13.5px; }
 .perm-check input { width: 16px; height: 16px; }
+
+.cor-preview {
+    width: 22px; height: 22px; border-radius: 6px; border: 1px solid #334155;
+}
 
 /* context menu */
 .ctx-menu {
-    position: fixed;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 6px;
-    z-index: 300;
-    min-width: 160px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    display: none;
+    position: fixed; background: #1e293b; border: 1px solid #334155;
+    border-radius: 12px; padding: 6px; z-index: 300; min-width: 160px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: none;
 }
-
 .ctx-menu.active { display: block; }
-
 .ctx-item {
-    padding: 9px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13.5px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    padding: 9px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 13.5px; display: flex; align-items: center; gap: 8px;
 }
-
 .ctx-item:hover { background: rgba(255,255,255,0.07); }
 .ctx-item.danger { color: #f87171; }
-
-.emoji-row {
-    display: flex;
-    gap: 4px;
-    padding: 6px 8px;
-    border-bottom: 1px solid #334155;
-    margin-bottom: 4px;
-}
-
-.emoji-btn {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
-}
-
+.emoji-row { display: flex; gap: 4px; padding: 6px 8px; border-bottom: 1px solid #334155; margin-bottom: 4px; }
+.emoji-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px; border-radius: 6px; }
 .emoji-btn:hover { background: rgba(255,255,255,0.1); }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-@keyframes modalIn {
-    from { opacity: 0; transform: scale(0.96); }
-    to { opacity: 1; transform: scale(1); }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
 
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
@@ -549,45 +322,29 @@ body {
 </head>
 <body>
 
-<!-- ===== TELA DE LOGIN ===== -->
+<!-- LOGIN -->
 <div id="telaLogin">
     <div class="login-box">
         <h1>Wrocket</h1>
         <p id="loginSubtitulo">Entre na sua conta</p>
-
         <div class="erro-login" id="erroLogin"></div>
-
         <input type="text" id="loginNome" placeholder="Seu nome" maxlength="30" autocomplete="username">
         <input type="password" id="loginSenha" placeholder="Senha" maxlength="40" autocomplete="current-password">
         <input type="password" id="loginSenha2" placeholder="Confirmar senha" maxlength="40" style="display:none;" autocomplete="new-password">
-
         <button id="btnLoginAcao">Entrar</button>
-
-        <div class="login-toggle" id="toggleLogin">
-            Não tem conta? <span>Criar conta</span>
-        </div>
+        <div class="login-toggle" id="toggleLogin">Não tem conta? <span>Criar conta</span></div>
     </div>
 </div>
 
-<!-- ===== APP PRINCIPAL ===== -->
+<!-- APP -->
 <div id="app">
-    <!-- BARRA ESQUERDA -->
     <div class="comunidades">
-        <button class="com-icon active" id="btnHome" title="Canais">
-            <i class="fas fa-home"></i>
-        </button>
-        <button class="com-icon" id="btnUsers" title="Pessoas">
-            <i class="fas fa-users"></i>
-        </button>
-        <button class="com-icon" id="btnAdmin" title="ADM" style="display:none;">
-            <i class="fas fa-shield-halved"></i>
-        </button>
-        <button class="com-icon plus-btn" id="btn-add" title="Criar canal">
-            <i class="fas fa-plus"></i>
-        </button>
+        <button class="com-icon active" id="btnHome" title="Canais"><i class="fas fa-home"></i></button>
+        <button class="com-icon" id="btnUsers" title="Pessoas"><i class="fas fa-users"></i></button>
+        <button class="com-icon" id="btnAdmin" title="ADM" style="display:none;"><i class="fas fa-shield-halved"></i></button>
+        <button class="com-icon plus-btn" id="btn-add" title="Criar canal"><i class="fas fa-plus"></i></button>
     </div>
 
-    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="side-header" id="sideTitle">Canais</div>
         <div class="group-list" id="listaGrupos"></div>
@@ -595,7 +352,6 @@ body {
         <div class="admin-list" id="listaAdmin" style="display:none;"></div>
     </div>
 
-    <!-- MAIN -->
     <div class="main">
         <div class="topbar">
             <div>
@@ -603,11 +359,7 @@ body {
                 <div id="canalInfo"></div>
             </div>
         </div>
-
-        <div id="mensagens">
-            <div class="empty-state">Selecione ou crie um canal para começar</div>
-        </div>
-
+        <div id="mensagens"><div class="empty-state">Selecione ou crie um canal para começar</div></div>
         <div class="bottom">
             <div class="user-bar">
                 <div class="user-profile" id="btnLogout" title="Sair da conta">
@@ -618,7 +370,6 @@ body {
                     </div>
                 </div>
             </div>
-
             <div class="input-wrapper">
                 <input id="msgInput" placeholder="Escreva uma mensagem..." autocomplete="off">
                 <button class="btn-send" id="btnEnviar"><i class="fas fa-paper-plane"></i></button>
@@ -633,15 +384,10 @@ body {
         <h2>Novo canal</h2>
         <input type="text" id="grupoNome" placeholder="Nome do canal" maxlength="40">
         <textarea id="grupoDescricao" placeholder="Descrição (opcional)" maxlength="200"></textarea>
-
         <div class="privado-area">
             <span>Privado (só quem você convidar)</span>
-            <label class="switch">
-                <input type="checkbox" id="grupoPrivado" checked>
-                <span class="slider"></span>
-            </label>
+            <label class="switch"><input type="checkbox" id="grupoPrivado" checked><span class="slider"></span></label>
         </div>
-
         <div class="modal-buttons">
             <button class="btn-cancel" id="btnCancelarCriar">Cancelar</button>
             <button class="btn-confirm" id="btnCriarFinal">Criar</button>
@@ -655,18 +401,35 @@ body {
         <h2>Editar canal</h2>
         <input type="text" id="editNome" placeholder="Nome">
         <textarea id="editDesc" placeholder="Descrição"></textarea>
-
         <div style="margin: 14px 0 8px; font-size: 13px; color: var(--text-muted);">Membros</div>
         <div id="listaMembros"></div>
-
         <div style="margin-top: 14px; font-size: 13px; color: var(--text-muted);">Adicionar pessoa</div>
-        <select id="selectAddMembro">
-            <option value="">Escolher usuário...</option>
-        </select>
-
+        <select id="selectAddMembro"><option value="">Escolher usuário...</option></select>
         <div class="modal-buttons" style="margin-top:16px;">
             <button class="btn-cancel" id="btnCancelarEdit">Fechar</button>
             <button class="btn-confirm" id="btnSalvarEdit">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CRIAR CARGO -->
+<div class="modal" id="modalCargo">
+    <div class="modal-box">
+        <h2>Criar Cargo</h2>
+        <input type="text" id="cargoNome" placeholder="Nome do cargo" maxlength="30">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <label style="font-size:14px;">Cor:</label>
+            <input type="color" id="cargoCor" value="#22c55e" style="width:50px; height:34px; border:none; background:none; cursor:pointer;">
+            <div class="cor-preview" id="corPreview" style="background:#22c55e;"></div>
+        </div>
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Permissões</div>
+        <div class="perm-check"><input type="checkbox" id="c_kick"><label for="c_kick">Kick</label></div>
+        <div class="perm-check"><input type="checkbox" id="c_ban"><label for="c_ban">Ban</label></div>
+        <div class="perm-check"><input type="checkbox" id="c_gerenciar"><label for="c_gerenciar">Gerenciar grupos</label></div>
+        <div class="perm-check"><input type="checkbox" id="c_criar_cargos"><label for="c_criar_cargos">Criar cargos</label></div>
+        <div class="modal-buttons" style="margin-top:16px;">
+            <button class="btn-cancel" id="btnCancelarCargo">Cancelar</button>
+            <button class="btn-confirm" id="btnCriarCargo">Criar</button>
         </div>
     </div>
 </div>
@@ -675,20 +438,9 @@ body {
 <div class="modal" id="modalPerms">
     <div class="modal-box">
         <h2>Permissões de <span id="permNome"></span></h2>
-
-        <div class="perm-check">
-            <input type="checkbox" id="permApagarMsg">
-            <label for="permApagarMsg">Apagar qualquer mensagem</label>
-        </div>
-        <div class="perm-check">
-            <input type="checkbox" id="permGerenciarCanais">
-            <label for="permGerenciarCanais">Gerenciar canais</label>
-        </div>
-        <div class="perm-check">
-            <input type="checkbox" id="permConvidar">
-            <label for="permConvidar">Convidar pessoas</label>
-        </div>
-
+        <div class="perm-check"><input type="checkbox" id="permApagarMsg"><label for="permApagarMsg">Apagar qualquer mensagem</label></div>
+        <div class="perm-check"><input type="checkbox" id="permGerenciarCanais"><label for="permGerenciarCanais">Gerenciar canais</label></div>
+        <div class="perm-check"><input type="checkbox" id="permConvidar"><label for="permConvidar">Convidar pessoas</label></div>
         <div class="modal-buttons" style="margin-top:18px;">
             <button class="btn-cancel" id="btnCancelarPerm">Cancelar</button>
             <button class="btn-confirm" id="btnSalvarPerm">Salvar</button>
@@ -696,7 +448,7 @@ body {
     </div>
 </div>
 
-<!-- CONTEXT MENU MENSAGEM -->
+<!-- CONTEXT MENU -->
 <div class="ctx-menu" id="ctxMenu">
     <div class="emoji-row">
         <button class="emoji-btn" data-emoji="👍">👍</button>
@@ -712,7 +464,7 @@ body {
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
     getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
-    onSnapshot, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, getDoc
+    onSnapshot, query, where, orderBy, serverTimestamp, arrayUnion, arrayRemove, getDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -721,20 +473,21 @@ const firebaseConfig = {
     projectId: "zap-proprio-web",
     storageBucket: "zap-proprio-web.firebasestorage.app",
     messagingSenderId: "974920784341",
-    appId: "1:974920784341:web:8eb8b14928d01a9ed3855c"
+    appId: "1:974920784341:web:8eb8b14928d01a9ed3855c",
+    measurementId: "G-8D8SN57CQM"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ===== CONFIG =====
 const DONO = "MVOIDv";
 
 let nome = null;
-let usuarioAtual = null; // dados completos do usuário logado
+let usuarioAtual = null;
 let canalAtual = null;
 let canaisCache = {};
 let usuariosCache = {};
+let cargosCache = {};
 let unsubscribeMensagens = null;
 let msgCtxId = null;
 let msgCtxData = null;
@@ -742,7 +495,7 @@ let editandoCanalId = null;
 let editandoPermUser = null;
 let modoCadastro = false;
 
-// ===== ELEMENTOS =====
+// elementos
 const telaLogin = document.getElementById("telaLogin");
 const appEl = document.getElementById("app");
 const mensagensEl = document.getElementById("mensagens");
@@ -757,7 +510,7 @@ const avatarEl = document.getElementById("avatar");
 const sideTitle = document.getElementById("sideTitle");
 const btnAdmin = document.getElementById("btnAdmin");
 
-// ===== LOGIN / CADASTRO =====
+// ===== LOGIN =====
 const loginNome = document.getElementById("loginNome");
 const loginSenha = document.getElementById("loginSenha");
 const loginSenha2 = document.getElementById("loginSenha2");
@@ -770,10 +523,7 @@ function mostrarErro(msg) {
     erroLogin.textContent = msg;
     erroLogin.style.display = "block";
 }
-
-function limparErro() {
-    erroLogin.style.display = "none";
-}
+function limparErro() { erroLogin.style.display = "none"; }
 
 toggleLogin.onclick = () => {
     modoCadastro = !modoCadastro;
@@ -802,8 +552,6 @@ btnLoginAcao.onclick = async () => {
 
     if (modoCadastro) {
         if (s !== s2) return mostrarErro("As senhas não coincidem");
-
-        // verifica se nome já existe
         const ref = doc(db, "usuarios", n);
         const snap = await getDoc(ref);
         if (snap.exists()) return mostrarErro("Esse nome já está em uso");
@@ -811,7 +559,7 @@ btnLoginAcao.onclick = async () => {
         const isDono = n === DONO;
         await setDoc(ref, {
             nome: n,
-            senha: s, // para amigos é ok, mas não é o mais seguro do mundo
+            senha: s,
             role: isDono ? "admin" : "user",
             permissoes: {
                 apagarMsg: isDono,
@@ -821,17 +569,13 @@ btnLoginAcao.onclick = async () => {
             criadoEm: serverTimestamp(),
             ultimoAcesso: serverTimestamp()
         });
-
         entrar(n);
     } else {
-        // login
         const ref = doc(db, "usuarios", n);
         const snap = await getDoc(ref);
         if (!snap.exists()) return mostrarErro("Conta não encontrada");
-
         const dados = snap.data();
         if (dados.senha !== s) return mostrarErro("Senha incorreta");
-
         await updateDoc(ref, { ultimoAcesso: serverTimestamp() });
         entrar(n);
     }
@@ -845,20 +589,14 @@ function entrar(n) {
     carregarUsuario();
 }
 
-// verifica se já tem sessão
 const salvo = localStorage.getItem("wrocket_user");
 if (salvo) {
-    // valida se ainda existe
     getDoc(doc(db, "usuarios", salvo)).then(snap => {
-        if (snap.exists()) {
-            entrar(salvo);
-        } else {
-            localStorage.removeItem("wrocket_user");
-        }
+        if (snap.exists()) entrar(salvo);
+        else localStorage.removeItem("wrocket_user");
     });
 }
 
-// ===== CARREGAR USUÁRIO LOGADO =====
 async function carregarUsuario() {
     const snap = await getDoc(doc(db, "usuarios", nome));
     if (!snap.exists()) {
@@ -867,19 +605,14 @@ async function carregarUsuario() {
         return;
     }
     usuarioAtual = snap.data();
-
     userNameBottom.textContent = nome + (usuarioAtual.role === "admin" ? " ★" : usuarioAtual.role === "subadmin" ? " ◆" : "");
     avatarEl.textContent = nome.charAt(0).toUpperCase();
-
-    // mostra botão ADM se for admin ou subadmin
     if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin") {
         btnAdmin.style.display = "flex";
     }
-
     iniciarApp();
 }
 
-// logout
 document.getElementById("btnLogout").onclick = () => {
     if (confirm("Sair da conta?")) {
         localStorage.removeItem("wrocket_user");
@@ -887,7 +620,6 @@ document.getElementById("btnLogout").onclick = () => {
     }
 };
 
-// ===== PERMISSÕES HELPERS =====
 function podeApagarQualquer() {
     return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.apagarMsg;
 }
@@ -898,18 +630,11 @@ function podeConvidar() {
     return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.convidar !== false;
 }
 
-// ===== INICIAR APP =====
+// ===== APP =====
 function iniciarApp() {
-    // navegação
-    document.getElementById("btnHome").onclick = () => {
-        setAba("canais");
-    };
-    document.getElementById("btnUsers").onclick = () => {
-        setAba("users");
-    };
-    document.getElementById("btnAdmin").onclick = () => {
-        setAba("admin");
-    };
+    document.getElementById("btnHome").onclick = () => setAba("canais");
+    document.getElementById("btnUsers").onclick = () => setAba("users");
+    document.getElementById("btnAdmin").onclick = () => setAba("admin");
 
     function setAba(tipo) {
         document.querySelectorAll(".com-icon").forEach(b => b.classList.remove("active"));
@@ -933,13 +658,14 @@ function iniciarApp() {
         }
     }
 
-    // enviar mensagem
+    // ENVIAR (agora usa coleção top-level mensagens + campo grupo)
     async function enviar() {
         if (!canalAtual) return;
         const texto = input.value.trim();
         if (!texto) return;
 
-        await addDoc(collection(db, "canais", canalAtual, "mensagens"), {
+        await addDoc(collection(db, "mensagens"), {
+            grupo: canalAtual,
             nome,
             texto,
             data: serverTimestamp(),
@@ -957,11 +683,15 @@ function iniciarApp() {
         }
     });
 
-    // mensagens
+    // CARREGAR MENSAGENS (query com where grupo + orderBy data)
     function carregarMensagens() {
         if (unsubscribeMensagens) unsubscribeMensagens();
 
-        const q = query(collection(db, "canais", canalAtual, "mensagens"), orderBy("data", "asc"));
+        const q = query(
+            collection(db, "mensagens"),
+            where("grupo", "==", canalAtual),
+            orderBy("data", "asc")
+        );
 
         unsubscribeMensagens = onSnapshot(q, snap => {
             mensagensEl.innerHTML = "";
@@ -998,77 +728,62 @@ function iniciarApp() {
                 `;
 
                 let pressTimer;
-                div.addEventListener("contextmenu", e => {
-                    e.preventDefault();
-                    abrirCtx(e, docSnap.id, m);
-                });
-                div.addEventListener("touchstart", e => {
-                    pressTimer = setTimeout(() => abrirCtx(e.touches[0], docSnap.id, m), 500);
-                });
+                div.addEventListener("contextmenu", e => { e.preventDefault(); abrirCtx(e, docSnap.id, m); });
+                div.addEventListener("touchstart", e => { pressTimer = setTimeout(() => abrirCtx(e.touches[0], docSnap.id, m), 500); });
                 div.addEventListener("touchend", () => clearTimeout(pressTimer));
                 div.addEventListener("touchmove", () => clearTimeout(pressTimer));
 
                 mensagensEl.appendChild(div);
             });
-
             mensagensEl.scrollTop = mensagensEl.scrollHeight;
         });
     }
 
-    // context menu
+    // CONTEXT MENU
     const ctxMenu = document.getElementById("ctxMenu");
-
     function abrirCtx(e, id, data) {
         msgCtxId = id;
         msgCtxData = data;
-
         ctxMenu.style.left = Math.min(e.clientX || e.pageX, window.innerWidth - 180) + "px";
         ctxMenu.style.top = Math.min(e.clientY || e.pageY, window.innerHeight - 160) + "px";
         ctxMenu.classList.add("active");
-
         const podeApagar = data.nome === nome || podeApagarQualquer();
         document.getElementById("ctxApagar").style.display = podeApagar ? "flex" : "none";
     }
-
     document.addEventListener("click", () => ctxMenu.classList.remove("active"));
 
     document.querySelectorAll(".emoji-btn").forEach(btn => {
         btn.onclick = async (e) => {
             e.stopPropagation();
-            if (!msgCtxId || !canalAtual) return;
-
+            if (!msgCtxId) return;
             const emoji = btn.dataset.emoji;
-            const ref = doc(db, "canais", canalAtual, "mensagens", msgCtxId);
+            const ref = doc(db, "mensagens", msgCtxId);
             const snap = await getDoc(ref);
             const data = snap.data();
             const reacoes = data.reacoes || {};
-
             if (!reacoes[emoji]) reacoes[emoji] = [];
-            if (!reacoes[emoji].includes(nome)) {
-                reacoes[emoji].push(nome);
-            } else {
+            if (!reacoes[emoji].includes(nome)) reacoes[emoji].push(nome);
+            else {
                 reacoes[emoji] = reacoes[emoji].filter(u => u !== nome);
                 if (reacoes[emoji].length === 0) delete reacoes[emoji];
             }
-
             await updateDoc(ref, { reacoes });
             ctxMenu.classList.remove("active");
         };
     });
 
     document.getElementById("ctxApagar").onclick = async () => {
-        if (!msgCtxId || !canalAtual) return;
+        if (!msgCtxId) return;
         if (confirm("Apagar essa mensagem?")) {
-            await deleteDoc(doc(db, "canais", canalAtual, "mensagens", msgCtxId));
+            await deleteDoc(doc(db, "mensagens", msgCtxId));
         }
         ctxMenu.classList.remove("active");
     };
 
-    // ===== CANAIS =====
+    // CANAIS
     onSnapshot(collection(db, "canais"), snap => {
         canaisCache = {};
         listaGrupos.innerHTML = "";
-
         let temGeral = false;
 
         snap.forEach(docSnap => {
@@ -1096,39 +811,27 @@ function iniciarApp() {
                              canal.criadoPor === nome ||
                              (canal.membros || []).includes(nome) ||
                              isAdmin;
-
             if (!isMembro) return;
 
             const div = document.createElement("div");
             div.className = "group-item";
             if (canalAtual === canal.id) div.classList.add("active");
-
             div.innerHTML = `
                 <i class="fas fa-hashtag"></i>
                 <span>${canal.nome}</span>
                 <span class="criador">${canal.criadoPor === "Sistema" ? "" : canal.criadoPor}</span>
             `;
-
             div.onclick = () => selecionarCanal(canal);
 
-            // editar: criador ou quem tem permissão
             if (canal.criadoPor === nome || podeGerenciarCanais()) {
-                div.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    abrirEditarCanal(canal);
-                };
+                div.oncontextmenu = (e) => { e.preventDefault(); abrirEditarCanal(canal); };
                 let t;
-                div.addEventListener("touchstart", e => {
-                    t = setTimeout(() => abrirEditarCanal(canal), 600);
-                });
+                div.addEventListener("touchstart", e => { t = setTimeout(() => abrirEditarCanal(canal), 600); });
                 div.addEventListener("touchend", () => clearTimeout(t));
             }
 
             listaGrupos.appendChild(div);
-
-            if (!canalAtual && canal.nome === "Geral") {
-                selecionarCanal(canal);
-            }
+            if (!canalAtual && canal.nome === "Geral") selecionarCanal(canal);
         });
     });
 
@@ -1137,73 +840,52 @@ function iniciarApp() {
         canalNomeTopo.textContent = "# " + canal.nome;
         canalInfo.textContent = (canal.descricao || (canal.privado ? "Privado" : "Público")) +
             (canal.criadoPor !== "Sistema" ? ` · criado por ${canal.criadoPor}` : "");
-
         carregarMensagens();
-
         document.querySelectorAll(".group-item").forEach(el => {
             el.classList.toggle("active", el.textContent.includes(canal.nome));
         });
     }
 
-    // ===== USUÁRIOS =====
+    // USUÁRIOS
     onSnapshot(collection(db, "usuarios"), snap => {
         usuariosCache = {};
         listaUsuarios.innerHTML = "";
-
         snap.forEach(docSnap => {
             const u = docSnap.data();
+            if (!u.nome) return;
             usuariosCache[u.nome] = u;
-
             const div = document.createElement("div");
             div.className = "user-item";
             div.innerHTML = `
                 <div class="avatar" style="width:28px;height:28px;font-size:12px;">${u.nome.charAt(0)}</div>
                 <span>${u.nome}${u.role === "admin" ? " ★" : u.role === "subadmin" ? " ◆" : ""}</span>
             `;
-
             div.onclick = () => {
-                if (!canalAtual) {
-                    alert("Entra num canal primeiro pra convidar.");
-                    return;
-                }
-                if (!podeConvidar()) {
-                    alert("Você não tem permissão pra convidar.");
-                    return;
-                }
-                if (confirm(`Convidar ${u.nome} pro canal atual?`)) {
-                    convidarUsuario(u.nome);
-                }
+                if (!canalAtual) return alert("Entra num canal primeiro pra convidar.");
+                if (!podeConvidar()) return alert("Você não tem permissão pra convidar.");
+                if (confirm(`Convidar ${u.nome} pro canal atual?`)) convidarUsuario(u.nome);
             };
-
             listaUsuarios.appendChild(div);
         });
     });
 
     async function convidarUsuario(userNome) {
         if (!canalAtual) return;
-        await updateDoc(doc(db, "canais", canalAtual), {
-            membros: arrayUnion(userNome)
-        });
+        await updateDoc(doc(db, "canais", canalAtual), { membros: arrayUnion(userNome) });
         alert(`${userNome} foi adicionado!`);
     }
 
-    // ===== CRIAR CANAL =====
+    // CRIAR CANAL
     document.getElementById("btn-add").onclick = () => {
         document.getElementById("modalCriar").classList.add("active");
         document.getElementById("grupoNome").focus();
     };
-
-    document.getElementById("btnCancelarCriar").onclick = () => {
-        document.getElementById("modalCriar").classList.remove("active");
-    };
-
+    document.getElementById("btnCancelarCriar").onclick = () => document.getElementById("modalCriar").classList.remove("active");
     document.getElementById("btnCriarFinal").onclick = async () => {
         const nomeGrupo = document.getElementById("grupoNome").value.trim();
         const descricao = document.getElementById("grupoDescricao").value.trim();
         const privado = document.getElementById("grupoPrivado").checked;
-
         if (!nomeGrupo) return;
-
         await addDoc(collection(db, "canais"), {
             nome: nomeGrupo,
             descricao,
@@ -1212,67 +894,50 @@ function iniciarApp() {
             membros: [nome],
             data: serverTimestamp()
         });
-
         document.getElementById("grupoNome").value = "";
         document.getElementById("grupoDescricao").value = "";
         document.getElementById("modalCriar").classList.remove("active");
     };
 
-    // ===== EDITAR CANAL =====
+    // EDITAR CANAL
     function abrirEditarCanal(canal) {
         editandoCanalId = canal.id;
         document.getElementById("editNome").value = canal.nome;
         document.getElementById("editDesc").value = canal.descricao || "";
-
         const lista = document.getElementById("listaMembros");
         lista.innerHTML = "";
-
         const membros = canal.membros || [];
         membros.forEach(m => {
             const item = document.createElement("div");
             item.className = "membro-item";
-            item.innerHTML = `
-                <span>${m}${m === canal.criadoPor ? " (criador)" : ""}</span>
-                ${m !== canal.criadoPor ? `<button data-user="${m}">remover</button>` : ""}
-            `;
+            item.innerHTML = `<span>${m}${m === canal.criadoPor ? " (criador)" : ""}</span>
+                ${m !== canal.criadoPor ? `<button data-user="${m}">remover</button>` : ""}`;
             if (m !== canal.criadoPor) {
                 item.querySelector("button").onclick = async () => {
-                    await updateDoc(doc(db, "canais", canal.id), {
-                        membros: arrayRemove(m)
-                    });
+                    await updateDoc(doc(db, "canais", canal.id), { membros: arrayRemove(m) });
                     abrirEditarCanal({ ...canal, membros: membros.filter(x => x !== m) });
                 };
             }
             lista.appendChild(item);
         });
-
         const select = document.getElementById("selectAddMembro");
         select.innerHTML = `<option value="">Escolher usuário...</option>`;
         Object.keys(usuariosCache).forEach(u => {
             if (!membros.includes(u)) {
                 const opt = document.createElement("option");
-                opt.value = u;
-                opt.textContent = u;
+                opt.value = u; opt.textContent = u;
                 select.appendChild(opt);
             }
         });
-
         select.onchange = async () => {
             if (!select.value) return;
-            await updateDoc(doc(db, "canais", canal.id), {
-                membros: arrayUnion(select.value)
-            });
+            await updateDoc(doc(db, "canais", canal.id), { membros: arrayUnion(select.value) });
             abrirEditarCanal({ ...canal, membros: [...membros, select.value] });
             select.value = "";
         };
-
         document.getElementById("modalEditar").classList.add("active");
     }
-
-    document.getElementById("btnCancelarEdit").onclick = () => {
-        document.getElementById("modalEditar").classList.remove("active");
-    };
-
+    document.getElementById("btnCancelarEdit").onclick = () => document.getElementById("modalEditar").classList.remove("active");
     document.getElementById("btnSalvarEdit").onclick = async () => {
         if (!editandoCanalId) return;
         await updateDoc(doc(db, "canais", editandoCanalId), {
@@ -1282,64 +947,114 @@ function iniciarApp() {
         document.getElementById("modalEditar").classList.remove("active");
     };
 
+    // ===== CARGOS =====
+    onSnapshot(collection(db, "cargos"), snap => {
+        cargosCache = {};
+        snap.forEach(d => cargosCache[d.id] = { id: d.id, ...d.data() });
+    });
+
     // ===== ABA ADM =====
     function renderAdmin() {
         listaAdmin.innerHTML = "";
 
-        if (usuarioAtual.role !== "admin") {
-            listaAdmin.innerHTML = `<div style="padding:16px;color:#94a3b8;font-size:13px;">Você é Sub-ADM. Só o dono gerencia permissões.</div>`;
-            return;
+        // botão criar cargo
+        if (usuarioAtual.role === "admin") {
+            const btnCargo = document.createElement("div");
+            btnCargo.className = "admin-item";
+            btnCargo.style.background = "rgba(34,197,94,0.12)";
+            btnCargo.innerHTML = `<i class="fas fa-plus"></i> <span>Criar novo cargo</span>`;
+            btnCargo.onclick = () => document.getElementById("modalCargo").classList.add("active");
+            listaAdmin.appendChild(btnCargo);
         }
 
-        Object.values(usuariosCache).forEach(u => {
-            if (u.nome === DONO) return; // não mostra o próprio dono
-
+        // lista de cargos existentes
+        Object.values(cargosCache).forEach(c => {
             const div = document.createElement("div");
             div.className = "admin-item";
             div.innerHTML = `
-                <div class="avatar" style="width:28px;height:28px;font-size:12px;">${u.nome.charAt(0)}</div>
+                <div class="cor-preview" style="background:${c.cor || '#666'}"></div>
                 <div style="flex:1;">
-                    <div>${u.nome}</div>
-                    <div style="font-size:11px;opacity:0.6;">${u.role === "subadmin" ? "Sub-ADM" : "Usuário"}</div>
+                    <div>${c.nome}</div>
+                    <div style="font-size:11px;opacity:0.6;">${(c.permissoes || []).join(", ") || "sem permissões"}</div>
                 </div>
             `;
-
-            div.onclick = () => abrirPermissoes(u);
             listaAdmin.appendChild(div);
         });
+
+        // lista de usuários pra promover
+        if (usuarioAtual.role === "admin") {
+            const sep = document.createElement("div");
+            sep.style.cssText = "padding:12px 8px 6px; font-size:11px; color:#64748b; text-transform:uppercase;";
+            sep.textContent = "Usuários";
+            listaAdmin.appendChild(sep);
+
+            Object.values(usuariosCache).forEach(u => {
+                if (u.nome === DONO) return;
+                const div = document.createElement("div");
+                div.className = "admin-item";
+                div.innerHTML = `
+                    <div class="avatar" style="width:28px;height:28px;font-size:12px;">${u.nome.charAt(0)}</div>
+                    <div style="flex:1;">
+                        <div>${u.nome}</div>
+                        <div style="font-size:11px;opacity:0.6;">${u.role === "subadmin" ? "Sub-ADM" : "Usuário"}</div>
+                    </div>
+                `;
+                div.onclick = () => abrirPermissoes(u);
+                listaAdmin.appendChild(div);
+            });
+        } else {
+            listaAdmin.innerHTML += `<div style="padding:16px;color:#94a3b8;font-size:13px;">Você é Sub-ADM.</div>`;
+        }
     }
+
+    // criar cargo
+    document.getElementById("cargoCor").oninput = (e) => {
+        document.getElementById("corPreview").style.background = e.target.value;
+    };
+    document.getElementById("btnCancelarCargo").onclick = () => document.getElementById("modalCargo").classList.remove("active");
+    document.getElementById("btnCriarCargo").onclick = async () => {
+        const nomeCargo = document.getElementById("cargoNome").value.trim();
+        const cor = document.getElementById("cargoCor").value;
+        if (!nomeCargo) return;
+
+        const perms = [];
+        if (document.getElementById("c_kick").checked) perms.push("kick");
+        if (document.getElementById("c_ban").checked) perms.push("ban");
+        if (document.getElementById("c_gerenciar").checked) perms.push("gerenciar_grupos");
+        if (document.getElementById("c_criar_cargos").checked) perms.push("criar_cargos");
+
+        await addDoc(collection(db, "cargos"), {
+            nome: nomeCargo,
+            cor,
+            permissoes: perms
+        });
+
+        document.getElementById("cargoNome").value = "";
+        document.getElementById("modalCargo").classList.remove("active");
+        renderAdmin();
+    };
 
     function abrirPermissoes(u) {
         editandoPermUser = u.nome;
         document.getElementById("permNome").textContent = u.nome;
-
         document.getElementById("permApagarMsg").checked = !!u.permissoes?.apagarMsg;
         document.getElementById("permGerenciarCanais").checked = !!u.permissoes?.gerenciarCanais;
         document.getElementById("permConvidar").checked = u.permissoes?.convidar !== false;
-
         document.getElementById("modalPerms").classList.add("active");
     }
-
-    document.getElementById("btnCancelarPerm").onclick = () => {
-        document.getElementById("modalPerms").classList.remove("active");
-    };
-
+    document.getElementById("btnCancelarPerm").onclick = () => document.getElementById("modalPerms").classList.remove("active");
     document.getElementById("btnSalvarPerm").onclick = async () => {
         if (!editandoPermUser) return;
-
         const perms = {
             apagarMsg: document.getElementById("permApagarMsg").checked,
             gerenciarCanais: document.getElementById("permGerenciarCanais").checked,
             convidar: document.getElementById("permConvidar").checked
         };
-
         const temAlguma = perms.apagarMsg || perms.gerenciarCanais;
-
         await updateDoc(doc(db, "usuarios", editandoPermUser), {
             role: temAlguma ? "subadmin" : "user",
             permissoes: perms
         });
-
         document.getElementById("modalPerms").classList.remove("active");
         renderAdmin();
     };
