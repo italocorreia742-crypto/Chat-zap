@@ -272,25 +272,19 @@ body {
 .btn-cancel { background: #1e293b; color: white; }
 .btn-confirm { background: var(--accent); color: white; }
 .btn-confirm:hover { background: var(--accent-hover); }
-.btn-danger { background: var(--danger); color: white; }
 
-.membro-item, .perm-item, .cargo-item {
+.membro-item, .cargo-item {
     display: flex; align-items: center; justify-content: space-between;
     padding: 8px 10px; border-radius: 9px; background: #1e293b;
     margin-bottom: 6px; font-size: 13.5px;
 }
-.membro-item button, .perm-item button, .cargo-item button {
-    background: none; border: none; color: #f87171; cursor: pointer; font-size: 13px;
-}
+.membro-item button { background: none; border: none; color: #f87171; cursor: pointer; font-size: 13px; }
 
 .perm-check { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 13.5px; }
 .perm-check input { width: 16px; height: 16px; }
 
-.cor-preview {
-    width: 22px; height: 22px; border-radius: 6px; border: 1px solid #334155;
-}
+.cor-preview { width: 22px; height: 22px; border-radius: 6px; border: 1px solid #334155; }
 
-/* context menu */
 .ctx-menu {
     position: fixed; background: #1e293b; border: 1px solid #334155;
     border-radius: 12px; padding: 6px; z-index: 300; min-width: 160px;
@@ -366,7 +360,7 @@ body {
                     <div class="avatar" id="avatar">?</div>
                     <div class="user-info">
                         <span id="userNameBottom">Usuário</span>
-                        <small id="userStatus">Online</small>
+                        <small>Online</small>
                     </div>
                 </div>
             </div>
@@ -434,7 +428,7 @@ body {
     </div>
 </div>
 
-<!-- MODAL PERMISSÕES SUB-ADM -->
+<!-- MODAL PERMISSÕES -->
 <div class="modal" id="modalPerms">
     <div class="modal-box">
         <h2>Permissões de <span id="permNome"></span></h2>
@@ -481,6 +475,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const DONO = "MVOIDv";
+const SENHA_DONO = "Wr0ck3t#Adm2026!";   // senha forte da conta ADM
 
 let nome = null;
 let usuarioAtual = null;
@@ -495,7 +490,6 @@ let editandoCanalId = null;
 let editandoPermUser = null;
 let modoCadastro = false;
 
-// elementos
 const telaLogin = document.getElementById("telaLogin");
 const appEl = document.getElementById("app");
 const mensagensEl = document.getElementById("mensagens");
@@ -510,7 +504,6 @@ const avatarEl = document.getElementById("avatar");
 const sideTitle = document.getElementById("sideTitle");
 const btnAdmin = document.getElementById("btnAdmin");
 
-// ===== LOGIN =====
 const loginNome = document.getElementById("loginNome");
 const loginSenha = document.getElementById("loginSenha");
 const loginSenha2 = document.getElementById("loginSenha2");
@@ -550,16 +543,17 @@ btnLoginAcao.onclick = async () => {
     if (!n || n.length < 2) return mostrarErro("Nome muito curto");
     if (!s || s.length < 3) return mostrarErro("Senha muito curta (mín. 3)");
 
+    const ref = doc(db, "usuarios", n);
+    const snap = await getDoc(ref);
+
     if (modoCadastro) {
         if (s !== s2) return mostrarErro("As senhas não coincidem");
-        const ref = doc(db, "usuarios", n);
-        const snap = await getDoc(ref);
-        if (snap.exists()) return mostrarErro("Esse nome já está em uso");
+        if (snap.exists()) return mostrarErro("Esse nome já está em uso. Escolha outro.");
 
         const isDono = n === DONO;
         await setDoc(ref, {
             nome: n,
-            senha: s,
+            senha: isDono ? SENHA_DONO : s,
             role: isDono ? "admin" : "user",
             permissoes: {
                 apagarMsg: isDono,
@@ -571,11 +565,24 @@ btnLoginAcao.onclick = async () => {
         });
         entrar(n);
     } else {
-        const ref = doc(db, "usuarios", n);
-        const snap = await getDoc(ref);
+        // LOGIN
         if (!snap.exists()) return mostrarErro("Conta não encontrada");
-        const dados = snap.data();
+
+        let dados = snap.data();
+
+        // Se for o dono e a conta estiver sem senha (estrutura antiga), define a senha forte
+        if (n === DONO && (!dados.senha || dados.senha === "")) {
+            await updateDoc(ref, {
+                senha: SENHA_DONO,
+                role: "admin",
+                permissoes: { apagarMsg: true, gerenciarCanais: true, convidar: true },
+                nome: DONO
+            });
+            dados.senha = SENHA_DONO;
+        }
+
         if (dados.senha !== s) return mostrarErro("Senha incorreta");
+
         await updateDoc(ref, { ultimoAcesso: serverTimestamp() });
         entrar(n);
     }
@@ -605,6 +612,21 @@ async function carregarUsuario() {
         return;
     }
     usuarioAtual = snap.data();
+
+    // Garante que o dono sempre tenha a senha forte e role admin
+    if (nome === DONO) {
+        if (usuarioAtual.senha !== SENHA_DONO || usuarioAtual.role !== "admin") {
+            await updateDoc(doc(db, "usuarios", DONO), {
+                senha: SENHA_DONO,
+                role: "admin",
+                permissoes: { apagarMsg: true, gerenciarCanais: true, convidar: true },
+                nome: DONO
+            });
+            usuarioAtual.senha = SENHA_DONO;
+            usuarioAtual.role = "admin";
+        }
+    }
+
     userNameBottom.textContent = nome + (usuarioAtual.role === "admin" ? " ★" : usuarioAtual.role === "subadmin" ? " ◆" : "");
     avatarEl.textContent = nome.charAt(0).toUpperCase();
     if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin") {
@@ -630,7 +652,6 @@ function podeConvidar() {
     return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.convidar !== false;
 }
 
-// ===== APP =====
 function iniciarApp() {
     document.getElementById("btnHome").onclick = () => setAba("canais");
     document.getElementById("btnUsers").onclick = () => setAba("users");
@@ -658,12 +679,10 @@ function iniciarApp() {
         }
     }
 
-    // ENVIAR (agora usa coleção top-level mensagens + campo grupo)
     async function enviar() {
         if (!canalAtual) return;
         const texto = input.value.trim();
         if (!texto) return;
-
         await addDoc(collection(db, "mensagens"), {
             grupo: canalAtual,
             nome,
@@ -683,24 +702,19 @@ function iniciarApp() {
         }
     });
 
-    // CARREGAR MENSAGENS (query com where grupo + orderBy data)
     function carregarMensagens() {
         if (unsubscribeMensagens) unsubscribeMensagens();
-
         const q = query(
             collection(db, "mensagens"),
             where("grupo", "==", canalAtual),
             orderBy("data", "asc")
         );
-
         unsubscribeMensagens = onSnapshot(q, snap => {
             mensagensEl.innerHTML = "";
-
             if (snap.empty) {
                 mensagensEl.innerHTML = `<div class="empty-state">Nenhuma mensagem ainda.<br>Manda a primeira 🚀</div>`;
                 return;
             }
-
             snap.forEach(docSnap => {
                 const m = docSnap.data();
                 const div = document.createElement("div");
@@ -739,7 +753,6 @@ function iniciarApp() {
         });
     }
 
-    // CONTEXT MENU
     const ctxMenu = document.getElementById("ctxMenu");
     function abrirCtx(e, id, data) {
         msgCtxId = id;
@@ -780,7 +793,6 @@ function iniciarApp() {
         ctxMenu.classList.remove("active");
     };
 
-    // CANAIS
     onSnapshot(collection(db, "canais"), snap => {
         canaisCache = {};
         listaGrupos.innerHTML = "";
@@ -846,7 +858,6 @@ function iniciarApp() {
         });
     }
 
-    // USUÁRIOS
     onSnapshot(collection(db, "usuarios"), snap => {
         usuariosCache = {};
         listaUsuarios.innerHTML = "";
@@ -875,7 +886,6 @@ function iniciarApp() {
         alert(`${userNome} foi adicionado!`);
     }
 
-    // CRIAR CANAL
     document.getElementById("btn-add").onclick = () => {
         document.getElementById("modalCriar").classList.add("active");
         document.getElementById("grupoNome").focus();
@@ -899,7 +909,6 @@ function iniciarApp() {
         document.getElementById("modalCriar").classList.remove("active");
     };
 
-    // EDITAR CANAL
     function abrirEditarCanal(canal) {
         editandoCanalId = canal.id;
         document.getElementById("editNome").value = canal.nome;
@@ -947,17 +956,14 @@ function iniciarApp() {
         document.getElementById("modalEditar").classList.remove("active");
     };
 
-    // ===== CARGOS =====
     onSnapshot(collection(db, "cargos"), snap => {
         cargosCache = {};
         snap.forEach(d => cargosCache[d.id] = { id: d.id, ...d.data() });
     });
 
-    // ===== ABA ADM =====
     function renderAdmin() {
         listaAdmin.innerHTML = "";
 
-        // botão criar cargo
         if (usuarioAtual.role === "admin") {
             const btnCargo = document.createElement("div");
             btnCargo.className = "admin-item";
@@ -967,7 +973,6 @@ function iniciarApp() {
             listaAdmin.appendChild(btnCargo);
         }
 
-        // lista de cargos existentes
         Object.values(cargosCache).forEach(c => {
             const div = document.createElement("div");
             div.className = "admin-item";
@@ -981,7 +986,6 @@ function iniciarApp() {
             listaAdmin.appendChild(div);
         });
 
-        // lista de usuários pra promover
         if (usuarioAtual.role === "admin") {
             const sep = document.createElement("div");
             sep.style.cssText = "padding:12px 8px 6px; font-size:11px; color:#64748b; text-transform:uppercase;";
@@ -1002,12 +1006,9 @@ function iniciarApp() {
                 div.onclick = () => abrirPermissoes(u);
                 listaAdmin.appendChild(div);
             });
-        } else {
-            listaAdmin.innerHTML += `<div style="padding:16px;color:#94a3b8;font-size:13px;">Você é Sub-ADM.</div>`;
         }
     }
 
-    // criar cargo
     document.getElementById("cargoCor").oninput = (e) => {
         document.getElementById("corPreview").style.background = e.target.value;
     };
@@ -1016,19 +1017,12 @@ function iniciarApp() {
         const nomeCargo = document.getElementById("cargoNome").value.trim();
         const cor = document.getElementById("cargoCor").value;
         if (!nomeCargo) return;
-
         const perms = [];
         if (document.getElementById("c_kick").checked) perms.push("kick");
         if (document.getElementById("c_ban").checked) perms.push("ban");
         if (document.getElementById("c_gerenciar").checked) perms.push("gerenciar_grupos");
         if (document.getElementById("c_criar_cargos").checked) perms.push("criar_cargos");
-
-        await addDoc(collection(db, "cargos"), {
-            nome: nomeCargo,
-            cor,
-            permissoes: perms
-        });
-
+        await addDoc(collection(db, "cargos"), { nome: nomeCargo, cor, permissoes: perms });
         document.getElementById("cargoNome").value = "";
         document.getElementById("modalCargo").classList.remove("active");
         renderAdmin();
