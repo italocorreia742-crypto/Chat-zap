@@ -6,180 +6,218 @@
 <title>Wrocket</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
 :root {
-    --bg-dark: #020617;
-    --bg-main: #0f172a;
+    --bg: #0b0f19;
+    --sidebar: #111827;
+    --card: #1f2937;
+    --border: #1f2937;
     --accent: #22c55e;
-    --sidebar: #0f172a;
-    --text: #f8fafc;
-    --danger: #ef4444;
-    --card: #1e293b;
+    --accent-hover: #16a34a;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --msg-me: #166534;
+    --msg-other: #1e293b;
 }
 
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
     -webkit-tap-highlight-color: transparent;
 }
 
 body {
-    margin: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background: var(--bg-dark);
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
     color: var(--text);
-    display: flex;
     height: 100vh;
+    display: flex;
     overflow: hidden;
 }
 
+/* ===== BARRA LATERAL ESQUERDA (COMUNIDADES) ===== */
 .comunidades {
-    width: 72px;
-    background: #000;
+    width: 68px;
+    background: #020617;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 12px;
+    padding: 16px 0;
     gap: 12px;
-    flex-shrink: 0;
+    border-right: 1px solid var(--border);
 }
 
 .com-icon {
-    width: 48px;
-    height: 48px;
-    background: #334155;
-    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: #1e293b;
+    border: none;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: 0.2s;
-    color: white;
-    border: none;
+    transition: all 0.2s ease;
+    font-size: 18px;
 }
 
 .com-icon:hover,
 .com-icon.active {
-    border-radius: 16px;
     background: var(--accent);
+    border-radius: 12px;
 }
 
 .plus-btn {
     background: linear-gradient(135deg, #22c55e, #16a34a);
-    border-radius: 18px;
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
-    transition: 0.25s ease;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
 }
 
 .plus-btn:hover {
-    transform: scale(1.08) rotate(90deg);
-    border-radius: 14px;
-    box-shadow: 0 0 25px rgba(34, 197, 94, 0.8);
+    transform: scale(1.06);
 }
 
-.plus-btn i {
-    font-size: 18px;
-}
-
+/* ===== SIDEBAR DE CANAIS ===== */
 .sidebar {
-    background: rgba(15,23,42,0.85);
     width: 240px;
+    background: var(--sidebar);
     display: flex;
     flex-direction: column;
-    border-right: 1px solid #1e293b;
-    border-top-right-radius: 18px;
-border-bottom-right-radius: 18px;
-
-backdrop-filter: blur(10px);
+    border-right: 1px solid var(--border);
 }
 
 .side-header {
-    padding: 15px;
-    font-weight: bold;
-    font-size: 14px;
-    color: #94a3b8;
+    padding: 18px 16px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #1e293b;
 }
 
 .group-list {
     flex: 1;
-    padding: 10px;
     overflow-y: auto;
+    padding: 8px 10px;
 }
 
 .group-item {
     padding: 10px 12px;
     border-radius: 10px;
     cursor: pointer;
-    margin-bottom: 6px;
-    background: rgba(255,255,255,0.03);
-    transition: 0.15s;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.15s ease;
 }
 
 .group-item:hover {
-    background: rgba(255,255,255,0.08);
-
-    transform: translateX(4px);
+    background: rgba(255,255,255,0.05);
+    color: white;
 }
 
+.group-item.active {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--accent);
+    font-weight: 500;
+}
+
+.group-item i {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+/* ===== ÁREA PRINCIPAL ===== */
 .main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #1e293b;
+    background: var(--bg);
+    min-width: 0;
 }
 
 .topbar {
-    height: 55px;
-    padding: 0 16px;
+    height: 56px;
+    padding: 0 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #0f172a;
-    backdrop-filter: blur(12px);
-    background: rgba(15,23,42,0.7);
+    border-bottom: 1px solid var(--border);
+    background: rgba(11, 15, 25, 0.85);
+    backdrop-filter: blur(8px);
+}
+
+#canalNomeTopo {
+    font-weight: 600;
+    font-size: 16px;
 }
 
 #mensagens {
     flex: 1;
     overflow-y: auto;
-    padding: 15px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    scroll-behavior: smooth;
+    gap: 12px;
+}
+
+.empty-state {
+    margin: auto;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
 }
 
 .msg {
-    padding: 12px;
+    max-width: 75%;
+    padding: 10px 14px;
     border-radius: 14px;
-    max-width: 85%;
-    animation: msgSpawn 0.18s ease;
-    transition: 0.15s;
+    font-size: 14.5px;
+    line-height: 1.45;
     word-break: break-word;
+    animation: fadeIn 0.15s ease;
 }
 
 .msg.eu {
     align-self: flex-end;
-    background: var(--accent);
+    background: var(--msg-me);
+    border-bottom-right-radius: 4px;
 }
 
 .msg.outro {
     align-self: flex-start;
-    background: var(--card);
+    background: var(--msg-other);
+    border-bottom-left-radius: 4px;
 }
 
-.msg:hover {
-    transform: scale(1.01);
+.msg b {
+    font-size: 13px;
+    display: block;
+    margin-bottom: 3px;
+    opacity: 0.9;
 }
 
+.msg .time {
+    font-size: 11px;
+    opacity: 0.55;
+    margin-top: 4px;
+    text-align: right;
+}
+
+/* ===== BARRA INFERIOR ===== */
 .bottom {
-    padding: 15px;
-    background: #1e293b;
-    border-top: 1px solid #334155;
+    padding: 12px 16px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--sidebar);
 }
 
 .user-bar {
@@ -193,112 +231,91 @@ backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     gap: 10px;
+    cursor: pointer;
 }
 
 .avatar {
-    width: 42px;
-    height: 42px;
-
-    border-radius: 14px;
-
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
     background: linear-gradient(135deg, #22c55e, #16a34a);
-
     display: flex;
     align-items: center;
     justify-content: center;
-
-    font-weight: bold;
-    font-size: 18px;
-
+    font-weight: 600;
+    font-size: 15px;
     color: white;
-
-    box-shadow:
-        0 0 15px rgba(34, 197, 94, 0.4),
-        inset 0 0 10px rgba(255,255,255,0.1);
-}
-
-.user-info {
-    display: flex;
-    flex-direction: column;
 }
 
 .user-info span {
-    font-size: 14px;
-    font-weight: 600;
-    color: white;
+    font-size: 13.5px;
+    font-weight: 500;
 }
 
 .user-info small {
-    color: #94a3b8;
     font-size: 11px;
+    color: var(--text-muted);
 }
 
 .input-wrapper {
-    background: #334155;
-    border-radius: 14px;
     display: flex;
     align-items: center;
-    padding-right: 10px;
-
-    box-shadow:
-        inset 0 2px 4px rgba(0,0,0,0.2),
-        0 0 10px rgba(0,0,0,0.15);
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 4px 6px 4px 4px;
+    border: 1px solid transparent;
+    transition: border 0.2s;
 }
 
 .input-wrapper:focus-within {
-
-    border: 1px solid rgba(34,197,94,0.4);
-
-    box-shadow:
-        0 0 0 3px rgba(34,197,94,0.12);
+    border-color: rgba(34, 197, 94, 0.4);
 }
 
 #msgInput {
     flex: 1;
-    min-width: 0;
-    background: none;
+    background: transparent;
     border: none;
-    padding: 14px;
-    color: white;
     outline: none;
+    color: white;
+    padding: 11px 12px;
+    font-size: 14.5px;
+    font-family: inherit;
 }
 
 #msgInput::placeholder {
-    color: #94a3b8;
+    color: #64748b;
 }
 
 .btn-send {
-    transition: 0.15s;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     border: none;
     background: var(--accent);
     color: white;
     cursor: pointer;
-    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
     flex-shrink: 0;
 }
 
 .btn-send:hover {
+    background: var(--accent-hover);
     transform: scale(1.05);
 }
 
-/* MODAL CRIAR GRUPO */
-
+/* ===== MODAL ===== */
 .modal-criar {
     position: fixed;
     inset: 0;
-
-    background: rgba(0,0,0,0.55);
-
+    background: rgba(0,0,0,0.6);
     display: none;
     align-items: center;
     justify-content: center;
-
-    z-index: 999;
-
-    backdrop-filter: blur(6px);
+    z-index: 100;
+    backdrop-filter: blur(4px);
 }
 
 .modal-criar.active {
@@ -306,88 +323,57 @@ backdrop-filter: blur(10px);
 }
 
 .modal-box {
-    overscroll-behavior: contain;
-    max-height: 90vh;
-    overflow-y: auto;
     width: 90%;
-    max-width: 420px;
-
-    background: #0f172a;
-
-    border: 1px solid rgba(255,255,255,0.05);
-
-    border-radius: 28px;
-
+    max-width: 400px;
+    background: #111827;
+    border-radius: 20px;
     padding: 24px;
-
-    animation: modalSpawn 0.18s ease;
-
-    box-shadow:
-        0 0 40px rgba(0,0,0,0.5),
-        0 0 20px rgba(34,197,94,0.12);
-}
-
-@keyframes modalSpawn {
-
-    from {
-        opacity: 0;
-        transform: scale(0.88);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+    border: 1px solid #1f2937;
+    animation: modalIn 0.2s ease;
 }
 
 .modal-box h2 {
+    font-size: 20px;
     margin-bottom: 18px;
-
-    font-size: 24px;
-
-    color: white;
+    font-weight: 600;
 }
 
 .modal-box input,
 .modal-box textarea {
     width: 100%;
-
     background: #1e293b;
-
-    border: none;
-
-    outline: none;
-
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 12px 14px;
     color: white;
-
-    padding: 14px;
-
-    border-radius: 18px;
-
-    margin-bottom: 14px;
-
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 12px;
+    outline: none;
     resize: none;
 }
 
+.modal-box input:focus,
+.modal-box textarea:focus {
+    border-color: var(--accent);
+}
+
 .modal-box textarea {
-    min-height: 100px;
+    min-height: 90px;
 }
 
 .privado-area {
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    margin-bottom: 18px;
-
-    color: white;
+    margin: 14px 0 20px;
+    font-size: 14px;
 }
 
 .switch {
     position: relative;
-
-    width: 52px;
-    height: 28px;
+    width: 46px;
+    height: 26px;
 }
 
 .switch input {
@@ -397,76 +383,30 @@ backdrop-filter: blur(10px);
 .slider {
     position: absolute;
     inset: 0;
-
     background: #334155;
-
     border-radius: 999px;
-
     cursor: pointer;
-
     transition: 0.2s;
 }
 
 .slider::before {
     content: "";
-
     position: absolute;
-
-    width: 22px;
-    height: 22px;
-
+    width: 20px;
+    height: 20px;
     left: 3px;
     top: 3px;
-
     background: white;
-
     border-radius: 50%;
-
     transition: 0.2s;
 }
 
 .switch input:checked + .slider {
-    background: #22c55e;
+    background: var(--accent);
 }
 
 .switch input:checked + .slider::before {
-    transform: translateX(24px);
-}
-
-.lista-usuarios {
-    display: none;
-
-    background: #1e293b;
-
-    border-radius: 18px;
-
-    padding: 10px;
-
-    max-height: 160px;
-
-    overflow-y: auto;
-
-    margin-bottom: 16px;
-}
-
-.lista-usuarios.active {
-    display: block;
-}
-
-.user-select {
-    padding: 10px;
-
-    border-radius: 12px;
-
-    cursor: pointer;
-
-    transition: 0.15s;
-
-    color: white;
-}
-
-.user-select:hover {
-    background: rgba(255,255,255,0.05);
+    transform: translateX(20px);
 }
 
 .modal-buttons {
@@ -476,255 +416,143 @@ backdrop-filter: blur(10px);
 
 .modal-buttons button {
     flex: 1;
-
+    padding: 12px;
+    border-radius: 12px;
     border: none;
-
-    padding: 14px;
-
-    border-radius: 18px;
-
-    font-weight: bold;
-
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
-
     transition: 0.15s;
 }
 
 #btnCancelarGrupo {
-    background: #334155;
+    background: #1e293b;
     color: white;
 }
 
 #btnCriarGrupoFinal {
-    background: #22c55e;
+    background: var(--accent);
     color: white;
 }
 
 #btnCriarGrupoFinal:hover {
-    transform: scale(1.03);
+    background: var(--accent-hover);
 }
 
-#btnCancelarGrupo:hover,
-#btnCriarGrupoFinal:hover {
-
-    filter: brightness(1.08);
-
-    transform: translateY(-1px);
+/* ===== ANIMAÇÕES ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes msgSpawn {
-
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to   { opacity: 1; transform: scale(1); }
 }
 
-/* MOBILE */
-
-@media (max-width: 768px) {
-
-    .sidebar {
-        width: 200px;
-    }
-
-    .comunidades {
-        width: 62px;
-    }
-
-    .msg {
-        word-break: break-word;
-        max-width: 95%;
-    }
-
-    .avatar {
-        width: 38px;
-        height: 38px;
-    }
-
-    .modal-box {
-        overscroll-behavior: contain;
-        width: 95%;
-        padding: 20px;
-        border-radius: 24px;
-    }
-
-    .modal-box h2 {
-        font-size: 20px;
-    }
-
-    .modal-buttons {
-        flex-direction: column;
-    }
-}
-
+/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
-
 ::-webkit-scrollbar-thumb {
     background: #334155;
-    border-radius: 999px;
+    border-radius: 10px;
 }
 
-.status-dot {
-
-    width: 10px;
-    height: 10px;
-
-    background: #22c55e;
-
-    border-radius: 50%;
-
-    box-shadow:
-        0 0 10px #22c55e;
-    flex-shrink: 0;
-    margin-left: -4px;
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 190px;
+    }
+    .comunidades {
+        width: 60px;
+    }
+    .msg {
+        max-width: 88%;
+    }
+    .modal-box {
+        padding: 20px;
+    }
 }
-
-.group-item.active {
-
-    background: rgba(34,197,94,0.18);
-
-    border: 1px solid rgba(34,197,94,0.25);
-
-    box-shadow:
-        0 0 12px rgba(34,197,94,0.15);
-}
-
 </style>
 </head>
-
 <body>
 
+<!-- BARRA DE COMUNIDADES -->
 <div class="comunidades">
-
-    <button class="com-icon active">
+    <button class="com-icon active" title="Início">
         <i class="fas fa-home"></i>
     </button>
-
-    <button class="com-icon plus-btn" id="btn-add">
+    <button class="com-icon plus-btn" id="btn-add" title="Criar canal">
         <i class="fas fa-plus"></i>
     </button>
-
 </div>
 
+<!-- SIDEBAR DE CANAIS -->
 <div class="sidebar">
     <div class="side-header">
-        CANAIS
+        Canais
     </div>
-
     <div class="group-list" id="listaGrupos"></div>
 </div>
 
+<!-- ÁREA PRINCIPAL -->
 <div class="main">
-
     <div class="topbar">
-        <div id="canalNomeTopo"># canal</div>
+        <div id="canalNomeTopo"># selecione um canal</div>
     </div>
 
-    <div id="mensagens"></div>
+    <div id="mensagens">
+        <div class="empty-state">
+            Selecione ou crie um canal para começar
+        </div>
+    </div>
 
-<div class="bottom">
-
-    <div class="user-bar">
-
-        <div class="user-profile">
-
-            <div class="avatar">
-                M
+    <div class="bottom">
+        <div class="user-bar">
+            <div class="user-profile" id="btnEditarNome" title="Clique para mudar o nome">
+                <div class="avatar" id="avatar">?</div>
+                <div class="user-info">
+                    <span id="userNameBottom">Usuário</span>
+                    <small>Online</small>
+                </div>
             </div>
-
-            <div class="status-dot"></div>
-
-            <div class="user-info">
-                <span id="userNameBottom">MVOIDv</span>
-                <small>Online</small>
-            </div>
-
         </div>
 
+        <div class="input-wrapper">
+            <input id="msgInput" placeholder="Escreva uma mensagem..." autocomplete="off">
+            <button class="btn-send" id="btnEnviar">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
     </div>
-
-    <div class="input-wrapper">
-
-        <input
-            id="msgInput"
-            placeholder="Sua mensagem..."
-            autocomplete="off"
-        >
-
-        <button class="btn-send" id="btnEnviar">
-            <i class="fas fa-paper-plane"></i>
-        </button>
-
-    </div>
-
 </div>
 
-<!-- MODAL CRIAR GRUPO -->
-
+<!-- MODAL CRIAR CANAL -->
 <div class="modal-criar" id="modalCriarGrupo">
-
     <div class="modal-box">
+        <h2>Novo canal</h2>
 
-        <h2>Criar Grupo</h2>
-
-        <input
-            type="text"
-            id="grupoNome"
-            placeholder="Nome do grupo"
-        >
-
-        <textarea
-            id="grupoDescricao"
-            placeholder="Informe sua descrição aqui (opcional)"
-        ></textarea>
+        <input type="text" id="grupoNome" placeholder="Nome do canal" maxlength="40">
+        <textarea id="grupoDescricao" placeholder="Descrição (opcional)" maxlength="200"></textarea>
 
         <div class="privado-area">
-
-            <span>Privado</span>
-
+            <span>Canal privado</span>
             <label class="switch">
-
                 <input type="checkbox" id="grupoPrivado">
-
                 <span class="slider"></span>
-
             </label>
-
-        </div>
-
-        <div id="listaUsuarios" class="lista-usuarios">
-
         </div>
 
         <div class="modal-buttons">
-
-            <button id="btnCancelarGrupo">
-                Cancelar
-            </button>
-
-            <button id="btnCriarGrupoFinal">
-                Criar
-            </button>
-
+            <button id="btnCancelarGrupo">Cancelar</button>
+            <button id="btnCriarGrupoFinal">Criar</button>
         </div>
-
     </div>
-
-</div>
-
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-
 import {
     getFirestore,
     collection,
@@ -747,68 +575,67 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const mensagens = document.getElementById("mensagens");
+const mensagensEl = document.getElementById("mensagens");
 const input = document.getElementById("msgInput");
+const listaGrupos = document.getElementById("listaGrupos");
+const canalNomeTopo = document.getElementById("canalNomeTopo");
+const userNameBottom = document.getElementById("userNameBottom");
+const avatarEl = document.getElementById("avatar");
 
-let nome = localStorage.getItem("nome");
-
-if (!nome) {
-    nome = prompt("Seu Nome:");
-
-    if (!nome || nome.trim() === "") {
-        nome = "User";
-    }
-
-    localStorage.setItem("nome", nome);
-}
-
-window.addEventListener("load", () => {
-
-    const userNameBottom = document.getElementById("userNameBottom");
-
-    if(userNameBottom) {
-        userNameBottom.innerText = nome;
-    }
-
-    const avatar = document.querySelector(".avatar");
-
-    if(avatar && nome) {
-        avatar.innerText = nome.charAt(0).toUpperCase();
-    }
-
-});
-
-localStorage.setItem("nome", nome);
-
+let nome = localStorage.getItem("nome") || "";
 let canalAtual = null;
-
-async function enviar() {
-
-    if (!canalAtual) return;
-
-    let texto = input.value.trim();
-
-    if (!texto) return;
-
-    await addDoc(
-        collection(db, "canais", canalAtual, "mensagens"),
-        {
-            nome,
-            texto,
-            data: serverTimestamp()
-        }
-    );
-
-    input.value = "";
-}
-
 let unsubscribeMensagens = null;
 
-function carregarMensagens() {
+// ===== NOME DO USUÁRIO =====
+function atualizarUIUsuario() {
+    userNameBottom.textContent = nome;
+    avatarEl.textContent = nome.charAt(0).toUpperCase() || "?";
+}
 
-    if (unsubscribeMensagens) {
-        unsubscribeMensagens();
+if (!nome.trim()) {
+    nome = prompt("Como você quer ser chamado?") || "Anônimo";
+    localStorage.setItem("nome", nome);
+}
+atualizarUIUsuario();
+
+document.getElementById("btnEditarNome").onclick = () => {
+    const novo = prompt("Novo nome:", nome);
+    if (novo && novo.trim()) {
+        nome = novo.trim();
+        localStorage.setItem("nome", nome);
+        atualizarUIUsuario();
     }
+};
+
+// ===== ENVIAR MENSAGEM =====
+async function enviar() {
+    if (!canalAtual) return;
+
+    const texto = input.value.trim();
+    if (!texto) return;
+
+    await addDoc(collection(db, "canais", canalAtual, "mensagens"), {
+        nome,
+        texto,
+        data: serverTimestamp()
+    });
+
+    input.value = "";
+    input.focus();
+}
+
+document.getElementById("btnEnviar").onclick = enviar;
+
+input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        enviar();
+    }
+});
+
+// ===== CARREGAR MENSAGENS =====
+function carregarMensagens() {
+    if (unsubscribeMensagens) unsubscribeMensagens();
 
     const q = query(
         collection(db, "canais", canalAtual, "mensagens"),
@@ -816,187 +643,126 @@ function carregarMensagens() {
     );
 
     unsubscribeMensagens = onSnapshot(q, (snap) => {
+        mensagensEl.innerHTML = "";
 
-        mensagens.innerHTML = "";
+        if (snap.empty) {
+            mensagensEl.innerHTML = `
+                <div class="empty-state">
+                    Nenhuma mensagem ainda.<br>Seja o primeiro a falar 🚀
+                </div>`;
+            return;
+        }
 
         snap.forEach((docSnap) => {
-
             const m = docSnap.data();
-
             const div = document.createElement("div");
+            div.className = "msg " + (m.nome === nome ? "eu" : "outro");
 
-            div.className =
-                "msg " + (m.nome === nome ? "eu" : "outro");
+            let hora = "";
+            if (m.data?.toDate) {
+                const d = m.data.toDate();
+                hora = d.toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            }
 
             div.innerHTML = `
                 <b>${m.nome}</b>
                 <div>${m.texto}</div>
+                ${hora ? `<div class="time">${hora}</div>` : ""}
             `;
-
-            mensagens.appendChild(div);
-
+            mensagensEl.appendChild(div);
         });
 
-        mensagens.scrollTop = mensagens.scrollHeight;
-
+        mensagensEl.scrollTop = mensagensEl.scrollHeight;
     });
-
 }
 
-const listaGrupos =
-    document.getElementById("listaGrupos");
-
+// ===== LISTA DE CANAIS =====
 onSnapshot(collection(db, "canais"), (snap) => {
-
     listaGrupos.innerHTML = "";
 
+    if (snap.empty) {
+        listaGrupos.innerHTML = `
+            <div style="padding:16px; color:#64748b; font-size:13px; text-align:center;">
+                Nenhum canal ainda.<br>Crie o primeiro!
+            </div>`;
+        return;
+    }
+
     snap.forEach((docSnap) => {
-
         const canal = docSnap.data();
+        const div = document.createElement("div");
+        div.className = "group-item";
+        if (canalAtual === docSnap.id) div.classList.add("active");
 
-const div = document.createElement("div");
+        div.innerHTML = `
+            <i class="fas fa-hashtag"></i>
+            <span>${canal.nome}</span>
+        `;
 
-div.className = "group-item";
+        div.onclick = () => {
+            document.querySelectorAll(".group-item").forEach(el => el.classList.remove("active"));
+            div.classList.add("active");
 
-div.innerHTML = `
-    <i class="fas fa-hashtag"></i>
-    ${canal.nome}
-`;
+            canalAtual = docSnap.id;
+            canalNomeTopo.textContent = "# " + canal.nome;
+            carregarMensagens();
+        };
 
-if (!canalAtual) {
+        // Seleciona o primeiro canal automaticamente
+        if (!canalAtual) {
+            canalAtual = docSnap.id;
+            div.classList.add("active");
+            canalNomeTopo.textContent = "# " + canal.nome;
+            carregarMensagens();
+        }
 
-    canalAtual = docSnap.id;
-
-    div.classList.add("active");
-
-    carregarMensagens();
-
-}
-
-div.onclick = () => {
-
-    document
-        .querySelectorAll(".group-item")
-        .forEach(el => el.classList.remove("active"));
-
-    div.classList.add("active");
-
-    canalAtual = docSnap.id;
-
-    document.getElementById("canalNomeTopo").innerText =
-        "# " + canal.nome;
-
-    carregarMensagens();
-
-};
-
-listaGrupos.appendChild(div);
-
+        listaGrupos.appendChild(div);
     });
-
 });
 
-const modalCriarGrupo =
-    document.getElementById("modalCriarGrupo");
+// ===== MODAL CRIAR CANAL =====
+const modal = document.getElementById("modalCriarGrupo");
 
-const btnAdd =
-    document.getElementById("btn-add");
-
-const fecharGrupo =
-    document.getElementById("btnCancelarGrupo");
-
-const privadoToggle =
-    document.getElementById("grupoPrivado");
-
-const listaUsuarios =
-    document.getElementById("listaUsuarios");
-
-btnAdd.onclick = () => {
-
-    modalCriarGrupo.classList.add("active");
-
+document.getElementById("btn-add").onclick = () => {
+    modal.classList.add("active");
+    document.getElementById("grupoNome").focus();
 };
 
-fecharGrupo.onclick = () => {
-
-    modalCriarGrupo.classList.remove("active");
-
+document.getElementById("btnCancelarGrupo").onclick = () => {
+    modal.classList.remove("active");
 };
 
-modalCriarGrupo.onclick = (e) => {
-
-    if(e.target === modalCriarGrupo) {
-
-        modalCriarGrupo.classList.remove("active");
-
-    }
-
-};
-
-privadoToggle.onchange = () => {
-
-    if(privadoToggle.checked) {
-
-        listaUsuarios.classList.add("active");
-
-    } else {
-
-        listaUsuarios.classList.remove("active");
-
-    }
-
+modal.onclick = (e) => {
+    if (e.target === modal) modal.classList.remove("active");
 };
 
 document.getElementById("btnCriarGrupoFinal").onclick = async () => {
+    const nomeGrupo = document.getElementById("grupoNome").value.trim();
+    const descricao = document.getElementById("grupoDescricao").value.trim();
+    const privado = document.getElementById("grupoPrivado").checked;
 
-    const nomeGrupo =
-        document.getElementById("grupoNome")
-        .value
-        .trim();
-
-    const descricao =
-        document.getElementById("grupoDescricao")
-        .value
-        .trim();
-
-    const privado =
-        document.getElementById("grupoPrivado")
-        .checked;
-
-    if(!nomeGrupo) return;
-
-    await addDoc(collection(db, "canais"), {
-
-        nome: nomeGrupo,
-        descricao: descricao,
-        privado: privado,
-        criadoPor: nome,
-        data: serverTimestamp()
-
-    });
-
-    modalCriarGrupo.classList.remove("active");
-
-    document.getElementById("grupoNome").value = "";
-    document.getElementById("grupoDescricao").value = "";
-
-};
-
-document.getElementById("btnEnviar").onclick = enviar;
-
-input.addEventListener("keydown", (e) => {
-
-    if (e.key === "Enter" && !e.shiftKey) {
-
-        e.preventDefault();
-
-        enviar();
-
+    if (!nomeGrupo) {
+        document.getElementById("grupoNome").focus();
+        return;
     }
 
-});
+    await addDoc(collection(db, "canais"), {
+        nome: nomeGrupo,
+        descricao,
+        privado,
+        criadoPor: nome,
+        data: serverTimestamp()
+    });
 
+    // Limpa e fecha
+    document.getElementById("grupoNome").value = "";
+    document.getElementById("grupoDescricao").value = "";
+    document.getElementById("grupoPrivado").checked = false;
+    modal.classList.remove("active");
+};
 </script>
-
 </body>
 </html>
