@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Wrocket</title>
-
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -12,8 +11,6 @@
 :root {
     --bg: #0b0f19;
     --sidebar: #111827;
-    --card: #1f2937;
-    --border: #1f2937;
     --accent: #22c55e;
     --accent-hover: #16a34a;
     --text: #f1f5f9;
@@ -21,241 +18,93 @@
     --msg-me: #166534;
     --msg-other: #1e293b;
     --danger: #ef4444;
+    --adm: #ef4444;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-body {
-    font-family: 'Inter', system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    height: 100vh;
-    display: flex;
-    overflow: hidden;
-}
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
 
 /* LOGIN */
-#telaLogin {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-
-.login-box {
-    width: 90%;
-    max-width: 380px;
-    background: #111827;
-    border-radius: 20px;
-    padding: 28px;
-    border: 1px solid #1f2937;
-}
-
+#telaLogin { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; }
+.login-box { width: 90%; max-width: 380px; background: #111827; border-radius: 20px; padding: 28px; border: 1px solid #1f2937; }
 .login-box h1 { font-size: 24px; margin-bottom: 6px; text-align: center; }
 .login-box p { text-align: center; color: var(--text-muted); font-size: 13px; margin-bottom: 22px; }
-
-.login-box input {
-    width: 100%;
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    padding: 13px 14px;
-    color: white;
-    font-size: 14px;
-    margin-bottom: 12px;
-    outline: none;
-    font-family: inherit;
-}
+.login-box input { width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 13px 14px; color: white; font-size: 14px; margin-bottom: 12px; outline: none; font-family: inherit; }
 .login-box input:focus { border-color: var(--accent); }
-
-.login-box button {
-    width: 100%;
-    padding: 13px;
-    border-radius: 12px;
-    border: none;
-    background: var(--accent);
-    color: white;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    margin-top: 6px;
-}
+.login-box button { width: 100%; padding: 13px; border-radius: 12px; border: none; background: var(--accent); color: white; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 6px; }
 .login-box button:hover { background: var(--accent-hover); }
-
 .login-toggle { text-align: center; margin-top: 16px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
 .login-toggle span { color: var(--accent); }
 .erro-login { color: #f87171; font-size: 13px; text-align: center; margin-bottom: 10px; display: none; }
 
-/* APP */
+/* BAN SCREEN */
+#telaBan { position: fixed; inset: 0; background: #0b0f19; display: none; align-items: center; justify-content: center; z-index: 1000; flex-direction: column; gap: 16px; text-align: center; padding: 20px; }
+#telaBan h2 { color: #ef4444; font-size: 22px; }
+#telaBan p { color: var(--text-muted); max-width: 320px; line-height: 1.5; }
+#telaBan button { margin-top: 12px; padding: 12px 24px; border-radius: 12px; border: none; background: var(--accent); color: white; font-weight: 600; cursor: pointer; }
+
 #app { display: none; width: 100%; height: 100%; }
 
-.comunidades {
-    width: 68px;
-    background: #020617;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px 0;
-    gap: 10px;
-    border-right: 1px solid var(--border);
-}
-
-.com-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: #1e293b;
-    border: none;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 17px;
-}
+.comunidades { width: 68px; background: #020617; display: flex; flex-direction: column; align-items: center; padding: 16px 0; gap: 10px; border-right: 1px solid #1f2937; }
+.com-icon { width: 44px; height: 44px; border-radius: 14px; background: #1e293b; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; font-size: 17px; position: relative; }
 .com-icon:hover, .com-icon.active { background: var(--accent); border-radius: 12px; }
 .plus-btn { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 0 12px rgba(34,197,94,0.35); }
+.badge { position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-.sidebar {
-    width: 260px;
-    background: var(--sidebar);
-    display: flex;
-    flex-direction: column;
-    border-right: 1px solid var(--border);
-}
+.sidebar { width: 260px; background: #111827; display: flex; flex-direction: column; border-right: 1px solid #1f2937; }
+.side-header { padding: 16px 14px 10px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+.group-list, .users-list, .admin-list, .convites-list, .ban-list { flex: 1; overflow-y: auto; padding: 6px 8px; }
 
-.side-header {
-    padding: 16px 14px 10px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
+.group-item, .user-item, .admin-item, .convite-item, .ban-item {
+    padding: 9px 11px; border-radius: 10px; cursor: pointer; margin-bottom: 3px;
+    color: var(--text-muted); font-size: 14px; display: flex; align-items: center; gap: 8px; transition: 0.15s; user-select: none;
 }
-
-.group-list, .users-list, .admin-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 6px 8px;
-}
-
-.group-item, .user-item, .admin-item {
-    padding: 9px 11px;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-bottom: 3px;
-    color: var(--text-muted);
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: 0.15s;
-    user-select: none;
-}
-.group-item:hover, .user-item:hover, .admin-item:hover { background: rgba(255,255,255,0.05); color: white; }
+.group-item:hover, .user-item:hover, .admin-item:hover, .convite-item:hover, .ban-item:hover { background: rgba(255,255,255,0.05); color: white; }
 .group-item.active { background: rgba(34,197,94,0.13); color: var(--accent); font-weight: 500; }
 .group-item .criador { font-size: 11px; opacity: 0.55; margin-left: auto; }
 
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-
-.topbar {
-    height: 54px;
-    padding: 0 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    background: rgba(11,15,25,0.9);
-}
+.topbar { height: 54px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1f2937; background: rgba(11,15,25,0.9); }
 #canalNomeTopo { font-weight: 600; font-size: 15px; }
 #canalInfo { font-size: 12px; color: var(--text-muted); }
+.topbar-actions { display: flex; gap: 8px; }
+.topbar-btn { background: none; border: none; color: var(--text-muted); font-size: 16px; cursor: pointer; padding: 6px; border-radius: 8px; }
+.topbar-btn:hover { background: rgba(255,255,255,0.08); color: white; }
 
-#mensagens {
-    flex: 1;
-    overflow-y: auto;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+#mensagens { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
 .empty-state { margin: auto; text-align: center; color: var(--text-muted); font-size: 14px; line-height: 1.5; }
 
-.msg {
-    max-width: 72%;
-    padding: 9px 13px;
-    border-radius: 13px;
-    font-size: 14.5px;
-    line-height: 1.4;
-    word-break: break-word;
-    position: relative;
-    animation: fadeIn 0.15s ease;
-}
+.msg { max-width: 72%; padding: 9px 13px; border-radius: 13px; font-size: 14.5px; line-height: 1.4; word-break: break-word; position: relative; animation: fadeIn 0.15s ease; cursor: pointer; }
 .msg.eu { align-self: flex-end; background: var(--msg-me); border-bottom-right-radius: 4px; }
 .msg.outro { align-self: flex-start; background: var(--msg-other); border-bottom-left-radius: 4px; }
-.msg b { font-size: 12.5px; display: block; margin-bottom: 2px; opacity: 0.85; }
+.msg b { font-size: 12.5px; display: block; margin-bottom: 2px; }
 .msg .time { font-size: 11px; opacity: 0.5; margin-top: 3px; text-align: right; }
 .msg .reacoes { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
 .msg .reacao { background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 10px; font-size: 12px; }
 
-.bottom {
-    padding: 10px 14px 14px;
-    border-top: 1px solid var(--border);
-    background: var(--sidebar);
-}
+.bottom { padding: 10px 14px 14px; border-top: 1px solid #1f2937; background: #111827; }
 .user-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .user-profile { display: flex; align-items: center; gap: 9px; cursor: pointer; }
-.avatar {
-    width: 34px; height: 34px; border-radius: 9px;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 600; font-size: 14px;
-}
+.avatar { width: 34px; height: 34px; border-radius: 9px; background: #1e293b; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 .user-info span { font-size: 13px; font-weight: 500; }
 .user-info small { font-size: 11px; color: var(--text-muted); }
+.adm-name { color: var(--adm) !important; }
 
-.input-wrapper {
-    display: flex; align-items: center;
-    background: #1e293b; border-radius: 11px;
-    padding: 3px 5px 3px 3px; border: 1px solid transparent;
-}
+.input-wrapper { display: flex; align-items: center; background: #1e293b; border-radius: 11px; padding: 3px 5px 3px 3px; border: 1px solid transparent; }
 .input-wrapper:focus-within { border-color: rgba(34,197,94,0.4); }
-#msgInput {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: white; padding: 10px 11px; font-size: 14.5px; font-family: inherit;
-}
+#msgInput { flex: 1; background: transparent; border: none; outline: none; color: white; padding: 10px 11px; font-size: 14.5px; font-family: inherit; }
 #msgInput::placeholder { color: #64748b; }
-.btn-send {
-    width: 36px; height: 36px; border-radius: 9px; border: none;
-    background: var(--accent); color: white; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; transition: 0.15s;
-}
+.btn-send { width: 36px; height: 36px; border-radius: 9px; border: none; background: var(--accent); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.15s; }
 .btn-send:hover { background: var(--accent-hover); transform: scale(1.05); }
 
 /* MODAIS */
-.modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
-    display: none; align-items: center; justify-content: center;
-    z-index: 200; backdrop-filter: blur(5px);
-}
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.65); display: none; align-items: center; justify-content: center; z-index: 200; backdrop-filter: blur(5px); }
 .modal.active { display: flex; }
-.modal-box {
-    width: 92%; max-width: 420px; max-height: 88vh; overflow-y: auto;
-    background: #111827; border-radius: 18px; padding: 22px;
-    border: 1px solid #1f2937; animation: modalIn 0.2s ease;
-}
+.modal-box { width: 92%; max-width: 420px; max-height: 88vh; overflow-y: auto; background: #111827; border-radius: 18px; padding: 22px; border: 1px solid #1f2937; animation: modalIn 0.2s ease; }
 .modal-box h2 { font-size: 18px; margin-bottom: 16px; font-weight: 600; }
-.modal-box input, .modal-box textarea, .modal-box select {
-    width: 100%; background: #1e293b; border: 1px solid #334155;
-    border-radius: 11px; padding: 11px 13px; color: white;
-    font-size: 14px; font-family: inherit; margin-bottom: 11px; outline: none; resize: none;
-}
+.modal-box input, .modal-box textarea, .modal-box select { width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 11px; padding: 11px 13px; color: white; font-size: 14px; font-family: inherit; margin-bottom: 11px; outline: none; resize: none; }
 .modal-box input:focus, .modal-box textarea:focus { border-color: var(--accent); }
 .modal-box textarea { min-height: 80px; }
-
 .privado-area { display: flex; align-items: center; justify-content: space-between; margin: 12px 0 18px; font-size: 14px; }
 .switch { position: relative; width: 44px; height: 24px; }
 .switch input { display: none; }
@@ -263,47 +112,40 @@ body {
 .slider::before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s; }
 .switch input:checked + .slider { background: var(--accent); }
 .switch input:checked + .slider::before { transform: translateX(20px); }
-
 .modal-buttons { display: flex; gap: 9px; margin-top: 8px; }
-.modal-buttons button {
-    flex: 1; padding: 11px; border-radius: 11px; border: none;
-    font-weight: 600; font-size: 14px; cursor: pointer;
-}
+.modal-buttons button { flex: 1; padding: 11px; border-radius: 11px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; }
 .btn-cancel { background: #1e293b; color: white; }
 .btn-confirm { background: var(--accent); color: white; }
 .btn-confirm:hover { background: var(--accent-hover); }
+.btn-danger { background: var(--danger); color: white; }
 
-.membro-item, .cargo-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 10px; border-radius: 9px; background: #1e293b;
-    margin-bottom: 6px; font-size: 13.5px;
-}
-.membro-item button { background: none; border: none; color: #f87171; cursor: pointer; font-size: 13px; }
-
+.membro-item, .cargo-item, .convite-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 9px; background: #1e293b; margin-bottom: 6px; font-size: 13.5px; }
+.membro-item button, .cargo-item button { background: none; border: none; color: #f87171; cursor: pointer; font-size: 13px; }
 .perm-check { display: flex; align-items: center; gap: 8px; margin: 8px 0; font-size: 13.5px; }
 .perm-check input { width: 16px; height: 16px; }
-
 .cor-preview { width: 22px; height: 22px; border-radius: 6px; border: 1px solid #334155; }
+.emoji-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin: 12px 0; max-height: 160px; overflow-y: auto; }
+.emoji-opt { font-size: 22px; text-align: center; padding: 6px; border-radius: 8px; cursor: pointer; }
+.emoji-opt:hover, .emoji-opt.selected { background: rgba(34,197,94,0.2); }
 
-.ctx-menu {
-    position: fixed; background: #1e293b; border: 1px solid #334155;
-    border-radius: 12px; padding: 6px; z-index: 300; min-width: 160px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: none;
-}
+.ctx-menu { position: fixed; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 6px; z-index: 300; min-width: 160px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: none; }
 .ctx-menu.active { display: block; }
-.ctx-item {
-    padding: 9px 12px; border-radius: 8px; cursor: pointer;
-    font-size: 13.5px; display: flex; align-items: center; gap: 8px;
-}
+.ctx-item { padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
 .ctx-item:hover { background: rgba(255,255,255,0.07); }
 .ctx-item.danger { color: #f87171; }
 .emoji-row { display: flex; gap: 4px; padding: 6px 8px; border-bottom: 1px solid #334155; margin-bottom: 4px; }
 .emoji-btn { background: none; border: none; font-size: 18px; cursor: pointer; padding: 4px; border-radius: 6px; }
 .emoji-btn:hover { background: rgba(255,255,255,0.1); }
 
+.profile-card { position: fixed; background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 16px; z-index: 310; width: 260px; box-shadow: 0 12px 40px rgba(0,0,0,0.5); display: none; }
+.profile-card.active { display: block; }
+.profile-card .p-avatar { font-size: 42px; text-align: center; margin-bottom: 8px; }
+.profile-card .p-name { font-weight: 600; font-size: 16px; text-align: center; margin-bottom: 4px; }
+.profile-card .p-role { font-size: 12px; text-align: center; color: var(--text-muted); margin-bottom: 10px; }
+.profile-card .p-cargos { font-size: 12px; color: var(--text-muted); }
+
 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes modalIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
@@ -315,6 +157,14 @@ body {
 </style>
 </head>
 <body>
+
+<!-- TELA BAN / KICK -->
+<div id="telaBan">
+    <h2 id="banTitulo">Você foi banido</h2>
+    <p id="banMsg">Você foi banido deste servidor. Se quiser voltar em paz, fale com o ADM.</p>
+    <div id="banTimer" style="font-size:28px;font-weight:700;color:#fbbf24;"></div>
+    <button id="btnComunicarAdm">Comunicar ADM</button>
+</div>
 
 <!-- LOGIN -->
 <div id="telaLogin">
@@ -335,7 +185,9 @@ body {
     <div class="comunidades">
         <button class="com-icon active" id="btnHome" title="Canais"><i class="fas fa-home"></i></button>
         <button class="com-icon" id="btnUsers" title="Pessoas"><i class="fas fa-users"></i></button>
+        <button class="com-icon" id="btnConvites" title="Convites" style="display:none;"><i class="fas fa-envelope"></i><span class="badge" id="badgeConvites" style="display:none;">0</span></button>
         <button class="com-icon" id="btnAdmin" title="ADM" style="display:none;"><i class="fas fa-shield-halved"></i></button>
+        <button class="com-icon" id="btnBans" title="Bans/Kicks" style="display:none;"><i class="fas fa-gavel"></i></button>
         <button class="com-icon plus-btn" id="btn-add" title="Criar canal"><i class="fas fa-plus"></i></button>
     </div>
 
@@ -343,7 +195,9 @@ body {
         <div class="side-header" id="sideTitle">Canais</div>
         <div class="group-list" id="listaGrupos"></div>
         <div class="users-list" id="listaUsuarios" style="display:none;"></div>
+        <div class="convites-list" id="listaConvites" style="display:none;"></div>
         <div class="admin-list" id="listaAdmin" style="display:none;"></div>
+        <div class="ban-list" id="listaBans" style="display:none;"></div>
     </div>
 
     <div class="main">
@@ -352,17 +206,21 @@ body {
                 <div id="canalNomeTopo"># selecione um canal</div>
                 <div id="canalInfo"></div>
             </div>
+            <div class="topbar-actions">
+                <button class="topbar-btn" id="btnCanalInfo" title="Info do canal" style="display:none;"><i class="fas fa-gear"></i></button>
+            </div>
         </div>
         <div id="mensagens"><div class="empty-state">Selecione ou crie um canal para começar</div></div>
         <div class="bottom">
             <div class="user-bar">
-                <div class="user-profile" id="btnLogout" title="Sair da conta">
-                    <div class="avatar" id="avatar">?</div>
+                <div class="user-profile" id="btnPerfil">
+                    <div class="avatar" id="avatar">😎</div>
                     <div class="user-info">
                         <span id="userNameBottom">Usuário</span>
                         <small>Online</small>
                     </div>
                 </div>
+                <button class="topbar-btn" id="btnLogout" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
             </div>
             <div class="input-wrapper">
                 <input id="msgInput" placeholder="Escreva uma mensagem..." autocomplete="off">
@@ -372,7 +230,7 @@ body {
     </div>
 </div>
 
-<!-- MODAL CRIAR CANAL -->
+<!-- MODAIS -->
 <div class="modal" id="modalCriar">
     <div class="modal-box">
         <h2>Novo canal</h2>
@@ -389,46 +247,70 @@ body {
     </div>
 </div>
 
-<!-- MODAL EDITAR CANAL -->
 <div class="modal" id="modalEditar">
     <div class="modal-box">
         <h2>Editar canal</h2>
         <input type="text" id="editNome" placeholder="Nome">
         <textarea id="editDesc" placeholder="Descrição"></textarea>
-        <div style="margin: 14px 0 8px; font-size: 13px; color: var(--text-muted);">Membros</div>
+        <div style="margin:14px 0 8px;font-size:13px;color:var(--text-muted);">Membros</div>
         <div id="listaMembros"></div>
-        <div style="margin-top: 14px; font-size: 13px; color: var(--text-muted);">Adicionar pessoa</div>
-        <select id="selectAddMembro"><option value="">Escolher usuário...</option></select>
+        <div style="margin-top:14px;font-size:13px;color:var(--text-muted);">Adicionar pessoa</div>
+        <select id="selectAddMembro"><option value="">Escolher...</option></select>
         <div class="modal-buttons" style="margin-top:16px;">
+            <button class="btn-danger" id="btnApagarCanal">Apagar canal</button>
             <button class="btn-cancel" id="btnCancelarEdit">Fechar</button>
             <button class="btn-confirm" id="btnSalvarEdit">Salvar</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL CRIAR CARGO -->
+<div class="modal" id="modalPerfil">
+    <div class="modal-box">
+        <h2>Editar perfil</h2>
+        <div style="text-align:center;font-size:48px;margin-bottom:12px;" id="previewEmoji">😎</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">Escolha um emoji</div>
+        <div class="emoji-grid" id="emojiGrid"></div>
+        <input type="text" id="editNomeUser" placeholder="Seu nome" maxlength="30">
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="btnCancelarPerfil">Cancelar</button>
+            <button class="btn-confirm" id="btnSalvarPerfil">Salvar</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="modalCanalInfo">
+    <div class="modal-box">
+        <h2 id="infoTitulo">Info do canal</h2>
+        <p id="infoDesc" style="color:var(--text-muted);font-size:14px;margin-bottom:14px;"></p>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Membros</div>
+        <div id="infoMembros"></div>
+        <div class="modal-buttons" style="margin-top:16px;">
+            <button class="btn-cancel" id="btnFecharInfo">Fechar</button>
+        </div>
+    </div>
+</div>
+
 <div class="modal" id="modalCargo">
     <div class="modal-box">
-        <h2>Criar Cargo</h2>
+        <h2 id="cargoTitulo">Criar Cargo</h2>
         <input type="text" id="cargoNome" placeholder="Nome do cargo" maxlength="30">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
             <label style="font-size:14px;">Cor:</label>
-            <input type="color" id="cargoCor" value="#22c55e" style="width:50px; height:34px; border:none; background:none; cursor:pointer;">
+            <input type="color" id="cargoCor" value="#22c55e" style="width:50px;height:34px;border:none;background:none;cursor:pointer;">
             <div class="cor-preview" id="corPreview" style="background:#22c55e;"></div>
         </div>
-        <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Permissões</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Permissões</div>
         <div class="perm-check"><input type="checkbox" id="c_kick"><label for="c_kick">Kick</label></div>
         <div class="perm-check"><input type="checkbox" id="c_ban"><label for="c_ban">Ban</label></div>
         <div class="perm-check"><input type="checkbox" id="c_gerenciar"><label for="c_gerenciar">Gerenciar grupos</label></div>
         <div class="perm-check"><input type="checkbox" id="c_criar_cargos"><label for="c_criar_cargos">Criar cargos</label></div>
         <div class="modal-buttons" style="margin-top:16px;">
             <button class="btn-cancel" id="btnCancelarCargo">Cancelar</button>
-            <button class="btn-confirm" id="btnCriarCargo">Criar</button>
+            <button class="btn-confirm" id="btnCriarCargo">Salvar</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL PERMISSÕES -->
 <div class="modal" id="modalPerms">
     <div class="modal-box">
         <h2>Permissões de <span id="permNome"></span></h2>
@@ -442,7 +324,23 @@ body {
     </div>
 </div>
 
-<!-- CONTEXT MENU -->
+<div class="modal" id="modalBan">
+    <div class="modal-box">
+        <h2>Banir / Kickar</h2>
+        <select id="banUser"><option value="">Escolher usuário...</option></select>
+        <select id="banTipo">
+            <option value="kick">Kick (temporário)</option>
+            <option value="ban">Ban (permanente)</option>
+        </select>
+        <input type="number" id="banTempo" placeholder="Minutos (só pro kick)" min="1" value="10">
+        <input type="text" id="banMotivo" placeholder="Motivo (opcional)">
+        <div class="modal-buttons">
+            <button class="btn-cancel" id="btnCancelarBan">Cancelar</button>
+            <button class="btn-danger" id="btnConfirmarBan">Confirmar</button>
+        </div>
+    </div>
+</div>
+
 <div class="ctx-menu" id="ctxMenu">
     <div class="emoji-row">
         <button class="emoji-btn" data-emoji="👍">👍</button>
@@ -454,11 +352,18 @@ body {
     <div class="ctx-item danger" id="ctxApagar"><i class="fas fa-trash"></i> Apagar</div>
 </div>
 
+<div class="profile-card" id="profileCard">
+    <div class="p-avatar" id="pAvatar">😎</div>
+    <div class="p-name" id="pName">Nome</div>
+    <div class="p-role" id="pRole">Cargo</div>
+    <div class="p-cargos" id="pCargos"></div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
     getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
-    onSnapshot, query, where, orderBy, serverTimestamp, arrayUnion, arrayRemove, getDoc
+    onSnapshot, query, where, orderBy, serverTimestamp, arrayUnion, arrayRemove, getDoc, getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -475,7 +380,8 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const DONO = "MVOIDv";
-const SENHA_DONO = "Wr0ck3t#Adm2026!";   // senha forte da conta ADM
+const SENHA_DONO = "Wr0ck3t#Adm2026!";
+const EMOJIS = ["😎","🔥","🚀","👾","🐱","🐶","🌈","⚡","🎮","🍕","🎸","👻","🐸","🦄","💀","👑","🌟","🎯","🍕","🍀","🏀","🎵","💻","🧠"];
 
 let nome = null;
 let usuarioAtual = null;
@@ -483,27 +389,37 @@ let canalAtual = null;
 let canaisCache = {};
 let usuariosCache = {};
 let cargosCache = {};
+let convitesCache = [];
 let unsubscribeMensagens = null;
 let msgCtxId = null;
 let msgCtxData = null;
 let editandoCanalId = null;
 let editandoPermUser = null;
 let modoCadastro = false;
+let emojiEscolhido = "😎";
 
+// elementos
 const telaLogin = document.getElementById("telaLogin");
+const telaBan = document.getElementById("telaBan");
 const appEl = document.getElementById("app");
 const mensagensEl = document.getElementById("mensagens");
 const input = document.getElementById("msgInput");
 const listaGrupos = document.getElementById("listaGrupos");
 const listaUsuarios = document.getElementById("listaUsuarios");
+const listaConvites = document.getElementById("listaConvites");
 const listaAdmin = document.getElementById("listaAdmin");
+const listaBans = document.getElementById("listaBans");
 const canalNomeTopo = document.getElementById("canalNomeTopo");
 const canalInfo = document.getElementById("canalInfo");
 const userNameBottom = document.getElementById("userNameBottom");
 const avatarEl = document.getElementById("avatar");
 const sideTitle = document.getElementById("sideTitle");
 const btnAdmin = document.getElementById("btnAdmin");
+const btnConvites = document.getElementById("btnConvites");
+const btnBans = document.getElementById("btnBans");
+const badgeConvites = document.getElementById("badgeConvites");
 
+// LOGIN
 const loginNome = document.getElementById("loginNome");
 const loginSenha = document.getElementById("loginSenha");
 const loginSenha2 = document.getElementById("loginSenha2");
@@ -512,10 +428,7 @@ const toggleLogin = document.getElementById("toggleLogin");
 const erroLogin = document.getElementById("erroLogin");
 const loginSubtitulo = document.getElementById("loginSubtitulo");
 
-function mostrarErro(msg) {
-    erroLogin.textContent = msg;
-    erroLogin.style.display = "block";
-}
+function mostrarErro(msg) { erroLogin.textContent = msg; erroLogin.style.display = "block"; }
 function limparErro() { erroLogin.style.display = "none"; }
 
 toggleLogin.onclick = () => {
@@ -539,49 +452,61 @@ btnLoginAcao.onclick = async () => {
     const n = loginNome.value.trim();
     const s = loginSenha.value;
     const s2 = loginSenha2.value;
-
     if (!n || n.length < 2) return mostrarErro("Nome muito curto");
-    if (!s || s.length < 3) return mostrarErro("Senha muito curta (mín. 3)");
+    if (!s || s.length < 3) return mostrarErro("Senha muito curta");
+
+    // checa ban local
+    const banLocal = localStorage.getItem("wrocket_ban");
+    if (banLocal) {
+        const banData = JSON.parse(banLocal);
+        if (banData.tipo === "ban" || (banData.tipo === "kick" && Date.now() < banData.ate)) {
+            mostrarTelaBan(banData);
+            return;
+        } else {
+            localStorage.removeItem("wrocket_ban");
+        }
+    }
 
     const ref = doc(db, "usuarios", n);
     const snap = await getDoc(ref);
 
     if (modoCadastro) {
         if (s !== s2) return mostrarErro("As senhas não coincidem");
-        if (snap.exists()) return mostrarErro("Esse nome já está em uso. Escolha outro.");
-
+        if (snap.exists()) return mostrarErro("Esse nome já está em uso");
         const isDono = n === DONO;
         await setDoc(ref, {
             nome: n,
             senha: isDono ? SENHA_DONO : s,
             role: isDono ? "admin" : "user",
-            permissoes: {
-                apagarMsg: isDono,
-                gerenciarCanais: isDono,
-                convidar: true
-            },
+            emoji: "😎",
+            permissoes: { apagarMsg: isDono, gerenciarCanais: isDono, convidar: true },
             criadoEm: serverTimestamp(),
             ultimoAcesso: serverTimestamp()
         });
         entrar(n);
     } else {
-        // LOGIN
         if (!snap.exists()) return mostrarErro("Conta não encontrada");
-
         let dados = snap.data();
-
-        // Se for o dono e a conta estiver sem senha (estrutura antiga), define a senha forte
         if (n === DONO && (!dados.senha || dados.senha === "")) {
-            await updateDoc(ref, {
-                senha: SENHA_DONO,
-                role: "admin",
-                permissoes: { apagarMsg: true, gerenciarCanais: true, convidar: true },
-                nome: DONO
-            });
+            await updateDoc(ref, { senha: SENHA_DONO, role: "admin", permissoes: { apagarMsg: true, gerenciarCanais: true, convidar: true }, nome: DONO });
             dados.senha = SENHA_DONO;
         }
-
         if (dados.senha !== s) return mostrarErro("Senha incorreta");
+
+        // checa ban no Firebase
+        const banSnap = await getDocs(query(collection(db, "punicoes"), where("usuario", "==", n), where("ativo", "==", true)));
+        if (!banSnap.empty) {
+            const pun = banSnap.docs[0].data();
+            if (pun.tipo === "ban" || (pun.tipo === "kick" && pun.ate && pun.ate.toMillis() > Date.now())) {
+                localStorage.setItem("wrocket_ban", JSON.stringify({
+                    tipo: pun.tipo,
+                    motivo: pun.motivo || "",
+                    ate: pun.ate ? pun.ate.toMillis() : null
+                }));
+                mostrarTelaBan({ tipo: pun.tipo, motivo: pun.motivo, ate: pun.ate ? pun.ate.toMillis() : null });
+                return;
+            }
+        }
 
         await updateDoc(ref, { ultimoAcesso: serverTimestamp() });
         entrar(n);
@@ -596,120 +521,136 @@ function entrar(n) {
     carregarUsuario();
 }
 
+function mostrarTelaBan(data) {
+    telaLogin.style.display = "none";
+    appEl.style.display = "none";
+    telaBan.style.display = "flex";
+    document.getElementById("banTitulo").textContent = data.tipo === "ban" ? "Você foi banido" : "Você foi kickado";
+    document.getElementById("banMsg").textContent = data.motivo ? `Motivo: ${data.motivo}` : (data.tipo === "ban" ? "Você foi banido deste servidor. Se quiser voltar em paz, fale com o ADM." : "Você foi kickado temporariamente.");
+    const timerEl = document.getElementById("banTimer");
+    if (data.tipo === "kick" && data.ate) {
+        const tick = () => {
+            const falta = data.ate - Date.now();
+            if (falta <= 0) {
+                localStorage.removeItem("wrocket_ban");
+                location.reload();
+                return;
+            }
+            const min = Math.floor(falta / 60000);
+            const seg = Math.floor((falta % 60000) / 1000);
+            timerEl.textContent = `${min.toString().padStart(2,"0")}:${seg.toString().padStart(2,"0")}`;
+            setTimeout(tick, 1000);
+        };
+        tick();
+    } else {
+        timerEl.textContent = "";
+    }
+}
+
+document.getElementById("btnComunicarAdm").onclick = () => {
+    alert("Envie uma mensagem para o ADM (MVOIDv) por outro meio ou aguarde.");
+};
+
 const salvo = localStorage.getItem("wrocket_user");
 if (salvo) {
-    getDoc(doc(db, "usuarios", salvo)).then(snap => {
-        if (snap.exists()) entrar(salvo);
-        else localStorage.removeItem("wrocket_user");
-    });
+    const banLocal = localStorage.getItem("wrocket_ban");
+    if (banLocal) {
+        const banData = JSON.parse(banLocal);
+        if (banData.tipo === "ban" || (banData.tipo === "kick" && Date.now() < banData.ate)) {
+            mostrarTelaBan(banData);
+        } else {
+            localStorage.removeItem("wrocket_ban");
+            getDoc(doc(db, "usuarios", salvo)).then(snap => { if (snap.exists()) entrar(salvo); else localStorage.removeItem("wrocket_user"); });
+        }
+    } else {
+        getDoc(doc(db, "usuarios", salvo)).then(snap => { if (snap.exists()) entrar(salvo); else localStorage.removeItem("wrocket_user"); });
+    }
 }
 
 async function carregarUsuario() {
     const snap = await getDoc(doc(db, "usuarios", nome));
-    if (!snap.exists()) {
-        localStorage.removeItem("wrocket_user");
-        location.reload();
-        return;
-    }
+    if (!snap.exists()) { localStorage.removeItem("wrocket_user"); location.reload(); return; }
     usuarioAtual = snap.data();
-
-    // Garante que o dono sempre tenha a senha forte e role admin
     if (nome === DONO) {
         if (usuarioAtual.senha !== SENHA_DONO || usuarioAtual.role !== "admin") {
-            await updateDoc(doc(db, "usuarios", DONO), {
-                senha: SENHA_DONO,
-                role: "admin",
-                permissoes: { apagarMsg: true, gerenciarCanais: true, convidar: true },
-                nome: DONO
-            });
-            usuarioAtual.senha = SENHA_DONO;
+            await updateDoc(doc(db, "usuarios", DONO), { senha: SENHA_DONO, role: "admin", permissoes: { apagarMsg: true, gerenciarCanais: true, convidar: true }, nome: DONO });
             usuarioAtual.role = "admin";
         }
     }
-
-    userNameBottom.textContent = nome + (usuarioAtual.role === "admin" ? " ★" : usuarioAtual.role === "subadmin" ? " ◆" : "");
-    avatarEl.textContent = nome.charAt(0).toUpperCase();
+    emojiEscolhido = usuarioAtual.emoji || "😎";
+    avatarEl.textContent = emojiEscolhido;
+    userNameBottom.textContent = nome;
+    userNameBottom.className = usuarioAtual.role === "admin" ? "adm-name" : "";
     if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin") {
         btnAdmin.style.display = "flex";
+        btnBans.style.display = "flex";
     }
+    btnConvites.style.display = "flex";
     iniciarApp();
 }
 
 document.getElementById("btnLogout").onclick = () => {
-    if (confirm("Sair da conta?")) {
-        localStorage.removeItem("wrocket_user");
-        location.reload();
-    }
+    if (confirm("Sair da conta?")) { localStorage.removeItem("wrocket_user"); location.reload(); }
 };
 
-function podeApagarQualquer() {
-    return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.apagarMsg;
-}
-function podeGerenciarCanais() {
-    return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.gerenciarCanais;
-}
-function podeConvidar() {
-    return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.convidar !== false;
-}
+function podeApagarQualquer() { return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.apagarMsg; }
+function podeGerenciarCanais() { return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.gerenciarCanais; }
+function podeConvidar() { return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.convidar !== false; }
 
 function iniciarApp() {
+    // navegação
     document.getElementById("btnHome").onclick = () => setAba("canais");
     document.getElementById("btnUsers").onclick = () => setAba("users");
+    document.getElementById("btnConvites").onclick = () => setAba("convites");
     document.getElementById("btnAdmin").onclick = () => setAba("admin");
+    document.getElementById("btnBans").onclick = () => setAba("bans");
 
     function setAba(tipo) {
         document.querySelectorAll(".com-icon").forEach(b => b.classList.remove("active"));
         listaGrupos.style.display = "none";
         listaUsuarios.style.display = "none";
+        listaConvites.style.display = "none";
         listaAdmin.style.display = "none";
+        listaBans.style.display = "none";
 
-        if (tipo === "canais") {
-            document.getElementById("btnHome").classList.add("active");
-            listaGrupos.style.display = "block";
-            sideTitle.textContent = "Canais";
-        } else if (tipo === "users") {
-            document.getElementById("btnUsers").classList.add("active");
-            listaUsuarios.style.display = "block";
-            sideTitle.textContent = "Pessoas";
-        } else if (tipo === "admin") {
-            document.getElementById("btnAdmin").classList.add("active");
-            listaAdmin.style.display = "block";
-            sideTitle.textContent = "Administração";
-            renderAdmin();
-        }
+        if (tipo === "canais") { document.getElementById("btnHome").classList.add("active"); listaGrupos.style.display = "block"; sideTitle.textContent = "Canais"; }
+        else if (tipo === "users") { document.getElementById("btnUsers").classList.add("active"); listaUsuarios.style.display = "block"; sideTitle.textContent = "Pessoas"; }
+        else if (tipo === "convites") { document.getElementById("btnConvites").classList.add("active"); listaConvites.style.display = "block"; sideTitle.textContent = "Convites"; renderConvites(); }
+        else if (tipo === "admin") { document.getElementById("btnAdmin").classList.add("active"); listaAdmin.style.display = "block"; sideTitle.textContent = "Administração"; renderAdmin(); }
+        else if (tipo === "bans") { document.getElementById("btnBans").classList.add("active"); listaBans.style.display = "block"; sideTitle.textContent = "Bans & Kicks"; renderBans(); }
     }
 
+    // ENVIAR MENSAGEM (corrigido)
     async function enviar() {
-        if (!canalAtual) return;
+        if (!canalAtual) { alert("Selecione um canal primeiro"); return; }
         const texto = input.value.trim();
         if (!texto) return;
-        await addDoc(collection(db, "mensagens"), {
-            grupo: canalAtual,
-            nome,
-            texto,
-            data: serverTimestamp(),
-            reacoes: {}
-        });
-        input.value = "";
-        input.focus();
-    }
-
-    document.getElementById("btnEnviar").onclick = enviar;
-    input.addEventListener("keydown", e => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            enviar();
+        try {
+            await addDoc(collection(db, "mensagens"), {
+                grupo: canalAtual,
+                nome: nome,
+                texto: texto,
+                data: serverTimestamp(),
+                reacoes: {},
+                emoji: emojiEscolhido
+            });
+            input.value = "";
+            input.focus();
+        } catch (e) {
+            console.error("Erro ao enviar:", e);
+            alert("Erro ao enviar mensagem. Tente de novo.");
         }
-    });
+    }
+    document.getElementById("btnEnviar").onclick = enviar;
+    input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar(); } });
 
+    // CARREGAR MENSAGENS
     function carregarMensagens() {
         if (unsubscribeMensagens) unsubscribeMensagens();
-        const q = query(
-            collection(db, "mensagens"),
-            where("grupo", "==", canalAtual),
-            orderBy("data", "asc")
-        );
-        unsubscribeMensagens = onSnapshot(q, snap => {
+        if (!canalAtual) return;
+
+        const q = query(collection(db, "mensagens"), where("grupo", "==", canalAtual), orderBy("data", "asc"));
+        unsubscribeMensagens = onSnapshot(q, (snap) => {
             mensagensEl.innerHTML = "";
             if (snap.empty) {
                 mensagensEl.innerHTML = `<div class="empty-state">Nenhuma mensagem ainda.<br>Manda a primeira 🚀</div>`;
@@ -722,48 +663,53 @@ function iniciarApp() {
                 div.dataset.id = docSnap.id;
 
                 let hora = "";
-                if (m.data?.toDate) {
-                    hora = m.data.toDate().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-                }
+                if (m.data?.toDate) hora = m.data.toDate().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
                 let reacoesHtml = "";
                 if (m.reacoes && Object.keys(m.reacoes).length) {
-                    reacoesHtml = `<div class="reacoes">` +
-                        Object.entries(m.reacoes).map(([emoji, users]) =>
-                            `<span class="reacao">${emoji} ${users.length}</span>`
-                        ).join("") + `</div>`;
+                    reacoesHtml = `<div class="reacoes">` + Object.entries(m.reacoes).map(([e, u]) => `<span class="reacao">${e} ${u.length}</span>`).join("") + `</div>`;
                 }
 
+                const nomeClass = m.nome === DONO ? "adm-name" : "";
                 div.innerHTML = `
-                    <b>${m.nome}</b>
+                    <b class="${nomeClass}">${m.emoji || "😎"} ${m.nome}</b>
                     <div>${m.texto}</div>
                     ${reacoesHtml}
                     ${hora ? `<div class="time">${hora}</div>` : ""}
                 `;
 
+                // long press / right click
                 let pressTimer;
                 div.addEventListener("contextmenu", e => { e.preventDefault(); abrirCtx(e, docSnap.id, m); });
                 div.addEventListener("touchstart", e => { pressTimer = setTimeout(() => abrirCtx(e.touches[0], docSnap.id, m), 500); });
                 div.addEventListener("touchend", () => clearTimeout(pressTimer));
                 div.addEventListener("touchmove", () => clearTimeout(pressTimer));
 
+                // click para perfil
+                div.addEventListener("click", (e) => {
+                    if (e.target.closest(".reacao")) return;
+                    mostrarPerfil(m.nome, m.emoji || "😎", e);
+                });
+
                 mensagensEl.appendChild(div);
             });
             mensagensEl.scrollTop = mensagensEl.scrollHeight;
+        }, (err) => {
+            console.error("Erro no snapshot de mensagens:", err);
+            mensagensEl.innerHTML = `<div class="empty-state">Erro ao carregar mensagens.<br>Verifique o índice no Firebase.</div>`;
         });
     }
 
+    // CONTEXT MENU
     const ctxMenu = document.getElementById("ctxMenu");
     function abrirCtx(e, id, data) {
-        msgCtxId = id;
-        msgCtxData = data;
+        msgCtxId = id; msgCtxData = data;
         ctxMenu.style.left = Math.min(e.clientX || e.pageX, window.innerWidth - 180) + "px";
         ctxMenu.style.top = Math.min(e.clientY || e.pageY, window.innerHeight - 160) + "px";
         ctxMenu.classList.add("active");
-        const podeApagar = data.nome === nome || podeApagarQualquer();
-        document.getElementById("ctxApagar").style.display = podeApagar ? "flex" : "none";
+        document.getElementById("ctxApagar").style.display = (data.nome === nome || podeApagarQualquer()) ? "flex" : "none";
     }
-    document.addEventListener("click", () => ctxMenu.classList.remove("active"));
+    document.addEventListener("click", () => { ctxMenu.classList.remove("active"); document.getElementById("profileCard").classList.remove("active"); });
 
     document.querySelectorAll(".emoji-btn").forEach(btn => {
         btn.onclick = async (e) => {
@@ -776,72 +722,58 @@ function iniciarApp() {
             const reacoes = data.reacoes || {};
             if (!reacoes[emoji]) reacoes[emoji] = [];
             if (!reacoes[emoji].includes(nome)) reacoes[emoji].push(nome);
-            else {
-                reacoes[emoji] = reacoes[emoji].filter(u => u !== nome);
-                if (reacoes[emoji].length === 0) delete reacoes[emoji];
-            }
+            else { reacoes[emoji] = reacoes[emoji].filter(u => u !== nome); if (!reacoes[emoji].length) delete reacoes[emoji]; }
             await updateDoc(ref, { reacoes });
             ctxMenu.classList.remove("active");
         };
     });
-
     document.getElementById("ctxApagar").onclick = async () => {
         if (!msgCtxId) return;
-        if (confirm("Apagar essa mensagem?")) {
-            await deleteDoc(doc(db, "mensagens", msgCtxId));
-        }
+        if (confirm("Apagar essa mensagem?")) await deleteDoc(doc(db, "mensagens", msgCtxId));
         ctxMenu.classList.remove("active");
     };
 
+    // PERFIL CARD
+    function mostrarPerfil(userNome, emoji, e) {
+        const card = document.getElementById("profileCard");
+        document.getElementById("pAvatar").textContent = emoji;
+        document.getElementById("pName").textContent = userNome;
+        document.getElementById("pName").className = "p-name " + (userNome === DONO ? "adm-name" : "");
+        const u = usuariosCache[userNome];
+        document.getElementById("pRole").textContent = u?.role === "admin" ? "Administrador" : u?.role === "subadmin" ? "Sub-ADM" : "Membro";
+        document.getElementById("pCargos").textContent = "";
+        card.style.left = Math.min(e.clientX, window.innerWidth - 280) + "px";
+        card.style.top = Math.min(e.clientY, window.innerHeight - 200) + "px";
+        card.classList.add("active");
+    }
+
+    // CANAIS
     onSnapshot(collection(db, "canais"), snap => {
         canaisCache = {};
         listaGrupos.innerHTML = "";
         let temGeral = false;
-
         snap.forEach(docSnap => {
             const c = docSnap.data();
             canaisCache[docSnap.id] = { id: docSnap.id, ...c };
             if (c.nome === "Geral") temGeral = true;
         });
-
         if (!temGeral) {
-            addDoc(collection(db, "canais"), {
-                nome: "Geral",
-                descricao: "Canal público da comunidade",
-                privado: false,
-                criadoPor: "Sistema",
-                membros: [],
-                data: serverTimestamp()
-            });
+            addDoc(collection(db, "canais"), { nome: "Geral", descricao: "Canal público da comunidade", privado: false, criadoPor: "Sistema", membros: [], data: serverTimestamp() });
             return;
         }
-
         const isAdmin = usuarioAtual?.role === "admin";
-
         Object.values(canaisCache).forEach(canal => {
-            const isMembro = !canal.privado ||
-                             canal.criadoPor === nome ||
-                             (canal.membros || []).includes(nome) ||
-                             isAdmin;
+            const isMembro = !canal.privado || canal.criadoPor === nome || (canal.membros || []).includes(nome) || isAdmin;
             if (!isMembro) return;
-
             const div = document.createElement("div");
-            div.className = "group-item";
-            if (canalAtual === canal.id) div.classList.add("active");
-            div.innerHTML = `
-                <i class="fas fa-hashtag"></i>
-                <span>${canal.nome}</span>
-                <span class="criador">${canal.criadoPor === "Sistema" ? "" : canal.criadoPor}</span>
-            `;
+            div.className = "group-item" + (canalAtual === canal.id ? " active" : "");
+            div.innerHTML = `<i class="fas fa-hashtag"></i><span>${canal.nome}</span><span class="criador">${canal.criadoPor === "Sistema" ? "" : canal.criadoPor}</span>`;
             div.onclick = () => selecionarCanal(canal);
-
             if (canal.criadoPor === nome || podeGerenciarCanais()) {
                 div.oncontextmenu = (e) => { e.preventDefault(); abrirEditarCanal(canal); };
-                let t;
-                div.addEventListener("touchstart", e => { t = setTimeout(() => abrirEditarCanal(canal), 600); });
+                let t; div.addEventListener("touchstart", e => { t = setTimeout(() => abrirEditarCanal(canal), 600); });
                 div.addEventListener("touchend", () => clearTimeout(t));
             }
-
             listaGrupos.appendChild(div);
             if (!canalAtual && canal.nome === "Geral") selecionarCanal(canal);
         });
@@ -850,14 +782,32 @@ function iniciarApp() {
     function selecionarCanal(canal) {
         canalAtual = canal.id;
         canalNomeTopo.textContent = "# " + canal.nome;
-        canalInfo.textContent = (canal.descricao || (canal.privado ? "Privado" : "Público")) +
-            (canal.criadoPor !== "Sistema" ? ` · criado por ${canal.criadoPor}` : "");
+        canalInfo.textContent = (canal.descricao || (canal.privado ? "Privado" : "Público")) + (canal.criadoPor !== "Sistema" ? ` · criado por ${canal.criadoPor}` : "");
+        document.getElementById("btnCanalInfo").style.display = "block";
         carregarMensagens();
-        document.querySelectorAll(".group-item").forEach(el => {
-            el.classList.toggle("active", el.textContent.includes(canal.nome));
-        });
+        document.querySelectorAll(".group-item").forEach(el => el.classList.toggle("active", el.textContent.includes(canal.nome)));
     }
 
+    document.getElementById("btnCanalInfo").onclick = () => {
+        const canal = canaisCache[canalAtual];
+        if (!canal) return;
+        document.getElementById("infoTitulo").textContent = "# " + canal.nome;
+        document.getElementById("infoDesc").textContent = canal.descricao || "Sem descrição";
+        const lista = document.getElementById("infoMembros");
+        lista.innerHTML = "";
+        const membros = canal.membros || [];
+        if (canal.criadoPor && canal.criadoPor !== "Sistema" && !membros.includes(canal.criadoPor)) membros.unshift(canal.criadoPor);
+        membros.forEach(m => {
+            const item = document.createElement("div");
+            item.className = "membro-item";
+            item.innerHTML = `<span>${m}${m === canal.criadoPor ? " (criador)" : ""}</span>`;
+            lista.appendChild(item);
+        });
+        document.getElementById("modalCanalInfo").classList.add("active");
+    };
+    document.getElementById("btnFecharInfo").onclick = () => document.getElementById("modalCanalInfo").classList.remove("active");
+
+    // USUÁRIOS
     onSnapshot(collection(db, "usuarios"), snap => {
         usuariosCache = {};
         listaUsuarios.innerHTML = "";
@@ -867,13 +817,10 @@ function iniciarApp() {
             usuariosCache[u.nome] = u;
             const div = document.createElement("div");
             div.className = "user-item";
-            div.innerHTML = `
-                <div class="avatar" style="width:28px;height:28px;font-size:12px;">${u.nome.charAt(0)}</div>
-                <span>${u.nome}${u.role === "admin" ? " ★" : u.role === "subadmin" ? " ◆" : ""}</span>
-            `;
+            div.innerHTML = `<div class="avatar" style="width:28px;height:28px;font-size:16px;">${u.emoji || "😎"}</div><span class="${u.role==="admin"?"adm-name":""}">${u.nome}${u.role==="admin"?" ★":u.role==="subadmin"?" ◆":""}</span>`;
             div.onclick = () => {
-                if (!canalAtual) return alert("Entra num canal primeiro pra convidar.");
-                if (!podeConvidar()) return alert("Você não tem permissão pra convidar.");
+                if (!canalAtual) return alert("Entra num canal primeiro");
+                if (!podeConvidar()) return alert("Sem permissão pra convidar");
                 if (confirm(`Convidar ${u.nome} pro canal atual?`)) convidarUsuario(u.nome);
             };
             listaUsuarios.appendChild(div);
@@ -882,14 +829,65 @@ function iniciarApp() {
 
     async function convidarUsuario(userNome) {
         if (!canalAtual) return;
-        await updateDoc(doc(db, "canais", canalAtual), { membros: arrayUnion(userNome) });
-        alert(`${userNome} foi adicionado!`);
+        const canal = canaisCache[canalAtual];
+        // se não for ADM e o canal não for do sistema, cria convite
+        if (usuarioAtual.role !== "admin" && canal.criadoPor !== "Sistema") {
+            await addDoc(collection(db, "convites"), {
+                de: nome,
+                para: userNome,
+                canalId: canalAtual,
+                canalNome: canal.nome,
+                status: "pendente",
+                data: serverTimestamp()
+            });
+            alert(`Convite enviado para ${userNome}!`);
+        } else {
+            await updateDoc(doc(db, "canais", canalAtual), { membros: arrayUnion(userNome) });
+            alert(`${userNome} adicionado!`);
+        }
     }
 
-    document.getElementById("btn-add").onclick = () => {
-        document.getElementById("modalCriar").classList.add("active");
-        document.getElementById("grupoNome").focus();
-    };
+    // CONVITES
+    onSnapshot(query(collection(db, "convites"), where("para", "==", nome), where("status", "==", "pendente")), snap => {
+        convitesCache = [];
+        snap.forEach(d => convitesCache.push({ id: d.id, ...d.data() }));
+        badgeConvites.textContent = convitesCache.length;
+        badgeConvites.style.display = convitesCache.length ? "flex" : "none";
+        if (listaConvites.style.display !== "none") renderConvites();
+    });
+
+    function renderConvites() {
+        listaConvites.innerHTML = "";
+        if (!convitesCache.length) {
+            listaConvites.innerHTML = `<div style="padding:16px;color:#64748b;font-size:13px;text-align:center;">Nenhum convite pendente</div>`;
+            return;
+        }
+        convitesCache.forEach(c => {
+            const div = document.createElement("div");
+            div.className = "convite-item";
+            div.innerHTML = `
+                <div style="flex:1;">
+                    <div><b>${c.canalNome}</b></div>
+                    <div style="font-size:12px;opacity:0.7;">de ${c.de}</div>
+                </div>
+                <div style="display:flex;gap:6px;">
+                    <button style="background:#22c55e;border:none;color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;" data-id="${c.id}" data-canal="${c.canalId}">Aceitar</button>
+                    <button style="background:#ef4444;border:none;color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;" data-id="${c.id}">Recusar</button>
+                </div>
+            `;
+            div.querySelectorAll("button")[0].onclick = async () => {
+                await updateDoc(doc(db, "canais", c.canalId), { membros: arrayUnion(nome) });
+                await updateDoc(doc(db, "convites", c.id), { status: "aceito" });
+            };
+            div.querySelectorAll("button")[1].onclick = async () => {
+                await updateDoc(doc(db, "convites", c.id), { status: "recusado" });
+            };
+            listaConvites.appendChild(div);
+        });
+    }
+
+    // CRIAR CANAL
+    document.getElementById("btn-add").onclick = () => { document.getElementById("modalCriar").classList.add("active"); document.getElementById("grupoNome").focus(); };
     document.getElementById("btnCancelarCriar").onclick = () => document.getElementById("modalCriar").classList.remove("active");
     document.getElementById("btnCriarFinal").onclick = async () => {
         const nomeGrupo = document.getElementById("grupoNome").value.trim();
@@ -897,18 +895,14 @@ function iniciarApp() {
         const privado = document.getElementById("grupoPrivado").checked;
         if (!nomeGrupo) return;
         await addDoc(collection(db, "canais"), {
-            nome: nomeGrupo,
-            descricao,
-            privado,
-            criadoPor: nome,
-            membros: [nome],
-            data: serverTimestamp()
+            nome: nomeGrupo, descricao, privado, criadoPor: nome, membros: [nome], data: serverTimestamp()
         });
         document.getElementById("grupoNome").value = "";
         document.getElementById("grupoDescricao").value = "";
         document.getElementById("modalCriar").classList.remove("active");
     };
 
+    // EDITAR CANAL
     function abrirEditarCanal(canal) {
         editandoCanalId = canal.id;
         document.getElementById("editNome").value = canal.nome;
@@ -919,8 +913,7 @@ function iniciarApp() {
         membros.forEach(m => {
             const item = document.createElement("div");
             item.className = "membro-item";
-            item.innerHTML = `<span>${m}${m === canal.criadoPor ? " (criador)" : ""}</span>
-                ${m !== canal.criadoPor ? `<button data-user="${m}">remover</button>` : ""}`;
+            item.innerHTML = `<span>${m}${m === canal.criadoPor ? " (criador)" : ""}</span>${m !== canal.criadoPor ? `<button data-user="${m}">remover</button>` : ""}`;
             if (m !== canal.criadoPor) {
                 item.querySelector("button").onclick = async () => {
                     await updateDoc(doc(db, "canais", canal.id), { membros: arrayRemove(m) });
@@ -930,12 +923,10 @@ function iniciarApp() {
             lista.appendChild(item);
         });
         const select = document.getElementById("selectAddMembro");
-        select.innerHTML = `<option value="">Escolher usuário...</option>`;
+        select.innerHTML = `<option value="">Escolher...</option>`;
         Object.keys(usuariosCache).forEach(u => {
             if (!membros.includes(u)) {
-                const opt = document.createElement("option");
-                opt.value = u; opt.textContent = u;
-                select.appendChild(opt);
+                const opt = document.createElement("option"); opt.value = u; opt.textContent = u; select.appendChild(opt);
             }
         });
         select.onchange = async () => {
@@ -955,7 +946,55 @@ function iniciarApp() {
         });
         document.getElementById("modalEditar").classList.remove("active");
     };
+    document.getElementById("btnApagarCanal").onclick = async () => {
+        if (!editandoCanalId) return;
+        const canal = canaisCache[editandoCanalId];
+        if (!canal) return;
+        if (canal.criadoPor !== nome && usuarioAtual.role !== "admin") return alert("Só o criador ou ADM pode apagar");
+        if (!confirm(`Apagar o canal "${canal.nome}"?`)) return;
+        await deleteDoc(doc(db, "canais", editandoCanalId));
+        document.getElementById("modalEditar").classList.remove("active");
+        canalAtual = null;
+        canalNomeTopo.textContent = "# selecione um canal";
+        canalInfo.textContent = "";
+        mensagensEl.innerHTML = `<div class="empty-state">Selecione ou crie um canal para começar</div>`;
+    };
 
+    // PERFIL (emoji + nome)
+    document.getElementById("btnPerfil").onclick = () => {
+        document.getElementById("editNomeUser").value = nome;
+        document.getElementById("previewEmoji").textContent = emojiEscolhido;
+        const grid = document.getElementById("emojiGrid");
+        grid.innerHTML = "";
+        EMOJIS.forEach(e => {
+            const d = document.createElement("div");
+            d.className = "emoji-opt" + (e === emojiEscolhido ? " selected" : "");
+            d.textContent = e;
+            d.onclick = () => {
+                document.querySelectorAll(".emoji-opt").forEach(x => x.classList.remove("selected"));
+                d.classList.add("selected");
+                emojiEscolhido = e;
+                document.getElementById("previewEmoji").textContent = e;
+            };
+            grid.appendChild(d);
+        });
+        document.getElementById("modalPerfil").classList.add("active");
+    };
+    document.getElementById("btnCancelarPerfil").onclick = () => document.getElementById("modalPerfil").classList.remove("active");
+    document.getElementById("btnSalvarPerfil").onclick = async () => {
+        const novoNome = document.getElementById("editNomeUser").value.trim();
+        if (!novoNome || novoNome.length < 2) return;
+        await updateDoc(doc(db, "usuarios", nome), { emoji: emojiEscolhido });
+        // se mudou o nome (só se não for o dono)
+        if (novoNome !== nome && nome !== DONO) {
+            // por simplicidade não mudamos o ID do documento (complicado). Só atualiza o display por enquanto.
+            alert("Nome não pode ser alterado no momento (só o emoji).");
+        }
+        avatarEl.textContent = emojiEscolhido;
+        document.getElementById("modalPerfil").classList.remove("active");
+    };
+
+    // CARGOS + ADM
     onSnapshot(collection(db, "cargos"), snap => {
         cargosCache = {};
         snap.forEach(d => cargosCache[d.id] = { id: d.id, ...d.data() });
@@ -963,55 +1002,49 @@ function iniciarApp() {
 
     function renderAdmin() {
         listaAdmin.innerHTML = "";
-
         if (usuarioAtual.role === "admin") {
             const btnCargo = document.createElement("div");
             btnCargo.className = "admin-item";
             btnCargo.style.background = "rgba(34,197,94,0.12)";
-            btnCargo.innerHTML = `<i class="fas fa-plus"></i> <span>Criar novo cargo</span>`;
-            btnCargo.onclick = () => document.getElementById("modalCargo").classList.add("active");
+            btnCargo.innerHTML = `<i class="fas fa-plus"></i> <span>Criar / Editar cargo</span>`;
+            btnCargo.onclick = () => { document.getElementById("cargoTitulo").textContent = "Criar Cargo"; document.getElementById("modalCargo").classList.add("active"); };
             listaAdmin.appendChild(btnCargo);
-        }
 
+            const btnBan = document.createElement("div");
+            btnBan.className = "admin-item";
+            btnBan.style.background = "rgba(239,68,68,0.12)";
+            btnBan.innerHTML = `<i class="fas fa-gavel"></i> <span>Banir / Kickar alguém</span>`;
+            btnBan.onclick = () => {
+                const sel = document.getElementById("banUser");
+                sel.innerHTML = `<option value="">Escolher...</option>`;
+                Object.keys(usuariosCache).forEach(u => { if (u !== DONO) { const o = document.createElement("option"); o.value = u; o.textContent = u; sel.appendChild(o); } });
+                document.getElementById("modalBan").classList.add("active");
+            };
+            listaAdmin.appendChild(btnBan);
+        }
         Object.values(cargosCache).forEach(c => {
             const div = document.createElement("div");
             div.className = "admin-item";
-            div.innerHTML = `
-                <div class="cor-preview" style="background:${c.cor || '#666'}"></div>
-                <div style="flex:1;">
-                    <div>${c.nome}</div>
-                    <div style="font-size:11px;opacity:0.6;">${(c.permissoes || []).join(", ") || "sem permissões"}</div>
-                </div>
-            `;
+            div.innerHTML = `<div class="cor-preview" style="background:${c.cor||"#666"}"></div><div style="flex:1;"><div>${c.nome}</div><div style="font-size:11px;opacity:0.6;">${(c.permissoes||[]).join(", ")||"sem permissões"}</div></div>`;
             listaAdmin.appendChild(div);
         });
-
         if (usuarioAtual.role === "admin") {
             const sep = document.createElement("div");
-            sep.style.cssText = "padding:12px 8px 6px; font-size:11px; color:#64748b; text-transform:uppercase;";
+            sep.style.cssText = "padding:12px 8px 6px;font-size:11px;color:#64748b;text-transform:uppercase;";
             sep.textContent = "Usuários";
             listaAdmin.appendChild(sep);
-
             Object.values(usuariosCache).forEach(u => {
                 if (u.nome === DONO) return;
                 const div = document.createElement("div");
                 div.className = "admin-item";
-                div.innerHTML = `
-                    <div class="avatar" style="width:28px;height:28px;font-size:12px;">${u.nome.charAt(0)}</div>
-                    <div style="flex:1;">
-                        <div>${u.nome}</div>
-                        <div style="font-size:11px;opacity:0.6;">${u.role === "subadmin" ? "Sub-ADM" : "Usuário"}</div>
-                    </div>
-                `;
+                div.innerHTML = `<div class="avatar" style="width:28px;height:28px;font-size:16px;">${u.emoji||"😎"}</div><div style="flex:1;"><div>${u.nome}</div><div style="font-size:11px;opacity:0.6;">${u.role==="subadmin"?"Sub-ADM":"Usuário"}</div></div>`;
                 div.onclick = () => abrirPermissoes(u);
                 listaAdmin.appendChild(div);
             });
         }
     }
 
-    document.getElementById("cargoCor").oninput = (e) => {
-        document.getElementById("corPreview").style.background = e.target.value;
-    };
+    document.getElementById("cargoCor").oninput = e => document.getElementById("corPreview").style.background = e.target.value;
     document.getElementById("btnCancelarCargo").onclick = () => document.getElementById("modalCargo").classList.remove("active");
     document.getElementById("btnCriarCargo").onclick = async () => {
         const nomeCargo = document.getElementById("cargoNome").value.trim();
@@ -1045,13 +1078,59 @@ function iniciarApp() {
             convidar: document.getElementById("permConvidar").checked
         };
         const temAlguma = perms.apagarMsg || perms.gerenciarCanais;
-        await updateDoc(doc(db, "usuarios", editandoPermUser), {
-            role: temAlguma ? "subadmin" : "user",
-            permissoes: perms
-        });
+        await updateDoc(doc(db, "usuarios", editandoPermUser), { role: temAlguma ? "subadmin" : "user", permissoes: perms });
         document.getElementById("modalPerms").classList.remove("active");
         renderAdmin();
     };
+
+    // BAN / KICK
+    document.getElementById("btnCancelarBan").onclick = () => document.getElementById("modalBan").classList.remove("active");
+    document.getElementById("btnConfirmarBan").onclick = async () => {
+        const user = document.getElementById("banUser").value;
+        const tipo = document.getElementById("banTipo").value;
+        const minutos = parseInt(document.getElementById("banTempo").value) || 10;
+        const motivo = document.getElementById("banMotivo").value.trim();
+        if (!user) return alert("Escolha um usuário");
+        const ate = tipo === "kick" ? new Date(Date.now() + minutos * 60000) : null;
+        await addDoc(collection(db, "punicoes"), {
+            usuario: user,
+            tipo,
+            motivo,
+            ate: ate ? ate : null,
+            ativo: true,
+            por: nome,
+            data: serverTimestamp()
+        });
+        alert(`${tipo === "ban" ? "Banido" : "Kickado"} com sucesso!`);
+        document.getElementById("modalBan").classList.remove("active");
+    };
+
+    function renderBans() {
+        listaBans.innerHTML = "";
+        getDocs(query(collection(db, "punicoes"), where("ativo", "==", true))).then(snap => {
+            if (snap.empty) {
+                listaBans.innerHTML = `<div style="padding:16px;color:#64748b;font-size:13px;text-align:center;">Nenhuma punição ativa</div>`;
+                return;
+            }
+            snap.forEach(d => {
+                const p = d.data();
+                const div = document.createElement("div");
+                div.className = "ban-item";
+                div.innerHTML = `
+                    <div style="flex:1;">
+                        <div><b>${p.usuario}</b> · ${p.tipo}</div>
+                        <div style="font-size:11px;opacity:0.7;">${p.motivo || "sem motivo"}</div>
+                    </div>
+                    <button style="background:#22c55e;border:none;color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;">Remover</button>
+                `;
+                div.querySelector("button").onclick = async () => {
+                    await updateDoc(doc(db, "punicoes", d.id), { ativo: false });
+                    renderBans();
+                };
+                listaBans.appendChild(div);
+            });
+        });
+    }
 }
 </script>
 </body>
