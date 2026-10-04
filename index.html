@@ -938,17 +938,28 @@ function marcarComoLido(canalId) {
   localStorage.setItem("wrocket_lastRead", JSON.stringify(lastRead));
   unreadCounts[canalId] = 0;
   atualizarBadges();
-
-      // ao carregar, mostrar só canais (esconder DMs)
-      document.querySelectorAll(".group-item").forEach(el => {
-        if (el.dataset.dm === "1") el.style.display = "none";
-      });
-      const tabCanais = document.querySelector('.side-tab[data-tab="canais"]');
-      const tabDms = document.querySelector('.side-tab[data-tab="dms"]');
-      if (tabCanais) tabCanais.classList.add("active");
-      if (tabDms) tabDms.classList.remove("active");
-
+      if (typeof filtrarAbaCanaisDms === 'function') filtrarAbaCanaisDms(document.querySelector('#sideTabs .side-tab.active')?.dataset.tab || 'canais');
 }
+
+
+// Tabs Canais / DMs click
+document.querySelectorAll("#sideTabs .side-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    filtrarAbaCanaisDms(tab.dataset.tab || "canais");
+  });
+});
+
+function filtrarAbaCanaisDms(tipo) {
+  document.querySelectorAll("#sideTabs .side-tab").forEach(t => {
+    t.classList.toggle("active", t.dataset.tab === tipo);
+  });
+  document.querySelectorAll("#listaGrupos .group-item").forEach(el => {
+    const isDm = el.dataset.dm === "1";
+    if (tipo === "dms") el.style.display = isDm ? "flex" : "none";
+    else el.style.display = isDm ? "none" : "flex";
+  });
+}
+
 function atualizarBadges() {
   document.querySelectorAll(".group-item").forEach(el => {
     const id = el.dataset.id;
