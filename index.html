@@ -317,6 +317,16 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .ticket-msg.eu { background: #166534; align-self: flex-end; }
 .cmd-hint { font-size: 11px; color: var(--text-muted); padding: 4px 8px; }
 
+
+.ticket-card.aberto { border-left: 3px solid #fbbf24; }
+.ticket-card.em_atendimento { border-left: 3px solid #3b82f6; }
+.ticket-card.resolvido { border-left: 3px solid #22c55e; opacity: 0.85; }
+.ticket-card.nao_resolvido { border-left: 3px solid #ef4444; }
+.ticket-card.recusado { border-left: 3px solid #6b7280; opacity: 0.8; }
+.ticket-card .t-actions { display: flex; gap: 6px; margin-top: 8px; }
+.ticket-card .t-actions button { flex: 1; padding: 6px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; }
+.badge-dono { background: linear-gradient(135deg,#ef4444,#b91c1c); color: white; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
+
 </style>
 </head>
 <body>
@@ -413,6 +423,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
       <button class="side-tab active" data-tstatus="aberto">Abertos</button>
       <button class="side-tab" data-tstatus="resolvido">Resolvidos</button>
       <button class="side-tab" data-tstatus="nao_resolvido">Não resolvidos</button>
+      <button class="side-tab" data-tstatus="recusado">Recusados</button>
     </div>
     <div class="ticket-lista" id="listaTicketsAdm">
       <div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket</div>
@@ -1083,6 +1094,7 @@ async function carregarUsuario() {
   avatarEl.textContent = emojiEscolhido;
   avatarLetter.textContent = (nome.charAt(0) || "?").toUpperCase();
   userNameBottom.textContent = nome;
+  if (nome === DONO) userNameBottom.innerHTML = nome + ' <span class="badge-dono">DONO</span>';
   userNameBottom.style.color = usuarioAtual.corNome || (usuarioAtual.role === "admin" ? "#ef4444" : "");
   const temPermBan = usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || usuarioAtual.permissoes?.ban || (usuarioAtual.permissoes && (usuarioAtual.permissoes.ban === true));
   if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || temPermBan) {
@@ -1248,7 +1260,7 @@ document.getElementById("btnResolverTicket")?.addEventListener("click", async ()
   alert("Ticket marcado como resolvido");
 });
 
-function abrirTicketChat(t) {
+window.abrirTicketChat = function abrirTicketChat(t) {
   ticketAbertoId = t.id;
   document.getElementById("ticketChatTitulo").textContent = t.assunto || "Ticket";
   document.getElementById("ticketChatInfo").textContent = `De: ${t.de} · Tipo: ${t.tipo}`;
@@ -1286,12 +1298,59 @@ function mostrarComandosAdm() {
 
 // Ticket button: normal user opens create, ADM can also open list
 document.getElementById("btnTicket")?.addEventListener("click", () => {
-  // TODOS abrem criar ticket (incluindo ADM)
+  // Mostra: criar novo OU ver meus tickets
+  const meus = (ticketsCache || []).filter(t => t.de === nome);
+  if (meus.length > 0) {
+    const op = confirm("OK = Ver meus tickets\nCancelar = Criar novo ticket");
+    if (op) {
+      renderMeusTickets();
+      return;
+    }
+  }
   document.getElementById("ticketOpcoes").style.display = "flex";
   document.getElementById("ticketForm").style.display = "none";
   document.getElementById("modalTicket").classList.add("active");
 });
+
+function renderMeusTickets() {
+  // reusa modalTicketsAdm visualmente mas só tickets do usuário
+  const lista = document.getElementById("listaTicketsAdm");
+  if (!lista) return;
+  document.querySelector("#modalTicketsAdm h2").textContent = "Meus Tickets";
+  // hide adm tabs for user view
+  const tabs = document.getElementById("ticketAdmTabs");
+  if (tabs) tabs.style.display = "none";
+  lista.innerHTML = "";
+  const meus = (ticketsCache || []).filter(t => t.de === nome);
+  if (!meus.length) {
+    lista.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">Você ainda não enviou tickets</div>';
+  } else {
+    meus.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "ticket-card " + (t.status || "aberto");
+      div.style.cursor = (t.status === "em_atendimento" || t.status === "aberto") ? "pointer" : "default";
+      let dataStr = t.data?.toDate ? t.data.toDate().toLocaleString("pt-BR") : "";
+      div.innerHTML = `<div class="t-tipo">${t.status}</div><div class="t-assunto">${t.assunto||""}</div><div class="t-meta">${dataStr}</div>
+        ${t.notifUser ? `<div style="margin-top:6px;font-size:12px;color:#fbbf24">${t.notifUser}</div>` : ""}
+        ${t.motivoRecusa ? `<div style="color:#f87171;font-size:12px;margin-top:4px">Recusa: ${t.motivoRecusa}</div>` : ""}`;
+      if (t.status === "em_atendimento" || t.status === "aberto") {
+        div.onclick = () => {
+          document.getElementById("modalTicketsAdm").classList.remove("active");
+          if (window.abrirTicketChat) window.abrirTicketChat(t);
+          else if (typeof abrirTicketChat === "function") abrirTicketChat(t);
+        };
+      }
+      lista.appendChild(div);
+    });
+  }
+  document.getElementById("modalTicketsAdm").classList.add("active");
+}
+
 document.getElementById("btnTicketsAdm")?.addEventListener("click", () => {
+  const tabs = document.getElementById("ticketAdmTabs");
+  if (tabs) tabs.style.display = "flex";
+  const h2 = document.querySelector("#modalTicketsAdm h2");
+  if (h2) h2.textContent = "Tickets ADM";
   renderTicketsAdm("aberto");
   document.getElementById("modalTicketsAdm").classList.add("active");
 });
@@ -1335,6 +1394,19 @@ function renderTicketsAdm(statusFiltro = "aberto") {
   const lista = document.getElementById("listaTicketsAdm");
   if (!lista) return;
   lista.innerHTML = "";
+  const agora = Date.now();
+  const DEZ_DIAS = 10 * 24 * 60 * 60 * 1000;
+
+  // auto-limpa resolvidos/nao_resolvidos/recusados com +10 dias sem mexer
+  (ticketsCache || []).forEach(t => {
+    if (["resolvido","nao_resolvido","recusado"].includes(t.status)) {
+      const base = t.atualizadoEm?.toMillis ? t.atualizadoEm.toMillis() : (t.data?.toMillis ? t.data.toMillis() : 0);
+      if (base && agora - base > DEZ_DIAS) {
+        deleteDoc(doc(db, "tickets", t.id)).catch(() => {});
+      }
+    }
+  });
+
   const filtrados = (ticketsCache || []).filter(t => {
     if (statusFiltro === "aberto") return t.status === "aberto" || t.status === "em_atendimento";
     return t.status === statusFiltro;
@@ -1345,15 +1417,83 @@ function renderTicketsAdm(statusFiltro = "aberto") {
   }
   filtrados.forEach(t => {
     const div = document.createElement("div");
-    div.className = "ticket-card";
+    div.className = "ticket-card " + (t.status || "aberto");
     const tipoLabel = t.tipo === "erro" ? "Erro / Bug" : t.tipo === "comunicar" ? "Comunicar ADM" : "Outro";
     let dataStr = "";
     if (t.data?.toDate) dataStr = t.data.toDate().toLocaleString("pt-BR");
-    div.innerHTML = `<div class="t-tipo">${tipoLabel} · ${t.status}</div><div class="t-assunto">${t.assunto}</div><div class="t-meta">de <b>${t.de}</b> · ${dataStr}</div><div style="margin-top:6px;font-size:13px;color:var(--text-muted)">${(t.motivo||"").slice(0,80)}</div>`;
-    div.onclick = () => {
-      document.getElementById("modalTicketsAdm").classList.remove("active");
-      abrirTicketChat(t);
-    };
+    div.innerHTML = `<div class="t-tipo">${tipoLabel} · ${t.status}</div>
+      <div class="t-assunto">${t.assunto || ""}</div>
+      <div class="t-meta">de <b>${t.de}</b> · ${dataStr}</div>
+      <div style="margin-top:6px;font-size:13px;color:var(--text-muted)">${(t.motivo||"").slice(0,100)}</div>
+      ${t.motivoRecusa ? `<div style="margin-top:4px;font-size:12px;color:#f87171">Recusa: ${t.motivoRecusa}</div>` : ""}`;
+
+    if (t.status === "aberto") {
+      const actions = document.createElement("div");
+      actions.className = "t-actions";
+      const btnA = document.createElement("button");
+      btnA.textContent = "Aceitar";
+      btnA.style.background = "#22c55e";
+      btnA.style.color = "#fff";
+      btnA.onclick = async (e) => {
+        e.stopPropagation();
+        await updateDoc(doc(db, "tickets", t.id), {
+          status: "em_atendimento",
+          atendidoPor: nome,
+          atualizadoEm: serverTimestamp(),
+          notifUser: "Seu ticket foi ACEITO! Abra em Meus Tickets e converse com o ADM."
+        });
+        alert("Ticket aceito. A pessoa será notificada.");
+        abrirTicketChat({ ...t, status: "em_atendimento" });
+      };
+      const btnR = document.createElement("button");
+      btnR.textContent = "Recusar";
+      btnR.style.background = "#ef4444";
+      btnR.style.color = "#fff";
+      btnR.onclick = async (e) => {
+        e.stopPropagation();
+        const motivo = prompt("Motivo da recusa:");
+        if (motivo === null) return;
+        await updateDoc(doc(db, "tickets", t.id), {
+          status: "recusado",
+          motivoRecusa: motivo || "Sem motivo",
+          atualizadoEm: serverTimestamp(),
+          notifUser: "Seu ticket foi RECUSADO. Motivo: " + (motivo || "Sem motivo")
+        });
+        alert("Ticket recusado.");
+      };
+      actions.appendChild(btnA);
+      actions.appendChild(btnR);
+      div.appendChild(actions);
+    } else if (t.status === "em_atendimento") {
+      div.style.cursor = "pointer";
+      div.onclick = () => {
+        document.getElementById("modalTicketsAdm").classList.remove("active");
+        abrirTicketChat(t);
+      };
+    } else if (t.status === "resolvido") {
+      // não clicável
+      div.style.cursor = "default";
+      div.style.opacity = "0.75";
+    } else if (t.status === "nao_resolvido") {
+      const actions = document.createElement("div");
+      actions.className = "t-actions";
+      const btnRe = document.createElement("button");
+      btnRe.textContent = "Reabrir";
+      btnRe.style.background = "#fbbf24";
+      btnRe.style.color = "#000";
+      btnRe.onclick = async (e) => {
+        e.stopPropagation();
+        await updateDoc(doc(db, "tickets", t.id), {
+          status: "aberto",
+          atualizadoEm: serverTimestamp()
+        });
+        alert("Ticket reaberto.");
+      };
+      actions.appendChild(btnRe);
+      div.appendChild(actions);
+    } else if (t.status === "recusado") {
+      div.style.cursor = "default";
+    }
     lista.appendChild(div);
   });
 }
@@ -1518,7 +1658,7 @@ function iniciarApp() {
         const nomeStyle = cor ? `style="color:${cor}"` : "";
 
         div.innerHTML = `
-          <b ${nomeStyle}>${m.emoji || "😎"} ${m.nome}</b>
+          <b ${nomeStyle}>${m.emoji || "😎"} ${m.nome}${m.nome === DONO ? ' <span class="badge-dono">DONO</span>' : ""}</b>
           <div>${m.texto}</div>
           ${reacoesHtml}
           ${hora ? `<div class="time">${hora}</div>` : ""}
