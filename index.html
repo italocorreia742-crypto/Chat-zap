@@ -327,6 +327,10 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .ticket-card .t-actions button { flex: 1; padding: 6px; border-radius: 8px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; }
 .badge-dono { background: linear-gradient(135deg,#ef4444,#b91c1c); color: white; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle; }
 
+
+.group-item.expulso { opacity: 0.55; filter: grayscale(0.7); border: 1px dashed #64748b; }
+.group-item.expulso span { color: #94a3b8; }
+
 </style>
 </head>
 <body>
@@ -471,6 +475,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
     <div class="side-tabs" id="sideTabs">
       <button class="side-tab active" data-tab="canais">Canais</button>
       <button class="side-tab" data-tab="dms">DMs</button>
+      <button class="side-tab" data-tab="expulsos">Expulsos</button>
     </div>
     <div class="group-list" id="listaGrupos"></div>
     <div class="users-list" id="listaUsuarios" style="display:none"></div>
@@ -979,7 +984,14 @@ function filtrarAbaCanaisDms(tipo) {
   });
   document.querySelectorAll("#listaGrupos .group-item").forEach(el => {
     const isDm = el.dataset.dm === "1";
-    el.style.display = (tipo === "dms") ? (isDm ? "flex" : "none") : (isDm ? "none" : "flex");
+    const isExp = el.dataset.expulso === "1";
+    if (tipo === "dms") {
+      el.style.display = (isDm && !isExp) ? "flex" : "none";
+    } else if (tipo === "expulsos") {
+      el.style.display = isExp ? "flex" : "none";
+    } else {
+      el.style.display = (!isDm && !isExp) ? "flex" : "none";
+    }
   });
 }
 (function setupSideTabs() {
@@ -1841,17 +1853,37 @@ function iniciarApp() {
         const outroUser = usuariosCache[outro] || {};
         div.innerHTML = `<div class="avatar" style="width:28px;height:28px;font-size:16px">${outroUser.emoji||"😎"}</div><span>@${outro}</span>`;
         div.dataset.dm = "1";
+        div.dataset.expulso = "0";
         div.onclick = () => selecionarCanal({ ...canal, nome: `@${outro}` });
+        listaGrupos.appendChild(div);
+        return;
+      }
+      const foiExpulso = (canal.expulsos || []).includes(nome);
+      if (foiExpulso) {
+        const div = document.createElement("div");
+        div.className = "group-item expulso";
+        div.dataset.id = canal.id;
+        div.dataset.dm = "0";
+        div.dataset.expulso = "1";
+        div.innerHTML = `<div class="canal-icon" style="background:#334155;color:#94a3b8">!</div><span>${canal.nome}</span><span class="criador">expulso</span>`;
+        div.onclick = () => {
+          if (confirm("Você foi expulso deste canal.\n\nOK = dispensar (apagar da lista)\nCancelar = manter")) {
+            updateDoc(doc(db, "canais", canal.id), { expulsos: arrayRemove(nome) });
+          }
+        };
         listaGrupos.appendChild(div);
         return;
       }
       const isMembro = !canal.privado || canal.criadoPor === nome || (canal.membros || []).includes(nome) || isAdmin;
       if (!isMembro) return;
+      // se não é membro de canal privado, não mostra
+      if (canal.privado && canal.criadoPor !== nome && !(canal.membros || []).includes(nome) && !isAdmin) return;
       const div = document.createElement("div");
       div.className = "group-item" + (canalAtual === canal.id ? " active" : "");
       div.dataset.id = canal.id;
       div.innerHTML = `<div class="canal-icon">${(canal.nome||"#")[0].toUpperCase()}</div><span>${canal.nome}</span><span class="criador">${canal.criadoPor === "Sistema" ? "" : canal.criadoPor}</span>`;
       div.dataset.dm = "0";
+      div.dataset.expulso = "0";
       div.onclick = () => selecionarCanal(canal);
       if (canal.criadoPor === nome || podeGerenciarCanais()) {
         div.oncontextmenu = e => { e.preventDefault(); abrirEditarCanal(canal); };
@@ -1867,6 +1899,22 @@ function iniciarApp() {
       const ativa = document.querySelector("#sideTabs .side-tab.active");
       filtrarAbaCanaisDms(ativa?.dataset.tab || "canais");
     }
+
+    // se foi expulso do canal atual, sai da conversa
+    if (canalAtual && canaisCache[canalAtual]) {
+      const c = canaisCache[canalAtual];
+      if (c.tipo !== "dm" && (c.expulsos || []).includes(nome)) {
+        canalAtual = null;
+        canalNomeTopo.textContent = "# você foi expulso";
+        canalInfo.textContent = "Este canal não está mais disponível";
+        mensagensEl.innerHTML = `<div class="empty-state">Você foi expulso deste canal.</div>`;
+      } else if (c.privado && c.criadoPor !== nome && !(c.membros || []).includes(nome) && usuarioAtual?.role !== "admin" && c.tipo !== "dm") {
+        canalAtual = null;
+        canalNomeTopo.textContent = "# selecione um canal";
+        mensagensEl.innerHTML = `<div class="empty-state">Você não faz mais parte deste canal.</div>`;
+      }
+    }
+
   });
 
   function selecionarCanal(canal) {
@@ -1999,7 +2047,12 @@ function iniciarApp() {
           <button style="background:#ef4444;border:none;color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px">Recusar</button>
         </div>`;
       div.querySelectorAll("button")[0].onclick = async () => {
-        if (c.canalId) await updateDoc(doc(db, "canais", c.canalId), { membros: arrayUnion(nome) });
+        if (c.canalId) {
+          await updateDoc(doc(db, "canais", c.canalId), {
+            membros: arrayUnion(nome),
+            expulsos: arrayRemove(nome)
+          });
+        }
         await updateDoc(doc(db, "convites", c.id), { status: "aceito" });
       };
       div.querySelectorAll("button")[1].onclick = async () => await updateDoc(doc(db, "convites", c.id), { status: "recusado" });
@@ -2027,11 +2080,11 @@ function iniciarApp() {
     const privado = document.getElementById("grupoPrivado").checked;
     if (!nomeGrupo) return;
     const membrosSel = [...document.getElementById("criarMembros").selectedOptions].map(o => o.value);
-    const membros = [nome, ...membrosSel];
+    // só o criador entra direto; outros recebem convite
+    const membros = [nome];
     const ref = await addDoc(collection(db, "canais"), {
-      nome: nomeGrupo, descricao, privado, criadoPor: nome, membros, tipo: "canal", data: serverTimestamp()
+      nome: nomeGrupo, descricao, privado: privado || membrosSel.length > 0, criadoPor: nome, membros, expulsos: [], tipo: "canal", data: serverTimestamp()
     });
-    // anti-spam de convite
     const agora = Date.now();
     if (agora - ultimoConvite < 8000 && membrosSel.length > 0) {
       alert("Espere alguns segundos antes de mandar mais convites.");
@@ -2062,8 +2115,12 @@ function iniciarApp() {
       item.innerHTML = `<span>${m}${m === canal.criadoPor ? " (criador)" : ""}</span>${m !== canal.criadoPor ? `<button data-user="${m}">remover</button>` : ""}`;
       if (m !== canal.criadoPor) {
         item.querySelector("button").onclick = async () => {
-          await updateDoc(doc(db, "canais", canal.id), { membros: arrayRemove(m) });
-          abrirEditarCanal({ ...canal, membros: membros.filter(x => x !== m) });
+          if (!confirm("Expulsar " + m + " do canal?")) return;
+          await updateDoc(doc(db, "canais", canal.id), {
+            membros: arrayRemove(m),
+            expulsos: arrayUnion(m)
+          });
+          abrirEditarCanal({ ...canal, membros: membros.filter(x => x !== m), expulsos: [...(canal.expulsos||[]), m] });
         };
       }
       lista.appendChild(item);
@@ -2079,8 +2136,13 @@ function iniciarApp() {
     });
     select.onchange = async () => {
       if (!select.value) return;
-      await updateDoc(doc(db, "canais", canal.id), { membros: arrayUnion(select.value) });
-      abrirEditarCanal({ ...canal, membros: [...membros, select.value] });
+      const convidado = select.value;
+      // manda convite em vez de adicionar direto
+      await addDoc(collection(db, "convites"), {
+        de: nome, para: convidado, canalId: canal.id, canalNome: canal.nome,
+        status: "pendente", data: serverTimestamp()
+      });
+      alert("Convite enviado para " + convidado);
       select.value = "";
     };
     document.getElementById("modalEditar").classList.add("active");
