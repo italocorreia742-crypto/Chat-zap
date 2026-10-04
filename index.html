@@ -260,8 +260,9 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 
 
 /* TABS CANAIS / DMS */
-.side-tabs { display: flex; gap: 4px; padding: 0 8px 8px; }
-.side-tab { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; background: transparent; border: none; }
+.side-tabs { display: flex; gap: 4px; padding: 0 8px 8px; position: relative; z-index: 5; }
+.side-tab { flex: 1; text-align: center; padding: 10px 8px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; background: transparent; border: none; pointer-events: auto; user-select: none; -webkit-user-select: none; }
+.side-tab:hover { background: rgba(255,255,255,0.05); color: white; }
 .side-tab.active { background: rgba(34,197,94,0.15); color: var(--accent); }
 
 /* TICKET */
@@ -942,23 +943,29 @@ function marcarComoLido(canalId) {
 }
 
 
-// Tabs Canais / DMs click
-document.querySelectorAll("#sideTabs .side-tab").forEach(tab => {
-  tab.addEventListener("click", () => {
-    filtrarAbaCanaisDms(tab.dataset.tab || "canais");
-  });
-});
-
+// Tabs Canais / DMs - delegação de evento (mais confiável)
 function filtrarAbaCanaisDms(tipo) {
+  if (!tipo) tipo = "canais";
   document.querySelectorAll("#sideTabs .side-tab").forEach(t => {
     t.classList.toggle("active", t.dataset.tab === tipo);
   });
   document.querySelectorAll("#listaGrupos .group-item").forEach(el => {
     const isDm = el.dataset.dm === "1";
-    if (tipo === "dms") el.style.display = isDm ? "flex" : "none";
-    else el.style.display = isDm ? "none" : "flex";
+    el.style.display = (tipo === "dms") ? (isDm ? "flex" : "none") : (isDm ? "none" : "flex");
   });
 }
+(function setupSideTabs() {
+  const tabs = document.getElementById("sideTabs");
+  if (!tabs) return;
+  tabs.addEventListener("click", (e) => {
+    const btn = e.target.closest(".side-tab");
+    if (!btn || !tabs.contains(btn)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    filtrarAbaCanaisDms(btn.dataset.tab || "canais");
+  });
+})();
+
 
 function atualizarBadges() {
   document.querySelectorAll(".group-item").forEach(el => {
@@ -1653,6 +1660,11 @@ function iniciarApp() {
       listaGrupos.appendChild(div);
       if (!canalAtual && canal.nome === "Geral") selecionarCanal(canal);
     });
+    // manter filtro Canais/DMs após re-render
+    if (typeof filtrarAbaCanaisDms === "function") {
+      const ativa = document.querySelector("#sideTabs .side-tab.active");
+      filtrarAbaCanaisDms(ativa?.dataset.tab || "canais");
+    }
   });
 
   function selecionarCanal(canal) {
