@@ -271,6 +271,33 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 /* CHANNEL ICON */
 .canal-icon { width: 28px; height: 28px; border-radius: 8px; background: rgba(34,197,94,0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
 
+
+/* TICKET UI MELHORADO */
+.ticket-opcoes { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.ticket-op { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid #334155; background: #1e293b; color: white; font-size: 14px; font-weight: 500; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; transition: .15s; }
+.ticket-op:hover { border-color: var(--accent); background: rgba(34,197,94,0.1); }
+.ticket-op.erro { border-color: #7f1d1d; }
+.ticket-op.erro:hover { background: rgba(239,68,68,0.12); border-color: #ef4444; }
+.ticket-op.adm { border-color: #1e40af; }
+.ticket-op.adm:hover { background: rgba(59,130,246,0.12); border-color: #3b82f6; }
+.ticket-lista { max-height: 50vh; overflow-y: auto; }
+.ticket-card { background: #1e293b; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; border: 1px solid #334155; cursor: pointer; transition: .15s; }
+.ticket-card:hover { border-color: var(--accent); }
+.ticket-card .t-tipo { font-size: 11px; font-weight: 600; text-transform: uppercase; color: #fbbf24; margin-bottom: 4px; }
+.ticket-card .t-assunto { font-weight: 600; font-size: 14px; }
+.ticket-card .t-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+
+/* MENÇÃO + ALARME + TICKET CHAT */
+.mention-box { position: absolute; bottom: 70px; left: 14px; right: 14px; background: #1e293b; border: 1px solid #334155; border-radius: 12px; max-height: 180px; overflow-y: auto; z-index: 50; display: none; }
+.mention-item { padding: 10px 14px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.mention-item:hover { background: rgba(34,197,94,0.15); }
+.alarme-toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #166534; color: white; padding: 14px 24px; border-radius: 14px; z-index: 9999; font-weight: 600; box-shadow: 0 10px 40px rgba(0,0,0,0.4); animation: fadeIn .3s ease; max-width: 90%; text-align: center; }
+.ticket-chat { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; margin: 12px 0; padding: 10px; background: #0f172a; border-radius: 10px; }
+.ticket-msg { padding: 8px 10px; border-radius: 8px; font-size: 13px; background: #1e293b; }
+.ticket-msg.eu { background: #166534; align-self: flex-end; }
+.cmd-hint { font-size: 11px; color: var(--text-muted); padding: 4px 8px; }
+
 </style>
 </head>
 <body>
@@ -289,7 +316,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
     <h1>Wrocket</h1>
     <p id="loginSubtitulo">Entre na sua conta</p>
     <div class="erro-login" id="erroLogin"></div>
-    <input type="text" id="loginNome" placeholder="Seu nome" maxlength="30" autocomplete="username">
+    <input type="text" id="loginNome" placeholder="Seu nome (máx 10)" maxlength="10" autocomplete="username">
     <input type="password" id="loginSenha" placeholder="Senha" maxlength="40" autocomplete="current-password">
     <input type="password" id="loginSenha2" placeholder="Confirmar senha" maxlength="40" style="display:none" autocomplete="new-password">
     <button id="btnLoginAcao">Entrar</button>
@@ -333,25 +360,58 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 </div>
 
 
-<!-- MODAL TICKET -->
+<!-- MODAL TICKET (abrir) -->
 <div class="modal" id="modalTicket">
   <div class="modal-box">
-    <h2>Abrir Ticket</h2>
-    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
-      <button class="btn-confirm" id="ticketTipoErro" style="background:#ef4444">Reportar erro / Bug</button>
-      <button class="btn-confirm" id="ticketTipoAdm" style="background:#3b82f6">Comunicar ADM / Sub-ADM</button>
-      <button class="btn-confirm" id="ticketTipoOutro" style="background:#64748b">Outro (criar ticket)</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">Abrir Ticket</h2>
+      <button id="btnFecharTicket" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">&times;</button>
+    </div>
+    <div class="ticket-opcoes" id="ticketOpcoes">
+      <button class="ticket-op erro" id="ticketTipoErro"><i class="fas fa-bug"></i> Reportar erro / Bug</button>
+      <button class="ticket-op adm" id="ticketTipoAdm"><i class="fas fa-shield-halved"></i> Comunicar ADM / Sub-ADM</button>
+      <button class="ticket-op" id="ticketTipoOutro"><i class="fas fa-comment"></i> Outro (criar ticket)</button>
     </div>
     <div id="ticketForm" style="display:none">
-      <input type="text" id="ticketAssunto" placeholder="Assunto / o que aconteceu">
+      <input type="text" id="ticketAssunto" placeholder="Assunto / o que aconteceu" maxlength="80">
       <textarea id="ticketMotivo" placeholder="Descreva com detalhes. Pode marcar @alguem" maxlength="500"></textarea>
       <div class="modal-buttons">
-        <button class="btn-cancel" id="btnCancelarTicket">Cancelar</button>
+        <button class="btn-cancel" id="btnVoltarTicket">Voltar</button>
         <button class="btn-confirm" id="btnEnviarTicket">Enviar Ticket</button>
       </div>
     </div>
-    <div class="modal-buttons" id="ticketVoltarWrap" style="display:none">
-      <button class="btn-cancel" id="btnVoltarTicket">Voltar</button>
+  </div>
+</div>
+
+<!-- MODAL LISTA DE TICKETS (só ADM) -->
+<div class="modal" id="modalTicketsAdm">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">Tickets recebidos</h2>
+      <button id="btnFecharTicketsAdm" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">&times;</button>
+    </div>
+    <div class="ticket-lista" id="listaTicketsAdm">
+      <div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket aberto</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL TICKET CHAT -->
+<div class="modal" id="modalTicketChat">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h2 style="margin:0;font-size:16px" id="ticketChatTitulo">Ticket</h2>
+      <button id="btnFecharTicketChat" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">&times;</button>
+    </div>
+    <div id="ticketChatInfo" style="font-size:13px;color:var(--text-muted);margin-bottom:10px"></div>
+    <div class="ticket-chat" id="ticketChatMsgs"></div>
+    <div class="input-wrapper">
+      <input id="ticketChatInput" placeholder="Responder..." autocomplete="off">
+      <button class="btn-send" id="btnTicketChatEnviar"><i class="fas fa-paper-plane"></i></button>
+    </div>
+    <div class="modal-buttons" style="margin-top:12px">
+      <button class="btn-danger" id="btnResolverTicket">Marcar resolvido</button>
     </div>
   </div>
 </div>
@@ -406,6 +466,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
         </div>
         <button class="topbar-btn" id="btnLogout" title="Sair"><i class="fas fa-right-from-bracket"></i></button>
       </div>
+      <div class="mention-box" id="mentionBox"></div>
       <div class="input-wrapper">
         <input id="msgInput" placeholder="Escreva uma mensagem..." autocomplete="off">
         <button class="btn-send" id="btnEnviar"><i class="fas fa-paper-plane"></i></button>
@@ -542,6 +603,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
     <button class="emoji-btn" data-emoji="🔥">🔥</button>
     <button class="emoji-btn" data-emoji="😮">😮</button>
   </div>
+  <div class="ctx-item" id="ctxPerfil"><i class="fas fa-user"></i> Ver perfil</div>
   <div class="ctx-item danger" id="ctxApagar"><i class="fas fa-trash"></i> Apagar</div>
 </div>
 
@@ -572,6 +634,18 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+
+const NOMES_BLOQUEADOS = ["admin","adm","dono","porra","caralho","puta","viado","fdp","merda","cu","buceta","pinto","piroca","arrombado","desgraça","desgraca","vsfd","tnc","krl","pqp","lixo","otario","otário"];
+function nomeValido(n) {
+  if (!n || n.length < 2) return "Nome muito curto (mínimo 2 caracteres)";
+  if (n.length > 10) return "Nome pode ter no máximo 10 caracteres";
+  const lower = n.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  for (const bad of NOMES_BLOQUEADOS) {
+    if (lower.includes(bad)) return "Esse nome não é permitido";
+  }
+  return null;
+}
 
 const DONO = "MVOIDv";
 const SENHA_DONO = "Wr0ck3t#Adm2026!";
@@ -655,7 +729,8 @@ document.getElementById("btnLoginAcao").onclick = async () => {
   const n = document.getElementById("loginNome").value.trim();
   const s = document.getElementById("loginSenha").value;
   const s2 = document.getElementById("loginSenha2").value;
-  if (!n || n.length < 2) return mostrarErro("Nome muito curto");
+  const erroNome = nomeValido(n);
+  if (erroNome) return mostrarErro(erroNome);
   if (!s || s.length < 3) return mostrarErro("Senha muito curta");
 
   const banLocal = localStorage.getItem("wrocket_ban");
@@ -937,7 +1012,8 @@ async function carregarUsuario() {
   avatarLetter.textContent = (nome.charAt(0) || "?").toUpperCase();
   userNameBottom.textContent = nome;
   userNameBottom.style.color = usuarioAtual.corNome || (usuarioAtual.role === "admin" ? "#ef4444" : "");
-  if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin") {
+  const temPermBan = usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || usuarioAtual.permissoes?.ban || (usuarioAtual.permissoes && (usuarioAtual.permissoes.ban === true));
+  if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || temPermBan) {
     btnAdmin.style.display = "flex";
     btnBans.style.display = "flex";
   }
@@ -955,27 +1031,261 @@ function podeConvidar() { return usuarioAtual?.role === "admin" || usuarioAtual?
 
 
 
+
+// ===== @ MENÇÃO + @ALARME + TICKET CHAT + CARGO REMOVE =====
+let ticketAbertoId = null;
+const COMANDOS_ADM = [
+  { cmd: "@alarme", desc: "Envia aviso pra todo mundo ir ao canal atual" },
+  { cmd: "@limpar", desc: "Limpa as mensagens do canal (só visual)" },
+  { cmd: "@status", desc: "Mostra quantos online" },
+  { cmd: "@aviso", desc: "Envia aviso global" }
+];
+
+// Mention autocomplete
+const msgInputEl = document.getElementById("msgInput");
+const mentionBox = document.getElementById("mentionBox");
+if (msgInputEl) {
+  msgInputEl.addEventListener("input", () => {
+    const val = msgInputEl.value;
+    const cursor = msgInputEl.selectionStart;
+    const before = val.slice(0, cursor);
+    const match = before.match(/@(\w*)$/);
+    if (match) {
+      const q = match[1].toLowerCase();
+      const users = Object.keys(usuariosCache || {}).filter(u => u.toLowerCase().includes(q) && u !== nome);
+      if (users.length) {
+        mentionBox.innerHTML = users.slice(0, 8).map(u => {
+          const em = (usuariosCache[u]?.emoji) || "😎";
+          return `<div class="mention-item" data-user="${u}">${em} <b>${u}</b></div>`;
+        }).join("");
+        mentionBox.style.display = "block";
+        mentionBox.querySelectorAll(".mention-item").forEach(item => {
+          item.onclick = () => {
+            const user = item.dataset.user;
+            const newBefore = before.replace(/@\w*$/, "@" + user + " ");
+            msgInputEl.value = newBefore + val.slice(cursor);
+            mentionBox.style.display = "none";
+            msgInputEl.focus();
+          };
+        });
+      } else mentionBox.style.display = "none";
+    } else mentionBox.style.display = "none";
+  });
+  document.addEventListener("click", (e) => {
+    if (!mentionBox.contains(e.target) && e.target !== msgInputEl) mentionBox.style.display = "none";
+  });
+}
+
+// Intercept send for commands
+const originalEnviarCheck = true;
+function processarComandos(texto) {
+  if (!texto.startsWith("@")) return false;
+  const isAdm = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
+  // @alarme
+  if (texto.toLowerCase().startsWith("@alarme") && isAdm) {
+    const msg = texto.slice(7).trim() || "Venham para este canal!";
+    const canalNome = canaisCache[canalAtual]?.nome || "canal";
+    addDoc(collection(db, "mensagens"), {
+      grupo: canalAtual, nome: "SISTEMA", texto: `🚨 ALARME: ${msg} — vão para #${canalNome}`, data: serverTimestamp(), reacoes: {}, emoji: "🚨", sistema: true
+    });
+    // broadcast toast via a special doc or just local for now + message
+    mostrarAlarme(`🚨 ${msg} — Canal: #${canalNome}`);
+    return true;
+  }
+  if (texto.toLowerCase().startsWith("@limpar") && isAdm) {
+    mensagensEl.innerHTML = `<div class="empty-state">Canal limpo visualmente</div>`;
+    return true;
+  }
+  if (texto.toLowerCase().startsWith("@status") && isAdm) {
+    const qtd = Object.keys(usuariosCache || {}).length;
+    alert(`Usuários cadastrados: ${qtd}`);
+    return true;
+  }
+  if (texto.toLowerCase().startsWith("@aviso") && isAdm) {
+    const msg = texto.slice(6).trim() || "Aviso do ADM";
+    mostrarAlarme(`📢 ${msg}`);
+    return true;
+  }
+  return false;
+}
+
+function mostrarAlarme(texto) {
+  const old = document.querySelector(".alarme-toast");
+  if (old) old.remove();
+  const t = document.createElement("div");
+  t.className = "alarme-toast";
+  t.textContent = texto;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 6000);
+}
+
+// Listen for system alarm messages when tab is focused or not
+function checarAlarmeMsg(m) {
+  if (m.sistema || m.nome === "SISTEMA") {
+    mostrarAlarme(m.texto);
+  }
+}
+
+// Ticket chat
+document.getElementById("btnFecharTicketChat")?.addEventListener("click", () => {
+  document.getElementById("modalTicketChat").classList.remove("active");
+  ticketAbertoId = null;
+});
+document.getElementById("btnTicketChatEnviar")?.addEventListener("click", enviarTicketMsg);
+document.getElementById("ticketChatInput")?.addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); enviarTicketMsg(); }
+});
+async function enviarTicketMsg() {
+  if (!ticketAbertoId) return;
+  const inp = document.getElementById("ticketChatInput");
+  const txt = inp?.value.trim();
+  if (!txt) return;
+  const ref = doc(db, "tickets", ticketAbertoId);
+  const snap = await getDoc(ref);
+  const data = snap.data();
+  const msgs = data.mensagens || [];
+  msgs.push({ de: nome, texto: txt, data: Date.now() });
+  await updateDoc(ref, { mensagens: msgs });
+  inp.value = "";
+  abrirTicketChat({ id: ticketAbertoId, ...data, mensagens: msgs });
+}
+document.getElementById("btnResolverTicket")?.addEventListener("click", async () => {
+  if (!ticketAbertoId) return;
+  await updateDoc(doc(db, "tickets", ticketAbertoId), { status: "resolvido" });
+  document.getElementById("modalTicketChat").classList.remove("active");
+  ticketAbertoId = null;
+  alert("Ticket marcado como resolvido");
+});
+
+function abrirTicketChat(t) {
+  ticketAbertoId = t.id;
+  document.getElementById("ticketChatTitulo").textContent = t.assunto || "Ticket";
+  document.getElementById("ticketChatInfo").textContent = `De: ${t.de} · Tipo: ${t.tipo}`;
+  const box = document.getElementById("ticketChatMsgs");
+  box.innerHTML = "";
+  (t.mensagens || []).forEach(m => {
+    const d = document.createElement("div");
+    d.className = "ticket-msg" + (m.de === nome ? " eu" : "");
+    d.innerHTML = `<b>${m.de}</b>: ${m.texto}`;
+    box.appendChild(d);
+  });
+  // first message = original
+  if (!(t.mensagens || []).length) {
+    const d = document.createElement("div");
+    d.className = "ticket-msg";
+    d.innerHTML = `<b>${t.de}</b>: ${t.motivo}`;
+    box.appendChild(d);
+  }
+  document.getElementById("modalTicketChat").classList.add("active");
+}
+
+// Override renderTicketsAdm to open chat
+function renderTicketsAdm() {
+  const lista = document.getElementById("listaTicketsAdm");
+  if (!lista) return;
+  lista.innerHTML = "";
+  if (!ticketsCache.length) {
+    lista.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket aberto</div>';
+    return;
+  }
+  ticketsCache.forEach(t => {
+    const div = document.createElement("div");
+    div.className = "ticket-card";
+    const tipoLabel = t.tipo === "erro" ? "Erro / Bug" : t.tipo === "comunicar" ? "Comunicar ADM" : "Outro";
+    let dataStr = "";
+    if (t.data?.toDate) dataStr = t.data.toDate().toLocaleString("pt-BR");
+    div.innerHTML = `<div class="t-tipo">${tipoLabel}</div><div class="t-assunto">${t.assunto}</div><div class="t-meta">de <b>${t.de}</b> · ${dataStr}</div><div style="margin-top:6px;font-size:13px;color:var(--text-muted)">${(t.motivo||"").slice(0,80)}</div>`;
+    div.onclick = () => {
+      document.getElementById("modalTicketsAdm").classList.remove("active");
+      abrirTicketChat(t);
+    };
+    lista.appendChild(div);
+  });
+}
+
+// Show commands hint for ADM when switching
+function mostrarComandosAdm() {
+  if (!(usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin")) return;
+  const hint = document.createElement("div");
+  hint.className = "cmd-hint";
+  hint.textContent = "Comandos: @alarme | @limpar | @status | @aviso";
+  // optional: show temporarily
+}
+
+
 // ===== TICKET + BAN REALTIME + CARGO HELPERS =====
+
+// Ticket button: normal user opens create, ADM can also open list
+document.getElementById("btnTicket")?.addEventListener("click", () => {
+  if (usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin") {
+    // show list for ADM
+    renderTicketsAdm();
+    document.getElementById("modalTicketsAdm").classList.add("active");
+  } else {
+    // normal user opens create form
+    document.getElementById("ticketOpcoes").style.display = "flex";
+    document.getElementById("ticketForm").style.display = "none";
+    document.getElementById("modalTicket").classList.add("active");
+  }
+});
+document.getElementById("btnFecharTicket")?.addEventListener("click", () => document.getElementById("modalTicket").classList.remove("active"));
+document.getElementById("btnFecharTicketsAdm")?.addEventListener("click", () => document.getElementById("modalTicketsAdm").classList.remove("active"));
+
+document.getElementById("ticketTipoErro")?.addEventListener("click", () => { ticketTipoAtual = "erro"; mostrarFormTicket(); });
+document.getElementById("ticketTipoAdm")?.addEventListener("click", () => { ticketTipoAtual = "comunicar"; mostrarFormTicket(); });
+document.getElementById("ticketTipoOutro")?.addEventListener("click", () => { ticketTipoAtual = "outro"; mostrarFormTicket(); });
+
+function mostrarFormTicket() {
+  document.getElementById("ticketOpcoes").style.display = "none";
+  document.getElementById("ticketForm").style.display = "block";
+}
+document.getElementById("btnVoltarTicket")?.addEventListener("click", () => {
+  document.getElementById("ticketForm").style.display = "none";
+  document.getElementById("ticketOpcoes").style.display = "flex";
+});
+document.getElementById("btnEnviarTicket")?.addEventListener("click", async () => {
+  const assunto = document.getElementById("ticketAssunto")?.value.trim();
+  const motivo = document.getElementById("ticketMotivo")?.value.trim();
+  if (!assunto || !motivo) return alert("Preencha assunto e motivo");
+  await addDoc(collection(db, "tickets"), {
+    de: nome, tipo: ticketTipoAtual, assunto, motivo, status: "aberto", data: serverTimestamp()
+  });
+  alert("Ticket enviado! O ADM vai ver em breve.");
+  document.getElementById("ticketAssunto").value = "";
+  document.getElementById("ticketMotivo").value = "";
+  document.getElementById("modalTicket").classList.remove("active");
+});
+
+function renderTicketsAdm() {
+  const lista = document.getElementById("listaTicketsAdm");
+  if (!lista) return;
+  lista.innerHTML = "";
+  if (!ticketsCache.length) {
+    lista.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket aberto</div>';
+    return;
+  }
+  ticketsCache.forEach(t => {
+    const div = document.createElement("div");
+    div.className = "ticket-card";
+    const tipoLabel = t.tipo === "erro" ? "Erro / Bug" : t.tipo === "comunicar" ? "Comunicar ADM" : "Outro";
+    let dataStr = "";
+    if (t.data?.toDate) dataStr = t.data.toDate().toLocaleString("pt-BR");
+    div.innerHTML = `<div class="t-tipo">${tipoLabel}</div><div class="t-assunto">${t.assunto}</div><div class="t-meta">de <b>${t.de}</b> · ${dataStr}</div><div style="margin-top:6px;font-size:13px;color:var(--text-muted)">${(t.motivo||"").slice(0,100)}</div>`;
+    div.onclick = () => {
+      if (confirm(`Ticket de ${t.de}\\n\\n${t.assunto}\\n\\n${t.motivo}\\n\\nMarcar como resolvido?`)) {
+        updateDoc(doc(db, "tickets", t.id), { status: "resolvido" });
+      }
+    };
+    lista.appendChild(div);
+  });
+}
+
 let ticketTipoAtual = "";
 let ticketsCache = [];
 
-document.getElementById("btnTicket")?.addEventListener("click", () => {
-  document.getElementById("ticketForm").style.display = "none";
-  document.getElementById("ticketVoltarWrap").style.display = "none";
-  document.querySelector("#modalTicket .modal-box > div:first-of-type")?.style && (document.querySelector("#modalTicket .modal-box > div").style.display = "flex");
-  document.getElementById("modalTicket").classList.add("active");
-});
 
-["ticketTipoErro","ticketTipoAdm","ticketTipoOutro"].forEach(id => {
-  document.getElementById(id)?.addEventListener("click", () => {
-    ticketTipoAtual = id === "ticketTipoErro" ? "erro" : id === "ticketTipoAdm" ? "comunicar" : "outro";
-    document.getElementById("ticketForm").style.display = "block";
-    document.getElementById("ticketVoltarWrap").style.display = "flex";
-    const box = document.querySelector("#modalTicket .modal-box");
-    const firstDiv = box?.querySelector("div");
-    if (firstDiv && firstDiv.querySelector("button")) firstDiv.style.display = "none";
-  });
-});
+
+
 document.getElementById("btnVoltarTicket")?.addEventListener("click", () => {
   document.getElementById("ticketForm").style.display = "none";
   document.getElementById("ticketVoltarWrap").style.display = "none";
@@ -1038,6 +1348,16 @@ function forcarBanTela(pun) {
 }
 
 
+
+document.getElementById("ctxPerfil")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (window._ctxMsgData) {
+    const m = window._ctxMsgData;
+    mostrarPerfilCard(m.nome, m.emoji || "😎", { clientX: 100, clientY: 100 });
+  }
+  document.getElementById("ctxMenu")?.classList.remove("active");
+});
+
 function iniciarApp() {
   
   // Ban/Kick em tempo real → joga a pessoa na tela imediatamente
@@ -1054,10 +1374,12 @@ function iniciarApp() {
     ticketsCache = [];
     snap.forEach(d => ticketsCache.push({ id: d.id, ...d.data() }));
     const badge = document.getElementById("badgeTicket");
-    if (badge && (usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin")) {
+    if (badge) {
       badge.textContent = ticketsCache.length;
       badge.style.display = ticketsCache.length ? "flex" : "none";
     }
+    // se o modal de tickets estiver aberto, atualiza a lista
+    if (document.getElementById("modalTicketsAdm")?.classList.contains("active")) renderTicketsAdm();
   });
 
   // listener global de novas mensagens (unread + notificação)
@@ -1099,6 +1421,7 @@ function iniciarApp() {
     if (!canalAtual) return alert("Selecione um canal");
     const texto = input.value.trim();
     if (!texto) return;
+    if (processarComandos(texto)) { input.value = ""; return; }
     try {
       const canal = canaisCache[canalAtual];
       const isDM = canal?.tipo === "dm";
@@ -1191,6 +1514,7 @@ function iniciarApp() {
   const ctxMenu = document.getElementById("ctxMenu");
   function abrirCtx(e, id, data) {
     msgCtxId = id;
+    window._ctxMsgData = data;
     ctxMenu.style.left = Math.min(e.clientX || e.pageX, window.innerWidth - 180) + "px";
     ctxMenu.style.top = Math.min(e.clientY || e.pageY, window.innerHeight - 160) + "px";
     ctxMenu.classList.add("active");
