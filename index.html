@@ -568,8 +568,10 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
     </select>
     <div style="font-size:13px;color:var(--text-muted);margin:10px 0 6px">Permissões</div>
     <div id="listaPermsCargo"></div>
-    <div style="font-size:13px;color:var(--text-muted);margin:10px 0 6px">Adicionar pessoas agora</div>
-    <select id="cargoMembros" multiple style="height:80px"></select>
+    <div style="font-size:13px;color:var(--text-muted);margin:10px 0 6px">Pessoas no cargo (clique pra adicionar/remover)</div>
+    <div id="cargoMembrosLista" style="max-height:120px;overflow-y:auto;background:#1e293b;border-radius:10px;padding:6px;margin-bottom:12px"></div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Clique no nome pra adicionar ou tirar</div>
+    <div id="cargoMembrosDisponiveis" style="max-height:100px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:6px"></div>
     <div class="modal-buttons">
       <button class="btn-cancel" id="btnCancelarCargo">Cancelar</button>
       <button class="btn-confirm" id="btnCriarCargo">Salvar</button>
@@ -676,7 +678,7 @@ const PERMISSOES_CARGO = [
 ];
 
 let nome = null, usuarioAtual = null, canalAtual = null;
-let canaisCache = {}, usuariosCache = {}, cargosCache = {}, convitesCache = [];
+let canaisCache = {}, usuariosCache = {}, cargosCache = {}, convitesCache = [], ticketsCache = [];
 let unsubscribeMensagens = null, msgCtxId = null, emojiEscolhido = "😎";
 let modoCadastro = false, editandoCargoId = null, editandoCanalId = null;
 let ultimoConvite = 0; // anti-spam simples
@@ -1984,14 +1986,33 @@ function iniciarApp() {
       div.innerHTML = `<input type="checkbox" id="perm_${p.id}" ${checked}><label for="perm_${p.id}">${p.label}</label>`;
       lista.appendChild(div);
     });
-    const sel = document.getElementById("cargoMembros");
-    sel.innerHTML = "";
-    Object.keys(usuariosCache).forEach(u => {
-      const o = document.createElement("option");
-      o.value = u; o.textContent = u;
-      if (cargo?.membros?.includes(u)) o.selected = true;
-      sel.appendChild(o);
-    });
+    window._cargoMembrosSel = new Set(cargo?.membros || []);
+    function renderCargoMembrosUI() {
+      const lista = document.getElementById("cargoMembrosLista");
+      const disp = document.getElementById("cargoMembrosDisponiveis");
+      if (!lista || !disp) return;
+      lista.innerHTML = "";
+      disp.innerHTML = "";
+      const selected = window._cargoMembrosSel;
+      if (!selected.size) lista.innerHTML = '<span style="color:#64748b;font-size:12px;padding:4px">Ninguém ainda</span>';
+      Object.keys(usuariosCache).forEach(u => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.style.cssText = "padding:6px 10px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:white;font-size:12px;cursor:pointer";
+        if (selected.has(u)) {
+          chip.style.borderColor = "var(--accent)";
+          chip.style.background = "rgba(34,197,94,0.15)";
+          chip.textContent = "✓ " + u;
+          chip.onclick = () => { selected.delete(u); renderCargoMembrosUI(); };
+          lista.appendChild(chip);
+        } else {
+          chip.textContent = u;
+          chip.onclick = () => { selected.add(u); renderCargoMembrosUI(); };
+          disp.appendChild(chip);
+        }
+      });
+    }
+    renderCargoMembrosUI();
     document.getElementById("modalCargo").classList.add("active");
   }
   document.getElementById("cargoCor").oninput = e => document.getElementById("corPreview").style.background = e.target.value;
@@ -2011,7 +2032,7 @@ function iniciarApp() {
         perms.push(p.id);
       }
     });
-    const membros = [...document.getElementById("cargoMembros").selectedOptions].map(o => o.value);
+    const membros = [...(window._cargoMembrosSel || [])];
     const data = { nome: nomeCargo, cor, permissoes: perms, membros, escopo };
     if (editandoCargoId) await updateDoc(doc(db, "cargos", editandoCargoId), data);
     else await addDoc(collection(db, "cargos"), data);
