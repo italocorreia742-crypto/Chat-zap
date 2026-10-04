@@ -1180,28 +1180,6 @@ function abrirTicketChat(t) {
 }
 
 // Override renderTicketsAdm to open chat
-function renderTicketsAdm() {
-  const lista = document.getElementById("listaTicketsAdm");
-  if (!lista) return;
-  lista.innerHTML = "";
-  if (!ticketsCache.length) {
-    lista.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket aberto</div>';
-    return;
-  }
-  ticketsCache.forEach(t => {
-    const div = document.createElement("div");
-    div.className = "ticket-card";
-    const tipoLabel = t.tipo === "erro" ? "Erro / Bug" : t.tipo === "comunicar" ? "Comunicar ADM" : "Outro";
-    let dataStr = "";
-    if (t.data?.toDate) dataStr = t.data.toDate().toLocaleString("pt-BR");
-    div.innerHTML = `<div class="t-tipo">${tipoLabel}</div><div class="t-assunto">${t.assunto}</div><div class="t-meta">de <b>${t.de}</b> · ${dataStr}</div><div style="margin-top:6px;font-size:13px;color:var(--text-muted)">${(t.motivo||"").slice(0,80)}</div>`;
-    div.onclick = () => {
-      document.getElementById("modalTicketsAdm").classList.remove("active");
-      abrirTicketChat(t);
-    };
-    lista.appendChild(div);
-  });
-}
 
 // Show commands hint for ADM when switching
 function mostrarComandosAdm() {
