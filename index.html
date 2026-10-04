@@ -233,6 +233,44 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
   .comunidades { width: 58px; }
   .msg { max-width: 88%; }
 }
+
+/* PERMISSÕES + WELCOME + UNREAD */
+#telaPermissoes, #telaWelcome { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; z-index: 999; flex-direction: column; }
+.perm-box { width: 92%; max-width: 420px; background: #111827; border-radius: 22px; padding: 28px; border: 1px solid #1f2937; box-shadow: 0 20px 50px rgba(0,0,0,.4); }
+.perm-box h1 { font-size: 22px; margin-bottom: 8px; text-align: center; font-weight: 700; }
+.perm-box p { text-align: center; color: var(--text-muted); font-size: 13.5px; margin-bottom: 20px; line-height: 1.45; }
+.perm-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: #1e293b; border-radius: 14px; margin-bottom: 10px; cursor: pointer; transition: .15s; border: 1px solid transparent; }
+.perm-item:hover { border-color: #334155; }
+.perm-item.active { border-color: var(--accent); background: rgba(34,197,94,.08); }
+.perm-item input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+.perm-item .perm-title { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+.perm-item .perm-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.4; }
+.perm-box button { width: 100%; padding: 14px; border-radius: 14px; border: none; background: var(--accent); color: white; font-weight: 600; font-size: 15px; cursor: pointer; margin-top: 8px; transition: all .25s ease; }
+.perm-box button:disabled { background: #334155; cursor: not-allowed; opacity: .7; }
+.btn-expand.expanding { position: fixed; z-index: 1001; transition: all .7s cubic-bezier(.16,1,.3,1); }
+#telaWelcome { z-index: 1000; }
+.welcome-text { font-size: clamp(28px, 8vw, 48px); font-weight: 700; text-align: center; opacity: 0; transform: scale(.9); transition: all .8s cubic-bezier(.16,1,.3,1); }
+.welcome-text.show { opacity: 1; transform: scale(1); }
+.welcome-text.hide { opacity: 0; transform: scale(1.1); transition: all .6s ease; }
+.unread-badge { background: #ef4444; color: white; font-size: 11px; font-weight: 700; min-width: 20px; height: 20px; border-radius: 10px; display: flex; align-items: center; justify-content: center; padding: 0 6px; margin-left: auto; }
+
+
+/* TABS CANAIS / DMS */
+.side-tabs { display: flex; gap: 4px; padding: 0 8px 8px; }
+.side-tab { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; background: transparent; border: none; }
+.side-tab.active { background: rgba(34,197,94,0.15); color: var(--accent); }
+
+/* TICKET */
+.ticket-btn { margin-top: auto; margin-bottom: 12px; width: 44px; height: 44px; border-radius: 14px; background: #1e293b; border: none; color: #fbbf24; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; position: relative; }
+.ticket-btn:hover { background: #334155; }
+.ticket-item { padding: 10px; background: #1e293b; border-radius: 10px; margin-bottom: 8px; cursor: pointer; }
+.ticket-item:hover { background: #334155; }
+.ticket-item .t-meta { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.ticket-badge { position: absolute; top: -4px; right: -4px; background: #fbbf24; color: #000; font-size: 10px; font-weight: 700; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+/* CHANNEL ICON */
+.canal-icon { width: 28px; height: 28px; border-radius: 8px; background: rgba(34,197,94,0.15); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+
 </style>
 </head>
 <body>
@@ -275,6 +313,49 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
   </div>
 </div>
 
+
+<!-- TELA DE PERMISSÕES + TERMOS -->
+<div id="telaPermissoes" style="display:none">
+  <div class="perm-box">
+    <h1>Quase lá!</h1>
+    <p>Para usar o Wrocket com a melhor experiência, precisamos de algumas permissões e que você aceite os termos.</p>
+    <div class="perm-item"><input type="checkbox" id="checkNotif"><div><div class="perm-title">Receber mensagens</div><div class="perm-desc">Permite que o Wrocket te avise de novas mensagens mesmo com a aba em segundo plano.</div></div></div>
+    <div class="perm-item"><input type="checkbox" id="checkStorage"><div><div class="perm-title">Salvar preferências</div><div class="perm-desc">Guarda suas configurações e sessão de forma segura neste dispositivo.</div></div></div>
+    <div class="perm-item"><input type="checkbox" id="checkSom"><div><div class="perm-title">Sons e notificações</div><div class="perm-desc">Ativa sons suaves quando chegar mensagem nova.</div></div></div>
+    <div class="perm-item"><input type="checkbox" id="checkTermos"><div><div class="perm-title">Termos de uso</div><div class="perm-desc">Li e aceito os termos. O Wrocket é um espaço feito com carinho pra amigos conversarem. Seja legal com todo mundo 💚</div></div></div>
+    <button id="btnContinuarWrocket" class="btn-expand" disabled>Continuar para o Wrocket</button>
+  </div>
+</div>
+
+<!-- WELCOME -->
+<div id="telaWelcome" style="display:none">
+  <div class="welcome-text" id="welcomeText">Bem-vindo ao Wrocket</div>
+</div>
+
+
+<!-- MODAL TICKET -->
+<div class="modal" id="modalTicket">
+  <div class="modal-box">
+    <h2>Abrir Ticket</h2>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <button class="btn-confirm" id="ticketTipoErro" style="background:#ef4444">Reportar erro / Bug</button>
+      <button class="btn-confirm" id="ticketTipoAdm" style="background:#3b82f6">Comunicar ADM / Sub-ADM</button>
+      <button class="btn-confirm" id="ticketTipoOutro" style="background:#64748b">Outro (criar ticket)</button>
+    </div>
+    <div id="ticketForm" style="display:none">
+      <input type="text" id="ticketAssunto" placeholder="Assunto / o que aconteceu">
+      <textarea id="ticketMotivo" placeholder="Descreva com detalhes. Pode marcar @alguem" maxlength="500"></textarea>
+      <div class="modal-buttons">
+        <button class="btn-cancel" id="btnCancelarTicket">Cancelar</button>
+        <button class="btn-confirm" id="btnEnviarTicket">Enviar Ticket</button>
+      </div>
+    </div>
+    <div class="modal-buttons" id="ticketVoltarWrap" style="display:none">
+      <button class="btn-cancel" id="btnVoltarTicket">Voltar</button>
+    </div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
   <div class="comunidades">
@@ -284,10 +365,15 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
     <button class="com-icon" id="btnAdmin" title="ADM" style="display:none"><i class="fas fa-shield-halved"></i></button>
     <button class="com-icon" id="btnBans" title="Bans" style="display:none"><i class="fas fa-gavel"></i></button>
     <button class="com-icon plus-btn" id="btn-add" title="Criar canal"><i class="fas fa-plus"></i></button>
+    <button class="ticket-btn" id="btnTicket" title="Ticket / Reportar"><i class="fas fa-ticket"></i><span class="ticket-badge" id="badgeTicket" style="display:none">0</span></button>
   </div>
 
   <div class="sidebar">
     <div class="side-header" id="sideTitle">Canais</div>
+    <div class="side-tabs" id="sideTabs">
+      <button class="side-tab active" data-tab="canais">Canais</button>
+      <button class="side-tab" data-tab="dms">DMs</button>
+    </div>
     <div class="group-list" id="listaGrupos"></div>
     <div class="users-list" id="listaUsuarios" style="display:none"></div>
     <div class="convites-list" id="listaConvites" style="display:none"></div>
@@ -511,6 +597,17 @@ let ultimoConvite = 0; // anti-spam simples
 
 const telaLogin = document.getElementById("telaLogin");
 const telaOnboarding = document.getElementById("telaOnboarding");
+const telaPermissoes = document.getElementById("telaPermissoes");
+const telaWelcome = document.getElementById("telaWelcome");
+let isPrimeiroAcesso = false;
+let lastRead = JSON.parse(localStorage.getItem("wrocket_lastRead") || "{}");
+let unreadCounts = {};
+let tabFocused = true;
+document.addEventListener("visibilitychange", () => {
+  tabFocused = !document.hidden;
+  if (tabFocused && typeof canalAtual !== "undefined" && canalAtual) marcarComoLido(canalAtual);
+});
+
 const telaBan = document.getElementById("telaBan");
 const appEl = document.getElementById("app");
 const mensagensEl = document.getElementById("mensagens");
@@ -617,7 +714,15 @@ document.getElementById("btnLoginAcao").onclick = async () => {
       }
     }
     await updateDoc(ref, { ultimoAcesso: serverTimestamp() });
-    entrar(n);
+    nome = n;
+    localStorage.setItem("wrocket_user", n);
+    if (n !== DONO && !dados.termosAceitos) {
+      isPrimeiroAcesso = false;
+      telaLogin.style.display = "none";
+      mostrarPermissoes();
+    } else {
+      entrar(n);
+    }
   }
 };
 
@@ -644,12 +749,130 @@ document.getElementById("btnSalvarOnboard").onclick = async () => {
   const desc = document.getElementById("onboardDesc").value.trim();
   await updateDoc(doc(db, "usuarios", nome), { emoji: emojiEscolhido, descricao: desc });
   telaOnboarding.style.display = "none";
-  entrar(nome);
+  isPrimeiroAcesso = true;
+  mostrarPermissoes();
 };
 document.getElementById("btnPularOnboard").onclick = () => {
   telaOnboarding.style.display = "none";
-  entrar(nome);
+  isPrimeiroAcesso = true;
+  mostrarPermissoes();
 };
+
+
+function mostrarPermissoes() {
+  telaPermissoes.style.display = "flex";
+  atualizarBotaoContinuar();
+}
+const checks = ["checkNotif", "checkStorage", "checkSom", "checkTermos"];
+checks.forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener("change", () => {
+    const item = el.closest(".perm-item");
+    if (el.checked) item.classList.add("active");
+    else item.classList.remove("active");
+    atualizarBotaoContinuar();
+  });
+  el.closest(".perm-item")?.addEventListener("click", e => {
+    if (e.target.tagName !== "INPUT") {
+      el.checked = !el.checked;
+      el.dispatchEvent(new Event("change"));
+    }
+  });
+});
+function atualizarBotaoContinuar() {
+  const btn = document.getElementById("btnContinuarWrocket");
+  if (btn) btn.disabled = !checks.every(id => document.getElementById(id)?.checked);
+}
+
+document.getElementById("btnContinuarWrocket")?.addEventListener("click", async () => {
+  const btn = document.getElementById("btnContinuarWrocket");
+  if (btn.disabled) return;
+  if ("Notification" in window && Notification.permission === "default") {
+    try { await Notification.requestPermission(); } catch(e) {}
+  }
+  try {
+    await updateDoc(doc(db, "usuarios", nome), {
+      termosAceitos: true,
+      preferencias: {
+        storage: true,
+        som: document.getElementById("checkSom")?.checked,
+        notif: document.getElementById("checkNotif")?.checked
+      }
+    });
+  } catch(e) { console.error(e); }
+
+  const rect = btn.getBoundingClientRect();
+  btn.classList.add("expanding");
+  btn.style.left = rect.left + "px";
+  btn.style.top = rect.top + "px";
+  btn.style.width = rect.width + "px";
+  btn.style.height = rect.height + "px";
+  btn.textContent = "";
+  requestAnimationFrame(() => {
+    btn.style.left = "0"; btn.style.top = "0";
+    btn.style.width = "100vw"; btn.style.height = "100vh";
+    btn.style.borderRadius = "0"; btn.style.background = "var(--accent)"; btn.style.opacity = "1";
+  });
+  setTimeout(() => {
+    btn.style.opacity = "0";
+    setTimeout(() => {
+      telaPermissoes.style.display = "none";
+      btn.classList.remove("expanding");
+      btn.style = "";
+      btn.textContent = "Continuar para o Wrocket";
+      mostrarWelcome();
+    }, 500);
+  }, 700);
+});
+
+function mostrarWelcome() {
+  telaWelcome.style.display = "flex";
+  const txt = document.getElementById("welcomeText");
+  txt.textContent = isPrimeiroAcesso ? "Bem-vindo ao Wrocket" : "Bom te ver de novo";
+  txt.classList.remove("hide");
+  requestAnimationFrame(() => txt.classList.add("show"));
+  setTimeout(() => {
+    txt.classList.add("hide");
+    setTimeout(() => {
+      telaWelcome.style.display = "none";
+      txt.classList.remove("show", "hide");
+      entrar(nome);
+    }, 600);
+  }, 1800);
+}
+
+function marcarComoLido(canalId) {
+  if (!canalId) return;
+  lastRead[canalId] = Date.now();
+  localStorage.setItem("wrocket_lastRead", JSON.stringify(lastRead));
+  unreadCounts[canalId] = 0;
+  atualizarBadges();
+}
+function atualizarBadges() {
+  document.querySelectorAll(".group-item").forEach(el => {
+    const id = el.dataset.id;
+    if (!id) return;
+    const count = unreadCounts[id] || 0;
+    let badge = el.querySelector(".unread-badge");
+    if (count > 0) {
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "unread-badge";
+        el.appendChild(badge);
+      }
+      badge.textContent = count > 99 ? "99+" : count;
+    } else if (badge) badge.remove();
+  });
+}
+function notificar(titulo, corpo) {
+  if (!tabFocused && "Notification" in window && Notification.permission === "granted") {
+    try {
+      new Notification(titulo, { body: corpo, icon: "https://cdn-icons-png.flaticon.com/512/2111/2111646.png" });
+    } catch(e) {}
+  }
+}
+
 
 function entrar(n) {
   nome = n;
@@ -730,7 +953,131 @@ function podeApagarQualquer() { return usuarioAtual?.role === "admin" || usuario
 function podeGerenciarCanais() { return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.gerenciarCanais; }
 function podeConvidar() { return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.convidar !== false; }
 
+
+
+// ===== TICKET + BAN REALTIME + CARGO HELPERS =====
+let ticketTipoAtual = "";
+let ticketsCache = [];
+
+document.getElementById("btnTicket")?.addEventListener("click", () => {
+  document.getElementById("ticketForm").style.display = "none";
+  document.getElementById("ticketVoltarWrap").style.display = "none";
+  document.querySelector("#modalTicket .modal-box > div:first-of-type")?.style && (document.querySelector("#modalTicket .modal-box > div").style.display = "flex");
+  document.getElementById("modalTicket").classList.add("active");
+});
+
+["ticketTipoErro","ticketTipoAdm","ticketTipoOutro"].forEach(id => {
+  document.getElementById(id)?.addEventListener("click", () => {
+    ticketTipoAtual = id === "ticketTipoErro" ? "erro" : id === "ticketTipoAdm" ? "comunicar" : "outro";
+    document.getElementById("ticketForm").style.display = "block";
+    document.getElementById("ticketVoltarWrap").style.display = "flex";
+    const box = document.querySelector("#modalTicket .modal-box");
+    const firstDiv = box?.querySelector("div");
+    if (firstDiv && firstDiv.querySelector("button")) firstDiv.style.display = "none";
+  });
+});
+document.getElementById("btnVoltarTicket")?.addEventListener("click", () => {
+  document.getElementById("ticketForm").style.display = "none";
+  document.getElementById("ticketVoltarWrap").style.display = "none";
+  const box = document.querySelector("#modalTicket .modal-box");
+  const firstDiv = box?.querySelector("div");
+  if (firstDiv) firstDiv.style.display = "flex";
+});
+document.getElementById("btnCancelarTicket")?.addEventListener("click", () => {
+  document.getElementById("modalTicket").classList.remove("active");
+});
+document.getElementById("btnEnviarTicket")?.addEventListener("click", async () => {
+  const assunto = document.getElementById("ticketAssunto")?.value.trim();
+  const motivo = document.getElementById("ticketMotivo")?.value.trim();
+  if (!assunto || !motivo) return alert("Preencha assunto e motivo");
+  await addDoc(collection(db, "tickets"), {
+    de: nome,
+    tipo: ticketTipoAtual,
+    assunto,
+    motivo,
+    status: "aberto",
+    data: serverTimestamp(),
+    mensagens: []
+  });
+  alert("Ticket enviado! O ADM vai ver em breve.");
+  document.getElementById("ticketAssunto").value = "";
+  document.getElementById("ticketMotivo").value = "";
+  document.getElementById("modalTicket").classList.remove("active");
+});
+
+// Side tabs Canais / DMs
+document.querySelectorAll(".side-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".side-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const tipo = tab.dataset.tab;
+    // simple filter: re-render list based on tipo
+    document.querySelectorAll(".group-item").forEach(el => {
+      const isDm = el.dataset.dm === "1";
+      if (tipo === "dms") el.style.display = isDm ? "flex" : "none";
+      else el.style.display = isDm ? "none" : "flex";
+    });
+  });
+});
+
+function forcarBanTela(pun) {
+  localStorage.setItem("wrocket_ban", JSON.stringify({
+    tipo: pun.tipo,
+    motivo: pun.motivo || "",
+    ate: pun.ate ? (pun.ate.toMillis ? pun.ate.toMillis() : pun.ate) : null
+  }));
+  if (typeof mostrarTelaBan === "function") {
+    mostrarTelaBan({
+      tipo: pun.tipo,
+      motivo: pun.motivo,
+      ate: pun.ate ? (pun.ate.toMillis ? pun.ate.toMillis() : pun.ate) : null
+    });
+  } else {
+    location.reload();
+  }
+}
+
+
 function iniciarApp() {
+  
+  // Ban/Kick em tempo real → joga a pessoa na tela imediatamente
+  onSnapshot(query(collection(db, "punicoes"), where("usuario", "==", nome), where("ativo", "==", true)), snap => {
+    if (snap.empty) return;
+    const pun = snap.docs[0].data();
+    if (pun.tipo === "ban" || (pun.tipo === "kick" && pun.ate && (pun.ate.toMillis ? pun.ate.toMillis() : pun.ate) > Date.now())) {
+      forcarBanTela(pun);
+    }
+  });
+
+  // Tickets (só ADM / quem tem permissão)
+  onSnapshot(query(collection(db, "tickets"), where("status", "==", "aberto")), snap => {
+    ticketsCache = [];
+    snap.forEach(d => ticketsCache.push({ id: d.id, ...d.data() }));
+    const badge = document.getElementById("badgeTicket");
+    if (badge && (usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin")) {
+      badge.textContent = ticketsCache.length;
+      badge.style.display = ticketsCache.length ? "flex" : "none";
+    }
+  });
+
+  // listener global de novas mensagens (unread + notificação)
+  onSnapshot(query(collection(db, "mensagens"), orderBy("data", "desc")), snap => {
+    snap.docChanges().forEach(change => {
+      if (change.type !== "added") return;
+      const m = change.doc.data();
+      if (m.nome === nome) return;
+      const canalId = m.grupo;
+      if (canalId !== canalAtual) {
+        unreadCounts[canalId] = (unreadCounts[canalId] || 0) + 1;
+        atualizarBadges();
+      }
+      if (!tabFocused) {
+        const canalNome = canaisCache[canalId]?.nome || "Canal";
+        notificar(`${m.emoji || "😎"} ${m.nome} em #${canalNome}`, (m.texto || "").slice(0, 80));
+      }
+    });
+  });
+
   document.getElementById("btnHome").onclick = () => setAba("canais");
   document.getElementById("btnUsers").onclick = () => setAba("users");
   document.getElementById("btnConvites").onclick = () => setAba("convites");
@@ -964,7 +1311,10 @@ function iniciarApp() {
         const outro = (canal.membros || []).find(m => m !== nome) || "DM";
         const div = document.createElement("div");
         div.className = "group-item" + (canalAtual === canal.id ? " active" : "");
-        div.innerHTML = `<i class="fas fa-user"></i><span>@${outro}</span>`;
+        div.dataset.id = canal.id;
+        const outroUser = usuariosCache[outro] || {};
+        div.innerHTML = `<div class="avatar" style="width:28px;height:28px;font-size:16px">${outroUser.emoji||"😎"}</div><span>@${outro}</span>`;
+        div.dataset.dm = "1";
         div.onclick = () => selecionarCanal({ ...canal, nome: `@${outro}` });
         listaGrupos.appendChild(div);
         return;
@@ -973,7 +1323,9 @@ function iniciarApp() {
       if (!isMembro) return;
       const div = document.createElement("div");
       div.className = "group-item" + (canalAtual === canal.id ? " active" : "");
-      div.innerHTML = `<i class="fas fa-hashtag"></i><span>${canal.nome}</span><span class="criador">${canal.criadoPor === "Sistema" ? "" : canal.criadoPor}</span>`;
+      div.dataset.id = canal.id;
+      div.innerHTML = `<div class="canal-icon">${(canal.nome||"#")[0].toUpperCase()}</div><span>${canal.nome}</span><span class="criador">${canal.criadoPor === "Sistema" ? "" : canal.criadoPor}</span>`;
+      div.dataset.dm = "0";
       div.onclick = () => selecionarCanal(canal);
       if (canal.criadoPor === nome || podeGerenciarCanais()) {
         div.oncontextmenu = e => { e.preventDefault(); abrirEditarCanal(canal); };
@@ -988,6 +1340,7 @@ function iniciarApp() {
 
   function selecionarCanal(canal) {
     canalAtual = canal.id;
+        marcarComoLido(canal.id);
     canalNomeTopo.textContent = canal.tipo === "dm" ? canal.nome : "# " + canal.nome;
     canalInfo.textContent = canal.tipo === "dm" ? "Conversa privada" : (canal.descricao || (canal.privado ? "Privado" : "Público")) + (canal.criadoPor !== "Sistema" ? ` · ${canal.criadoPor}` : "");
     document.getElementById("btnCanalInfo").style.display = canal.tipo === "dm" ? "none" : "block";
@@ -1293,13 +1646,20 @@ function iniciarApp() {
     Object.values(cargosCache).forEach(c => {
       const div = document.createElement("div");
       div.className = "admin-item";
+      const membrosStr = (c.membros || []).length ? (c.membros || []).join(", ") : "ninguém";
       div.innerHTML = `
         <div class="cor-preview" style="background:${c.cor || "#666"}"></div>
         <div style="flex:1">
           <div>${c.nome} ${c.escopo && c.escopo !== "global" ? "<small style='opacity:.6'>(grupo)</small>" : ""}</div>
           <div style="font-size:11px;opacity:.6">${(c.permissoes || []).join(", ") || "sem permissões"}</div>
-        </div>`;
-      div.onclick = () => abrirModalCargo(c);
+          <div style="font-size:11px;opacity:.7;margin-top:2px">Membros: ${membrosStr}</div>
+        </div>
+        <button style="background:none;border:none;color:#f87171;cursor:pointer;font-size:12px" title="Editar">✎</button>`;
+      div.onclick = (e) => {
+        if (e.target.tagName === "BUTTON") return;
+        abrirModalCargo(c);
+      };
+      div.querySelector("button").onclick = (e) => { e.stopPropagation(); abrirModalCargo(c); };
       listaAdmin.appendChild(div);
     });
   }
@@ -1418,3 +1778,6 @@ function iniciarApp() {
 </script>
 </body>
 </html>
+
+
+
