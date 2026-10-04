@@ -690,6 +690,8 @@ const PERMISSOES_CARGO = [
   {id:"editar_canal", label:"Editar canal"},
   {id:"ver_logs", label:"Ver logs"},
   {id:"mutar", label:"Mutar membros"},
+  {id:"ver_tickets", label:"Ver tickets"},
+  {id:"gerenciar_tickets", label:"Gerenciar / responder tickets"},
   {id:"subadmin", label:"Tornar Sub-ADM (só o dono)"}
 ];
 
@@ -1087,7 +1089,8 @@ async function carregarUsuario() {
     btnAdmin.style.display = "flex";
     btnBans.style.display = "flex";
   }
-  if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin") {
+  const podeTickets = usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || usuarioAtual.permissoes?.ver_tickets || usuarioAtual.permissoes?.gerenciar_tickets;
+  if (podeTickets) {
     const btnTA = document.getElementById("btnTicketsAdm");
     if (btnTA) btnTA.style.display = "flex";
   }
@@ -1379,7 +1382,7 @@ document.getElementById("ctxPerfil")?.addEventListener("click", (e) => {
   e.stopPropagation();
   if (window._ctxMsgData) {
     const m = window._ctxMsgData;
-    mostrarPerfilCard(m.nome, m.emoji || "😎", { clientX: 100, clientY: 100 });
+    if (window.mostrarPerfilCard) window.mostrarPerfilCard(m.nome, m.emoji || "😎", { clientX: 100, clientY: 100 });
   }
   document.getElementById("ctxMenu")?.classList.remove("active");
 });
@@ -1410,12 +1413,18 @@ function iniciarApp() {
   });
 
   // listener global de novas mensagens (unread + notificação)
+  let mensagensInitDone = false;
   onSnapshot(query(collection(db, "mensagens"), orderBy("data", "desc")), snap => {
     snap.docChanges().forEach(change => {
       if (change.type !== "added") return;
+      // ignora o carregamento inicial (evita badge fantasma)
+      if (!mensagensInitDone) return;
       const m = change.doc.data();
       if (m.nome === nome) return;
       const canalId = m.grupo;
+      const msgTime = m.data?.toMillis ? m.data.toMillis() : (m.data || 0);
+      const last = lastRead[canalId] || 0;
+      if (msgTime && msgTime <= last) return;
       if (canalId !== canalAtual) {
         unreadCounts[canalId] = (unreadCounts[canalId] || 0) + 1;
         atualizarBadges();
@@ -1425,6 +1434,7 @@ function iniciarApp() {
         notificar(`${m.emoji || "😎"} ${m.nome} em #${canalNome}`, (m.texto || "").slice(0, 80));
       }
     });
+    mensagensInitDone = true;
   });
 
   document.getElementById("btnHome").onclick = () => setAba("canais");
@@ -1618,8 +1628,24 @@ function iniciarApp() {
       card.style.left = Math.min(e.clientX || 100, window.innerWidth - 310) + "px";
       card.style.top = Math.min(e.clientY || 100, window.innerHeight - 240) + "px";
     }
+    // cargos da pessoa
+    const cargosUser = Object.values(cargosCache || {}).filter(c => (c.membros || []).includes(userNome));
+    let cargosEl = document.getElementById("pCargos");
+    if (!cargosEl) {
+      cargosEl = document.createElement("div");
+      cargosEl.id = "pCargos";
+      cargosEl.style.cssText = "font-size:12px;text-align:center;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px;justify-content:center";
+      document.getElementById("pDesc")?.after(cargosEl);
+    }
+    if (cargosUser.length) {
+      cargosEl.innerHTML = cargosUser.map(c => `<span style="background:${c.cor||'#334155'};color:#fff;padding:2px 8px;border-radius:6px;font-size:11px">${c.nome}</span>`).join("");
+    } else {
+      cargosEl.innerHTML = '<span style="color:#64748b;font-size:11px">Sem cargos</span>';
+    }
     card.classList.add("active");
   }
+  // expõe global pra context menu e cliques
+  window.mostrarPerfilCard = mostrarPerfilCard;
 
   // DM
   async function iniciarDM(outro) {
