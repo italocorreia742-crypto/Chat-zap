@@ -233,10 +233,24 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
 @media (max-width: 768px) {
-  .sidebar { width: 200px; }
-  .comunidades { width: 58px; }
+  .comunidades { width: 52px; padding: 10px 0; gap: 8px; }
+  .com-icon, .ticket-btn { width: 40px; height: 40px; font-size: 15px; border-radius: 12px; }
+  .sidebar { width: 0; min-width: 0; overflow: hidden; border: none; transition: width .25s ease; }
+  .sidebar.open { width: 75vw; max-width: 280px; min-width: 200px; border-right: 1px solid #1f2937; position: absolute; left: 52px; top: 0; bottom: 0; z-index: 40; box-shadow: 8px 0 30px rgba(0,0,0,.4); }
+  .main { width: 100%; }
   .msg { max-width: 88%; }
+  .topbar { padding: 0 10px; height: 50px; }
+  #mensagens { padding: 12px; }
+  .bottom { padding: 8px 10px 12px; }
+  .modal-box { width: 96%; max-height: 85vh; padding: 16px; }
+  .profile-card { width: 85vw; max-width: 300px; }
+  .side-tabs { padding: 0 6px 8px; }
+  .group-item { font-size: 13px; padding: 10px; }
+  /* botão menu mobile */
+  #btnMenuMobile { display: flex !important; }
 }
+#btnMenuMobile { display: none; }
+
 
 /* PERMISSÕES + WELCOME + UNREAD */
 #telaPermissoes, #telaWelcome { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center; z-index: 999; flex-direction: column; }
@@ -461,6 +475,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
         <div id="canalInfo"></div>
       </div>
       <div class="topbar-actions">
+        <button class="topbar-btn" id="btnMenuMobile" title="Menu"><i class="fas fa-bars"></i></button>
         <button class="topbar-btn" id="btnCanalInfo" title="Info do canal" style="display:none"><i class="fas fa-gear"></i></button>
       </div>
     </div>
@@ -992,6 +1007,18 @@ function notificar(titulo, corpo) {
 }
 
 
+
+document.getElementById("btnMenuMobile")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  document.querySelector(".sidebar")?.classList.toggle("open");
+});
+document.addEventListener("click", (e) => {
+  const sb = document.querySelector(".sidebar");
+  if (sb?.classList.contains("open") && !e.target.closest(".sidebar") && !e.target.closest("#btnMenuMobile") && !e.target.closest(".comunidades")) {
+    sb.classList.remove("open");
+  }
+});
+
 function entrar(n) {
   nome = n;
   localStorage.setItem("wrocket_user", n);
@@ -1499,6 +1526,7 @@ function iniciarApp() {
         div.addEventListener("touchmove", () => clearTimeout(pressTimer));
         div.addEventListener("click", e => {
           if (e.target.closest(".reacao")) return;
+          e.stopPropagation();
           mostrarPerfilCard(m.nome, m.emoji || "😎", e);
         });
         mensagensEl.appendChild(div);
@@ -1520,10 +1548,11 @@ function iniciarApp() {
     ctxMenu.classList.add("active");
     document.getElementById("ctxApagar").style.display = (data.nome === nome || podeApagarQualquer()) ? "flex" : "none";
   }
-  document.addEventListener("click", () => {
-    ctxMenu.classList.remove("active");
-    document.getElementById("profileCard").classList.remove("active");
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest("#ctxMenu")) ctxMenu.classList.remove("active");
+    if (!e.target.closest("#profileCard")) document.getElementById("profileCard")?.classList.remove("active");
   });
+  document.getElementById("profileCard")?.addEventListener("click", e => e.stopPropagation());
 
   document.querySelectorAll(".emoji-btn").forEach(btn => {
     btn.onclick = async e => {
@@ -1580,8 +1609,15 @@ function iniciarApp() {
       }
     }
     const card = document.getElementById("profileCard");
-    card.style.left = Math.min(e.clientX, window.innerWidth - 310) + "px";
-    card.style.top = Math.min(e.clientY, window.innerHeight - 240) + "px";
+    if (window.innerWidth < 600) {
+      card.style.left = "50%";
+      card.style.top = "50%";
+      card.style.transform = "translate(-50%, -50%)";
+    } else {
+      card.style.transform = "";
+      card.style.left = Math.min(e.clientX || 100, window.innerWidth - 310) + "px";
+      card.style.top = Math.min(e.clientY || 100, window.innerHeight - 240) + "px";
+    }
     card.classList.add("active");
   }
 
