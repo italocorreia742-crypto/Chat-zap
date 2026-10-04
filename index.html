@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Wrocket</title>
-<link rel="icon" type="image/jpeg" href="favicon.jpg">
-<link rel="apple-touch-icon" href="favicon.jpg">
+<link rel="icon" type="image/jpeg" href="favicon.jpg" sizes="32x32">
+<link rel="icon" type="image/jpeg" href="favicon.jpg" sizes="192x192">
+<link rel="apple-touch-icon" href="favicon.jpg" sizes="180x180">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -389,12 +390,17 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 <!-- MODAL LISTA DE TICKETS (só ADM) -->
 <div class="modal" id="modalTicketsAdm">
   <div class="modal-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-      <h2 style="margin:0">Tickets recebidos</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <h2 style="margin:0">Tickets ADM</h2>
       <button id="btnFecharTicketsAdm" style="background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer">&times;</button>
     </div>
+    <div class="side-tabs" id="ticketAdmTabs" style="margin-bottom:12px">
+      <button class="side-tab active" data-tstatus="aberto">Abertos</button>
+      <button class="side-tab" data-tstatus="resolvido">Resolvidos</button>
+      <button class="side-tab" data-tstatus="nao_resolvido">Não resolvidos</button>
+    </div>
     <div class="ticket-lista" id="listaTicketsAdm">
-      <div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket aberto</div>
+      <div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket</div>
     </div>
   </div>
 </div>
@@ -414,7 +420,9 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
       <button class="btn-send" id="btnTicketChatEnviar"><i class="fas fa-paper-plane"></i></button>
     </div>
     <div class="modal-buttons" style="margin-top:12px">
-      <button class="btn-danger" id="btnResolverTicket">Marcar resolvido</button>
+      <button class="btn-confirm" id="btnAceitarTicket">Aceitar ticket</button>
+      <button class="btn-confirm" id="btnResolverTicket" style="background:#22c55e">Resolvido</button>
+      <button class="btn-danger" id="btnNaoResolvido">Não resolvido</button>
     </div>
   </div>
 </div>
@@ -428,7 +436,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
     <button class="com-icon" id="btnAdmin" title="ADM" style="display:none"><i class="fas fa-shield-halved"></i></button>
     <button class="com-icon" id="btnBans" title="Bans" style="display:none"><i class="fas fa-gavel"></i></button>
     <button class="com-icon plus-btn" id="btn-add" title="Criar canal"><i class="fas fa-plus"></i></button>
-    <button class="ticket-btn" id="btnTicket" title="Ticket / Reportar"><i class="fas fa-ticket"></i><span class="ticket-badge" id="badgeTicket" style="display:none">0</span></button>
+    <button class="ticket-btn" id="btnTicket" title="Abrir Ticket"><i class="fas fa-ticket"></i></button>
+    <button class="ticket-btn" id="btnTicketsAdm" title="Tickets recebidos" style="display:none;color:#fbbf24"><i class="fas fa-inbox"></i><span class="ticket-badge" id="badgeTicket" style="display:none">0</span></button>
   </div>
 
   <div class="sidebar">
@@ -926,6 +935,16 @@ function marcarComoLido(canalId) {
   localStorage.setItem("wrocket_lastRead", JSON.stringify(lastRead));
   unreadCounts[canalId] = 0;
   atualizarBadges();
+
+      // ao carregar, mostrar só canais (esconder DMs)
+      document.querySelectorAll(".group-item").forEach(el => {
+        if (el.dataset.dm === "1") el.style.display = "none";
+      });
+      const tabCanais = document.querySelector('.side-tab[data-tab="canais"]');
+      const tabDms = document.querySelector('.side-tab[data-tab="dms"]');
+      if (tabCanais) tabCanais.classList.add("active");
+      if (tabDms) tabDms.classList.remove("active");
+
 }
 function atualizarBadges() {
   document.querySelectorAll(".group-item").forEach(el => {
@@ -1019,6 +1038,10 @@ async function carregarUsuario() {
   if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || temPermBan) {
     btnAdmin.style.display = "flex";
     btnBans.style.display = "flex";
+  }
+  if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin") {
+    const btnTA = document.getElementById("btnTicketsAdm");
+    if (btnTA) btnTA.style.display = "flex";
   }
   btnConvites.style.display = "flex";
   iniciarApp();
@@ -1152,6 +1175,20 @@ async function enviarTicketMsg() {
   inp.value = "";
   abrirTicketChat({ id: ticketAbertoId, ...data, mensagens: msgs });
 }
+
+document.getElementById("btnAceitarTicket")?.addEventListener("click", async () => {
+  if (!ticketAbertoId) return;
+  await updateDoc(doc(db, "tickets", ticketAbertoId), { status: "em_atendimento", atendidoPor: nome });
+  alert("Ticket aceito! Pode conversar com a pessoa abaixo.");
+});
+document.getElementById("btnNaoResolvido")?.addEventListener("click", async () => {
+  if (!ticketAbertoId) return;
+  await updateDoc(doc(db, "tickets", ticketAbertoId), { status: "nao_resolvido" });
+  document.getElementById("modalTicketChat").classList.remove("active");
+  ticketAbertoId = null;
+  alert("Ticket marcado como não resolvido");
+});
+
 document.getElementById("btnResolverTicket")?.addEventListener("click", async () => {
   if (!ticketAbertoId) return;
   await updateDoc(doc(db, "tickets", ticketAbertoId), { status: "resolvido" });
@@ -1198,16 +1235,21 @@ function mostrarComandosAdm() {
 
 // Ticket button: normal user opens create, ADM can also open list
 document.getElementById("btnTicket")?.addEventListener("click", () => {
-  if (usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin") {
-    // show list for ADM
-    renderTicketsAdm();
-    document.getElementById("modalTicketsAdm").classList.add("active");
-  } else {
-    // normal user opens create form
-    document.getElementById("ticketOpcoes").style.display = "flex";
-    document.getElementById("ticketForm").style.display = "none";
-    document.getElementById("modalTicket").classList.add("active");
-  }
+  // TODOS abrem criar ticket (incluindo ADM)
+  document.getElementById("ticketOpcoes").style.display = "flex";
+  document.getElementById("ticketForm").style.display = "none";
+  document.getElementById("modalTicket").classList.add("active");
+});
+document.getElementById("btnTicketsAdm")?.addEventListener("click", () => {
+  renderTicketsAdm("aberto");
+  document.getElementById("modalTicketsAdm").classList.add("active");
+});
+document.querySelectorAll("#ticketAdmTabs .side-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll("#ticketAdmTabs .side-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    renderTicketsAdm(tab.dataset.tstatus);
+  });
 });
 document.getElementById("btnFecharTicket")?.addEventListener("click", () => document.getElementById("modalTicket").classList.remove("active"));
 document.getElementById("btnFecharTicketsAdm")?.addEventListener("click", () => document.getElementById("modalTicketsAdm").classList.remove("active"));
@@ -1237,79 +1279,34 @@ document.getElementById("btnEnviarTicket")?.addEventListener("click", async () =
   document.getElementById("modalTicket").classList.remove("active");
 });
 
-function renderTicketsAdm() {
+
+function renderTicketsAdm(statusFiltro = "aberto") {
   const lista = document.getElementById("listaTicketsAdm");
   if (!lista) return;
   lista.innerHTML = "";
-  if (!ticketsCache.length) {
-    lista.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket aberto</div>';
+  const filtrados = (ticketsCache || []).filter(t => {
+    if (statusFiltro === "aberto") return t.status === "aberto" || t.status === "em_atendimento";
+    return t.status === statusFiltro;
+  });
+  if (!filtrados.length) {
+    lista.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px">Nenhum ticket</div>';
     return;
   }
-  ticketsCache.forEach(t => {
+  filtrados.forEach(t => {
     const div = document.createElement("div");
     div.className = "ticket-card";
     const tipoLabel = t.tipo === "erro" ? "Erro / Bug" : t.tipo === "comunicar" ? "Comunicar ADM" : "Outro";
     let dataStr = "";
     if (t.data?.toDate) dataStr = t.data.toDate().toLocaleString("pt-BR");
-    div.innerHTML = `<div class="t-tipo">${tipoLabel}</div><div class="t-assunto">${t.assunto}</div><div class="t-meta">de <b>${t.de}</b> · ${dataStr}</div><div style="margin-top:6px;font-size:13px;color:var(--text-muted)">${(t.motivo||"").slice(0,100)}</div>`;
+    div.innerHTML = `<div class="t-tipo">${tipoLabel} · ${t.status}</div><div class="t-assunto">${t.assunto}</div><div class="t-meta">de <b>${t.de}</b> · ${dataStr}</div><div style="margin-top:6px;font-size:13px;color:var(--text-muted)">${(t.motivo||"").slice(0,80)}</div>`;
     div.onclick = () => {
-      if (confirm(`Ticket de ${t.de}\\n\\n${t.assunto}\\n\\n${t.motivo}\\n\\nMarcar como resolvido?`)) {
-        updateDoc(doc(db, "tickets", t.id), { status: "resolvido" });
-      }
+      document.getElementById("modalTicketsAdm").classList.remove("active");
+      abrirTicketChat(t);
     };
     lista.appendChild(div);
   });
 }
 
-let ticketTipoAtual = "";
-let ticketsCache = [];
-
-
-
-
-document.getElementById("btnVoltarTicket")?.addEventListener("click", () => {
-  document.getElementById("ticketForm").style.display = "none";
-  document.getElementById("ticketVoltarWrap").style.display = "none";
-  const box = document.querySelector("#modalTicket .modal-box");
-  const firstDiv = box?.querySelector("div");
-  if (firstDiv) firstDiv.style.display = "flex";
-});
-document.getElementById("btnCancelarTicket")?.addEventListener("click", () => {
-  document.getElementById("modalTicket").classList.remove("active");
-});
-document.getElementById("btnEnviarTicket")?.addEventListener("click", async () => {
-  const assunto = document.getElementById("ticketAssunto")?.value.trim();
-  const motivo = document.getElementById("ticketMotivo")?.value.trim();
-  if (!assunto || !motivo) return alert("Preencha assunto e motivo");
-  await addDoc(collection(db, "tickets"), {
-    de: nome,
-    tipo: ticketTipoAtual,
-    assunto,
-    motivo,
-    status: "aberto",
-    data: serverTimestamp(),
-    mensagens: []
-  });
-  alert("Ticket enviado! O ADM vai ver em breve.");
-  document.getElementById("ticketAssunto").value = "";
-  document.getElementById("ticketMotivo").value = "";
-  document.getElementById("modalTicket").classList.remove("active");
-});
-
-// Side tabs Canais / DMs
-document.querySelectorAll(".side-tab").forEach(tab => {
-  tab.addEventListener("click", () => {
-    document.querySelectorAll(".side-tab").forEach(t => t.classList.remove("active"));
-    tab.classList.add("active");
-    const tipo = tab.dataset.tab;
-    // simple filter: re-render list based on tipo
-    document.querySelectorAll(".group-item").forEach(el => {
-      const isDm = el.dataset.dm === "1";
-      if (tipo === "dms") el.style.display = isDm ? "flex" : "none";
-      else el.style.display = isDm ? "none" : "flex";
-    });
-  });
-});
 
 function forcarBanTela(pun) {
   localStorage.setItem("wrocket_ban", JSON.stringify({
@@ -1351,13 +1348,14 @@ function iniciarApp() {
   });
 
   // Tickets (só ADM / quem tem permissão)
-  onSnapshot(query(collection(db, "tickets"), where("status", "==", "aberto")), snap => {
+  onSnapshot(collection(db, "tickets"), snap => {
     ticketsCache = [];
     snap.forEach(d => ticketsCache.push({ id: d.id, ...d.data() }));
+    const abertos = ticketsCache.filter(t => t.status === "aberto" || t.status === "em_atendimento");
     const badge = document.getElementById("badgeTicket");
     if (badge) {
-      badge.textContent = ticketsCache.length;
-      badge.style.display = ticketsCache.length ? "flex" : "none";
+      badge.textContent = abertos.length;
+      badge.style.display = abertos.length ? "flex" : "none";
     }
     // se o modal de tickets estiver aberto, atualiza a lista
     if (document.getElementById("modalTicketsAdm")?.classList.contains("active")) renderTicketsAdm();
