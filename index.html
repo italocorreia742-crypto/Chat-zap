@@ -635,6 +635,10 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
       <label class="switch"><input type="checkbox" id="grupoPrivado" checked><span class="slider"></span></label>
     </div>
     <div id="publicoHint" style="font-size:12px;color:var(--text-muted);margin:-8px 0 12px;display:none">Desmarcado = canal público (todos veem sem convite)</div>
+    <div id="protegidoArea" class="privado-area" style="display:none">
+      <span>Protegido (só ADM/Sub apaga)</span>
+      <label class="switch"><input type="checkbox" id="grupoProtegido"><span class="slider"></span></label>
+    </div>
     <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">Adicionar membros agora (opcional)</div>
     <select id="criarMembros" multiple style="height:90px"></select>
     <div class="modal-buttons">
@@ -1692,22 +1696,38 @@ async function enviarTicketMsg() {
   if (!txt) return;
   const ref = doc(db, "tickets", ticketAbertoId);
   const snap = await getDoc(ref);
+  if (!snap.exists()) return;
   const data = snap.data();
+  if (["resolvido", "nao_resolvido", "recusado"].includes(data.status)) {
+    alert("Este ticket está fechado. Você não pode mais enviar mensagens.");
+    return;
+  }
   const msgs = data.mensagens || [];
   msgs.push({ de: nome, texto: txt, data: Date.now() });
-  await updateDoc(ref, { mensagens: msgs });
+  await updateDoc(ref, { mensagens: msgs, atualizadoEm: serverTimestamp() });
   inp.value = "";
-  abrirTicketChat({ id: ticketAbertoId, ...data, mensagens: msgs });
 }
 
 document.getElementById("btnAceitarTicket")?.addEventListener("click", async () => {
   if (!ticketAbertoId) return;
-  await updateDoc(doc(db, "tickets", ticketAbertoId), { status: "em_atendimento", atendidoPor: nome });
-  alert("Ticket aceito! Pode conversar com a pessoa abaixo.");
+  const snap = await getDoc(doc(db, "tickets", ticketAbertoId));
+  const de = snap.data()?.de;
+  await updateDoc(doc(db, "tickets", ticketAbertoId), {
+    status: "em_atendimento", atendidoPor: nome, atualizadoEm: serverTimestamp(),
+    notifUser: "Seu ticket foi ACEITO! Abra em Meus Tickets e converse com o ADM."
+  });
+  if (de) await enviarNotif(de, "ticket", "ADM aceitou seu ticket! Abra Meus Tickets para conversar.", { ticketId: ticketAbertoId, status: "aceito" });
+  alert("Ticket aceito! A pessoa foi notificada.");
 });
 document.getElementById("btnNaoResolvido")?.addEventListener("click", async () => {
   if (!ticketAbertoId) return;
-  await updateDoc(doc(db, "tickets", ticketAbertoId), { status: "nao_resolvido" });
+  const snap = await getDoc(doc(db, "tickets", ticketAbertoId));
+  const de = snap.data()?.de;
+  await updateDoc(doc(db, "tickets", ticketAbertoId), {
+    status: "nao_resolvido", atualizadoEm: serverTimestamp(),
+    notifUser: "Seu ticket foi marcado como NÃO RESOLVIDO."
+  });
+  if (de) await enviarNotif(de, "ticket", "Seu ticket foi marcado como NÃO RESOLVIDO.", { ticketId: ticketAbertoId, status: "nao_resolvido" });
   document.getElementById("modalTicketChat").classList.remove("active");
   ticketAbertoId = null;
   alert("Ticket marcado como não resolvido");
@@ -1715,7 +1735,13 @@ document.getElementById("btnNaoResolvido")?.addEventListener("click", async () =
 
 document.getElementById("btnResolverTicket")?.addEventListener("click", async () => {
   if (!ticketAbertoId) return;
-  await updateDoc(doc(db, "tickets", ticketAbertoId), { status: "resolvido" });
+  const snap = await getDoc(doc(db, "tickets", ticketAbertoId));
+  const de = snap.data()?.de;
+  await updateDoc(doc(db, "tickets", ticketAbertoId), {
+    status: "resolvido", atualizadoEm: serverTimestamp(),
+    notifUser: "Seu ticket foi RESOLVIDO!"
+  });
+  if (de) await enviarNotif(de, "ticket", "Seu ticket foi RESOLVIDO!", { ticketId: ticketAbertoId, status: "resolvido" });
   document.getElementById("modalTicketChat").classList.remove("active");
   ticketAbertoId = null;
   alert("Ticket marcado como resolvido");
@@ -1726,14 +1752,26 @@ window.abrirTicketChat = function abrirTicketChat(t) {
   ticketAbertoId = t.id;
   document.getElementById("ticketChatTitulo").textContent = t.assunto || "Ticket";
   document.getElementById("ticketChatInfo").textContent = `De: ${t.de} · Tipo: ${t.tipo} · ${t.status || ""}`;
-  const isAdm = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
-  // botões de ADM só pro ADM
+  const isAdm = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin" || temPerm("gerenciar_tickets");
   const btnAceitar = document.getElementById("btnAceitarTicket");
   const btnResolver = document.getElementById("btnResolverTicket");
   const btnNao = document.getElementById("btnNaoResolvido");
-  if (btnAceitar) btnAceitar.style.display = isAdm ? "block" : "none";
-  if (btnResolver) btnResolver.style.display = isAdm ? "block" : "none";
-  if (btnNao) btnNao.style.display = isAdm ? "block" : "none";
+  const inp = document.getElementById("ticketChatInput");
+  const btnSend = document.getElementById("btnTicketChatEnviar");
+
+  function aplicarStatusUI(status) {
+    const fechado = ["resolvido", "nao_resolvido", "recusado"].includes(status);
+    if (btnAceitar) btnAceitar.style.display = (isAdm && status === "aberto") ? "block" : "none";
+    if (btnResolver) btnResolver.style.display = (isAdm && status === "em_atendimento") ? "block" : "none";
+    if (btnNao) btnNao.style.display = (isAdm && status === "em_atendimento") ? "block" : "none";
+    if (inp) {
+      inp.disabled = fechado;
+      inp.placeholder = fechado ? "Ticket fechado" : "Responder...";
+      inp.style.opacity = fechado ? "0.5" : "1";
+    }
+    if (btnSend) btnSend.style.display = fechado ? "none" : "";
+  }
+  aplicarStatusUI(t.status || "aberto");
 
   if (unsubTicketChat) { unsubTicketChat(); unsubTicketChat = null; }
   unsubTicketChat = onSnapshot(doc(db, "tickets", t.id), snap => {
@@ -1752,6 +1790,28 @@ window.abrirTicketChat = function abrirTicketChat(t) {
       d.innerHTML = `<b>${m.de}</b>: ${m.texto}`;
       box.appendChild(d);
     });
+    // banner de status pro usuário
+    const fechado = ["resolvido", "nao_resolvido", "recusado"].includes(data.status);
+    if (fechado) {
+      const banner = document.createElement("div");
+      banner.style.cssText = "margin-top:12px;padding:12px;border-radius:12px;text-align:center;font-weight:600;font-size:14px";
+      if (data.status === "resolvido") {
+        banner.style.background = "rgba(34,197,94,0.15)";
+        banner.style.color = "#22c55e";
+        banner.textContent = "✓ Ticket RESOLVIDO — conversa encerrada";
+      } else if (data.status === "nao_resolvido") {
+        banner.style.background = "rgba(239,68,68,0.15)";
+        banner.style.color = "#f87171";
+        banner.textContent = "✗ Ticket NÃO RESOLVIDO — conversa encerrada";
+      } else {
+        banner.style.background = "rgba(100,116,139,0.2)";
+        banner.style.color = "#94a3b8";
+        banner.textContent = "Ticket RECUSADO" + (data.motivoRecusa ? ": " + data.motivoRecusa : "");
+      }
+      box.appendChild(banner);
+    }
+    aplicarStatusUI(data.status);
+    document.getElementById("ticketChatInfo").textContent = `De: ${data.de} · Tipo: ${data.tipo} · ${data.status || ""}`;
     box.scrollTop = box.scrollHeight;
   });
   document.getElementById("modalTicketChat").classList.add("active");
@@ -1917,7 +1977,8 @@ function renderTicketsAdm(statusFiltro = "aberto") {
           atualizadoEm: serverTimestamp(),
           notifUser: "Seu ticket foi ACEITO! Abra em Meus Tickets e converse com o ADM."
         });
-        alert("Ticket aceito. A pessoa será notificada.");
+        if (t.de) await enviarNotif(t.de, "ticket", "ADM aceitou seu ticket! Abra Meus Tickets para conversar.", { ticketId: t.id, status: "aceito" });
+        alert("Ticket aceito. A pessoa foi notificada.");
         abrirTicketChat({ ...t, status: "em_atendimento" });
       };
       const btnR = document.createElement("button");
@@ -1934,7 +1995,8 @@ function renderTicketsAdm(statusFiltro = "aberto") {
           atualizadoEm: serverTimestamp(),
           notifUser: "Seu ticket foi RECUSADO. Motivo: " + (motivo || "Sem motivo")
         });
-        alert("Ticket recusado.");
+        if (t.de) await enviarNotif(t.de, "ticket", "Seu ticket foi RECUSADO. Motivo: " + (motivo || "Sem motivo"), { ticketId: t.id, status: "recusado" });
+        alert("Ticket recusado. A pessoa foi notificada.");
       };
       actions.appendChild(btnA);
       actions.appendChild(btnR);
@@ -1973,6 +2035,34 @@ function renderTicketsAdm(statusFiltro = "aberto") {
   });
 }
 
+
+
+function mostrarAvisoPosPunicao() {
+  let tela = document.getElementById("telaPosPunicao");
+  if (!tela) {
+    tela = document.createElement("div");
+    tela.id = "telaPosPunicao";
+    tela.style.cssText = "position:fixed;inset:0;z-index:100001;background:#0b0f19;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:24px;text-align:center";
+    tela.innerHTML = `
+      <div style="max-width:400px">
+        <div style="font-size:48px;margin-bottom:12px">⚠️</div>
+        <h2 style="margin-bottom:10px">Você voltou ao Wrocket</h2>
+        <p style="color:#94a3b8;line-height:1.5;margin-bottom:12px">
+          Sua punição acabou ou foi removida por um ADM.<br><br>
+          Se você fez algo errado, <b style="color:#f1f5f9">não repita</b> — a gente quer um espaço de boa pra todo mundo.<br><br>
+          Se foi só brincadeira dos ADMs, relaxa e continua na conversa 👍
+        </p>
+        <button id="btnPosPunicaoOk" style="background:#22c55e;color:#fff;border:none;padding:12px 24px;border-radius:12px;font-weight:600;cursor:pointer;font-size:15px">Entendi, continuar</button>
+      </div>`;
+    document.body.appendChild(tela);
+    document.getElementById("btnPosPunicaoOk").onclick = () => {
+      tela.remove();
+      location.reload();
+    };
+  } else {
+    tela.style.display = "flex";
+  }
+}
 
 function forcarBanTela(pun) {
   localStorage.setItem("wrocket_ban", JSON.stringify({
@@ -2034,7 +2124,10 @@ function iniciarApp() {
       if (change.type !== "added") return;
       const n = change.doc.data();
       const id = change.doc.id;
-      if (n.tipo === "cargo") {
+      if (n.tipo === "ticket") {
+        mostrarToast(`<b>Ticket</b><br>${n.texto || ""}`, 8000);
+        notificar("Ticket", n.texto || "Atualização do seu ticket");
+      } else if (n.tipo === "cargo") {
         sincronizarPermsUsuario(nome).then(() => atualizarUIPerms());
         if ((n.texto || "").toLowerCase().includes("removido")) {
           mostrarToast(`<b>Cargo</b><br>${n.texto || ""}`, 5000);
@@ -2077,12 +2170,12 @@ function iniciarApp() {
   // Ban/Kick em tempo real → joga a pessoa na tela imediatamente
   onSnapshot(query(collection(db, "punicoes"), where("usuario", "==", nome), where("ativo", "==", true)), snap => {
     if (snap.empty) {
-      // punição removida → libera
+      const tinhaBan = !!localStorage.getItem("wrocket_ban") || (document.getElementById("telaBan")?.style.display === "flex");
       localStorage.removeItem("wrocket_ban");
       const telaBan = document.getElementById("telaBan");
-      if (telaBan && telaBan.style.display === "flex") {
-        telaBan.style.display = "none";
-        location.reload();
+      if (tinhaBan) {
+        if (telaBan) telaBan.style.display = "none";
+        mostrarAvisoPosPunicao();
       }
       return;
     }
@@ -2091,9 +2184,11 @@ function iniciarApp() {
     if (pun.tipo === "ban" || (pun.tipo === "kick" && ateMs && ateMs > Date.now())) {
       forcarBanTela(pun);
     } else if (pun.tipo === "kick" && ateMs && ateMs <= Date.now()) {
-      // kick expirou
       updateDoc(doc(db, "punicoes", snap.docs[0].id), { ativo: false }).catch(() => {});
       localStorage.removeItem("wrocket_ban");
+      const telaBan = document.getElementById("telaBan");
+      if (telaBan) telaBan.style.display = "none";
+      mostrarAvisoPosPunicao();
     }
   });
 
@@ -2428,18 +2523,46 @@ function iniciarApp() {
   onSnapshot(collection(db, "canais"), snap => {
     canaisCache = {};
     listaGrupos.innerHTML = "";
-    let temGeral = false;
+    let temOficial = false;
+    const paraRenomear = [];
     snap.forEach(docSnap => {
       const c = docSnap.data();
       canaisCache[docSnap.id] = { id: docSnap.id, ...c };
-      if (c.nome === "Geral") temGeral = true;
+      if (c.nome === "Global-Squad" || c.oficial === true) temOficial = true;
+      if (c.nome === "Geral") paraRenomear.push(docSnap.id);
     });
-    if (!temGeral) {
-      addDoc(collection(db, "canais"), {
-        nome: "Geral", descricao: "Canal público da comunidade", privado: false,
-        criadoPor: "Sistema", membros: [], tipo: "canal", data: serverTimestamp()
-      });
-      return;
+    // renomeia Geral antigo → Global-Squad (só 1)
+    if (paraRenomear.length) {
+      const id0 = paraRenomear[0];
+      updateDoc(doc(db, "canais", id0), {
+        nome: "Global-Squad",
+        descricao: "Canal oficial da comunidade",
+        privado: false,
+        oficial: true,
+        protegido: true,
+        criadoPor: "Sistema"
+      }).catch(() => {});
+      // apaga Gerais duplicados extras
+      paraRenomear.slice(1).forEach(id => deleteDoc(doc(db, "canais", id)).catch(() => {}));
+      temOficial = true;
+    }
+    if (!temOficial) {
+      // só cria se realmente não existir
+      const jaTem = Object.values(canaisCache).some(c => c.nome === "Global-Squad" || c.oficial);
+      if (!jaTem) {
+        addDoc(collection(db, "canais"), {
+          nome: "Global-Squad",
+          descricao: "Canal oficial da comunidade",
+          privado: false,
+          oficial: true,
+          protegido: true,
+          criadoPor: "Sistema",
+          membros: [],
+          tipo: "canal",
+          data: serverTimestamp()
+        }).catch(() => {});
+      }
+      // não return — evita loop de recriação; próximo snapshot atualiza
     }
     const isAdmin = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
     Object.values(canaisCache).forEach(canal => {
@@ -2499,14 +2622,20 @@ function iniciarApp() {
       div.dataset.dm = "0";
       div.dataset.expulso = "0";
       div.onclick = () => selecionarCanal(canal);
-      if (canal.criadoPor === nome || podeGerenciarCanais()) {
+      const podeEditarEste = (() => {
+        if (canal.oficial || canal.nome === "Global-Squad") {
+          return usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
+        }
+        return canal.criadoPor === nome || podeGerenciarCanais() || usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
+      })();
+      if (podeEditarEste) {
         div.oncontextmenu = e => { e.preventDefault(); abrirEditarCanal(canal); };
         let t;
         div.addEventListener("touchstart", e => { t = setTimeout(() => abrirEditarCanal(canal), 600); });
         div.addEventListener("touchend", () => clearTimeout(t));
       }
       listaGrupos.appendChild(div);
-      if (!canalAtual && canal.nome === "Geral") selecionarCanal(canal);
+      if (!canalAtual && (canal.nome === "Global-Squad" || canal.oficial)) selecionarCanal(canal);
     });
     // manter filtro Canais/DMs após re-render
     if (typeof filtrarAbaCanaisDms === "function") {
@@ -2690,16 +2819,19 @@ function iniciarApp() {
     });
     const priv = document.getElementById("grupoPrivado");
     const hint = document.getElementById("publicoHint");
+    const protArea = document.getElementById("protegidoArea");
     if (priv) {
       if (usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin") {
         priv.disabled = false;
         priv.parentElement.style.opacity = "1";
         if (hint) hint.style.display = "block";
+        if (protArea) protArea.style.display = "flex";
       } else {
         priv.checked = true;
         priv.disabled = true;
         priv.parentElement.style.opacity = "0.7";
         if (hint) hint.style.display = "none";
+        if (protArea) protArea.style.display = "none";
       }
     }
     document.getElementById("modalCriar").classList.add("active");
@@ -2717,10 +2849,12 @@ function iniciarApp() {
     const membrosSel = [...document.getElementById("criarMembros").selectedOptions].map(o => o.value);
     // só o criador entra direto; outros (se privado) recebem convite
     const membros = [nome];
+    const protegido = !!(isAdm && document.getElementById("grupoProtegido")?.checked);
     const ref = await addDoc(collection(db, "canais"), {
       nome: nomeGrupo,
       descricao,
       privado: !!privado,
+      protegido,
       criadoPor: nome,
       membros,
       expulsos: [],
@@ -2751,6 +2885,17 @@ function iniciarApp() {
     const boxPub = document.getElementById("editPublicoBox");
     const boxPriv = document.getElementById("editPrivadoBox");
     const isPublico = !canal.privado;
+    const isAdm = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin" || nome === DONO;
+    const protArea = document.getElementById("editProtegidoArea");
+    const protCb = document.getElementById("editProtegido");
+    if (protArea && protCb) {
+      if (isAdm && !canal.oficial) {
+        protArea.style.display = "flex";
+        protCb.checked = !!canal.protegido;
+      } else {
+        protArea.style.display = "none";
+      }
+    }
 
     if (isPublico) {
       if (boxPub) boxPub.style.display = "block";
@@ -2810,24 +2955,53 @@ function iniciarApp() {
   document.getElementById("btnCancelarEdit").onclick = () => document.getElementById("modalEditar").classList.remove("active");
   document.getElementById("btnSalvarEdit").onclick = async () => {
     if (!editandoCanalId) return;
-    await updateDoc(doc(db, "canais", editandoCanalId), {
+    const canal = canaisCache[editandoCanalId];
+    const data = {
       nome: document.getElementById("editNome").value.trim(),
       descricao: document.getElementById("editDesc").value.trim()
-    });
+    };
+    if (canal && !canal.oficial && (usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin" || nome === DONO)) {
+      data.protegido = !!document.getElementById("editProtegido")?.checked;
+    }
+    if (canal?.oficial || canal?.nome === "Global-Squad") {
+      data.nome = "Global-Squad"; // não deixa renomear oficial
+    }
+    await updateDoc(doc(db, "canais", editandoCanalId), data);
     document.getElementById("modalEditar").classList.remove("active");
   };
   document.getElementById("btnApagarCanal").onclick = async () => {
     if (!editandoCanalId) return;
     const canal = canaisCache[editandoCanalId];
     if (!canal) return;
-    if (canal.criadoPor !== nome && usuarioAtual.role !== "admin") return alert("Só o criador ou ADM pode apagar");
-    if (!confirm(`Apagar o canal "${canal.nome}"?`)) return;
-    await deleteDoc(doc(db, "canais", editandoCanalId));
-    document.getElementById("modalEditar").classList.remove("active");
-    canalAtual = null;
-    canalNomeTopo.textContent = "# selecione um canal";
-    canalInfo.textContent = "";
-    mensagensEl.innerHTML = `<div class="empty-state">Selecione ou crie um canal para começar</div>`;
+    const isAdm = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin" || nome === DONO;
+    if (canal.oficial || canal.nome === "Global-Squad") {
+      return alert("O canal Global-Squad é oficial e não pode ser apagado.");
+    }
+    if (canal.protegido && !isAdm) {
+      return alert("Este canal está protegido. Só ADM ou Sub-ADM pode apagar.");
+    }
+    if (canal.criadoPor !== nome && !isAdm) return alert("Só o criador, ADM ou Sub-ADM pode apagar");
+    if (!confirm(`Apagar o canal "${canal.nome}" de verdade?\nIsso remove o canal do Firebase.`)) return;
+    try {
+      // apaga mensagens do canal também
+      const msgs = await getDocs(query(collection(db, "mensagens"), where("grupo", "==", editandoCanalId)));
+      for (const m of msgs.docs) {
+        await deleteDoc(doc(db, "mensagens", m.id));
+      }
+      await deleteDoc(doc(db, "canais", editandoCanalId));
+      delete canaisCache[editandoCanalId];
+      document.getElementById("modalEditar").classList.remove("active");
+      if (canalAtual === editandoCanalId) {
+        canalAtual = null;
+        canalNomeTopo.textContent = "# selecione um canal";
+        canalInfo.textContent = "";
+        mensagensEl.innerHTML = `<div class="empty-state">Canal apagado</div>`;
+      }
+      alert("Canal apagado com sucesso.");
+    } catch (e) {
+      console.error(e);
+      alert("Erro ao apagar: " + (e.message || e));
+    }
   };
 
   // PERFIL
@@ -3013,11 +3187,18 @@ function iniciarApp() {
     const sel = document.getElementById("banUser");
     if (!sel) return;
     sel.innerHTML = `<option value="">Escolher usuário...</option>`;
-    const nomes = Object.keys(usuariosCache || {}).filter(u => u !== DONO && u !== nome);
-    // also from usuariosCache values if keyed differently
+    const nomes = [];
     Object.values(usuariosCache || {}).forEach(u => {
       const n = u.nome || u.id;
-      if (n && n !== DONO && n !== nome && !nomes.includes(n)) nomes.push(n);
+      if (!n || n === DONO || n === nome) return;
+      if (u.role === "admin" || u.role === "subadmin") return;
+      if (!nomes.includes(n)) nomes.push(n);
+    });
+    Object.keys(usuariosCache || {}).forEach(u => {
+      if (u === DONO || u === nome) return;
+      const data = usuariosCache[u];
+      if (data?.role === "admin" || data?.role === "subadmin") return;
+      if (!nomes.includes(u)) nomes.push(u);
     });
     nomes.sort().forEach(u => {
       const o = document.createElement("option");
@@ -3047,6 +3228,11 @@ function iniciarApp() {
     const unidade = document.getElementById("banUnidade")?.value || "minutos";
     const motivo = document.getElementById("banMotivo").value.trim();
     if (!user) return alert("Escolha um usuário");
+    if (user === DONO || user === nome) return alert("Não é possível punir o DONO ou a si mesmo.");
+    const alvo = buscarUsuario(user);
+    if (alvo?.role === "admin" || alvo?.role === "subadmin") {
+      return alert("Não é possível banir ou kickar ADM / Sub-ADM.");
+    }
     let ms = tempo * 60000;
     if (unidade === "horas") ms = tempo * 3600000;
     if (unidade === "segundos") ms = tempo * 1000;
