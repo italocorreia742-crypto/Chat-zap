@@ -548,7 +548,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
       </div>
       <div class="mention-box" id="mentionBox"></div>
       <div class="input-wrapper">
-        <input id="msgInput" placeholder="Escreva uma mensagem..." autocomplete="off">
+        <input id="msgInput" placeholder="Escreva uma mensagem..." autocomplete="off" spellcheck="true" lang="pt-BR">
         <button class="btn-send" id="btnEnviar"><i class="fas fa-paper-plane"></i></button>
       </div>
     </div>
@@ -1659,10 +1659,24 @@ function iniciarApp() {
   
   // Ban/Kick em tempo real → joga a pessoa na tela imediatamente
   onSnapshot(query(collection(db, "punicoes"), where("usuario", "==", nome), where("ativo", "==", true)), snap => {
-    if (snap.empty) return;
+    if (snap.empty) {
+      // punição removida → libera
+      localStorage.removeItem("wrocket_ban");
+      const telaBan = document.getElementById("telaBan");
+      if (telaBan && telaBan.style.display === "flex") {
+        telaBan.style.display = "none";
+        location.reload();
+      }
+      return;
+    }
     const pun = snap.docs[0].data();
-    if (pun.tipo === "ban" || (pun.tipo === "kick" && pun.ate && (pun.ate.toMillis ? pun.ate.toMillis() : pun.ate) > Date.now())) {
+    const ateMs = pun.ate ? (pun.ate.toMillis ? pun.ate.toMillis() : (pun.ate.seconds ? pun.ate.seconds * 1000 : pun.ate)) : null;
+    if (pun.tipo === "ban" || (pun.tipo === "kick" && ateMs && ateMs > Date.now())) {
       forcarBanTela(pun);
+    } else if (pun.tipo === "kick" && ateMs && ateMs <= Date.now()) {
+      // kick expirou
+      updateDoc(doc(db, "punicoes", snap.docs[0].id), { ativo: false }).catch(() => {});
+      localStorage.removeItem("wrocket_ban");
     }
   });
 
@@ -1714,11 +1728,40 @@ function iniciarApp() {
   function setAba(t) {
     document.querySelectorAll(".com-icon").forEach(b => b.classList.remove("active"));
     [listaGrupos, listaUsuarios, listaConvites, listaAdmin, listaBans].forEach(el => el.style.display = "none");
-    if (t === "canais") { document.getElementById("btnHome").classList.add("active"); listaGrupos.style.display = "block"; sideTitle.textContent = "Canais"; }
-    else if (t === "users") { document.getElementById("btnUsers").classList.add("active"); listaUsuarios.style.display = "block"; sideTitle.textContent = "Pessoas"; }
-    else if (t === "convites") { document.getElementById("btnConvites").classList.add("active"); listaConvites.style.display = "block"; sideTitle.textContent = "Convites"; renderConvites(); }
-    else if (t === "admin") { document.getElementById("btnAdmin").classList.add("active"); listaAdmin.style.display = "block"; sideTitle.textContent = "Administração"; renderAdmin(); }
-    else if (t === "bans") { document.getElementById("btnBans").classList.add("active"); listaBans.style.display = "block"; sideTitle.textContent = "Bans & Kicks"; renderBans(); }
+    const tabs = document.getElementById("sideTabs");
+    if (tabs) tabs.style.display = (t === "canais") ? "flex" : "none";
+    // mobile: abre a sidebar automaticamente ao clicar nos ícones
+    const sb = document.querySelector(".sidebar");
+    if (sb && window.innerWidth <= 768) sb.classList.add("open");
+
+    if (t === "canais") {
+      document.getElementById("btnHome").classList.add("active");
+      listaGrupos.style.display = "block";
+      sideTitle.textContent = "Canais";
+      if (typeof filtrarAbaCanaisDms === "function") {
+        const ativa = document.querySelector("#sideTabs .side-tab.active");
+        filtrarAbaCanaisDms(ativa?.dataset.tab || "canais");
+      }
+    } else if (t === "users") {
+      document.getElementById("btnUsers").classList.add("active");
+      listaUsuarios.style.display = "block";
+      sideTitle.textContent = "Pessoas";
+    } else if (t === "convites") {
+      document.getElementById("btnConvites").classList.add("active");
+      listaConvites.style.display = "block";
+      sideTitle.textContent = "Convites";
+      renderConvites();
+    } else if (t === "admin") {
+      document.getElementById("btnAdmin").classList.add("active");
+      listaAdmin.style.display = "block";
+      sideTitle.textContent = "Administração";
+      renderAdmin();
+    } else if (t === "bans") {
+      document.getElementById("btnBans").classList.add("active");
+      listaBans.style.display = "block";
+      sideTitle.textContent = "Bans & Kicks";
+      renderBans();
+    }
   }
 
   // ENVIAR
@@ -1790,8 +1833,9 @@ function iniciarApp() {
         const u = usuariosCache[m.nome] || {};
         const cor = u.corNome || (m.nome === DONO ? "#ef4444" : "");
         const nomeStyle = cor ? `style="color:${cor}"` : "";
+        const emojiShow = u.emoji || m.emoji || "😎";
         const html = `
-          <b ${nomeStyle}>${m.emoji || "😎"} ${m.nome}${m.nome === DONO ? ' <span class="badge-dono">DONO</span>' : ""}</b>
+          <b ${nomeStyle}>${emojiShow} ${m.nome}${m.nome === DONO ? ' <span class="badge-dono">DONO</span>' : ""}</b>
           <div>${m.texto}</div>
           ${reacoesHtml}
           ${hora ? `<div class="time">${hora}</div>` : ""}
@@ -2559,15 +2603,31 @@ function iniciarApp() {
         const p = d.data();
         const div = document.createElement("div");
         div.className = "ban-item";
+        let tempoStr = "";
+        if (p.tipo === "kick" && p.ate) {
+          const ateMs = p.ate.toMillis ? p.ate.toMillis() : (p.ate.seconds ? p.ate.seconds * 1000 : p.ate);
+          tempoStr = " até " + new Date(ateMs).toLocaleString("pt-BR");
+        }
         div.innerHTML = `
-          <div style="flex:1"><div><b>${p.usuario}</b> · ${p.tipo}</div><div style="font-size:11px;opacity:.7">${p.motivo || "sem motivo"}</div></div>
-          <button style="background:#22c55e;border:none;color:white;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px">Remover</button>`;
-        div.querySelector("button").onclick = async () => {
-          await updateDoc(doc(db, "punicoes", d.id), { ativo: false });
-          renderBans();
+          <div style="flex:1"><div><b>${p.usuario}</b> · ${p.tipo}${tempoStr}</div><div style="font-size:11px;opacity:.7">${p.motivo || "sem motivo"} · por ${p.por || "?"}</div></div>
+          <button type="button" style="background:#22c55e;border:none;color:white;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px">Remover</button>`;
+        div.querySelector("button").onclick = async (e) => {
+          e.stopPropagation();
+          if (!confirm("Remover " + p.tipo + " de " + p.usuario + "?")) return;
+          try {
+            await updateDoc(doc(db, "punicoes", d.id), { ativo: false, removidoPor: nome, removidoEm: serverTimestamp() });
+            alert("Punição removida! A pessoa já pode voltar.");
+            renderBans();
+          } catch (err) {
+            console.error(err);
+            alert("Erro ao remover: " + (err.message || err));
+          }
         };
         listaBans.appendChild(div);
       });
+    }).catch(err => {
+      console.error(err);
+      listaBans.innerHTML = `<div style="padding:16px;color:#f87171;font-size:13px">Erro ao carregar punições</div>`;
     });
   }
 }
