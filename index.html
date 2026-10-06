@@ -367,6 +367,18 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .group-item.expulso { opacity: 0.55; filter: grayscale(0.7); border: 1px dashed #64748b; }
 .group-item.expulso span { color: #94a3b8; }
 
+
+.toast-aviso {
+  position: fixed; top: 16px; right: 16px; z-index: 99999;
+  background: #1e293b; border: 1px solid #334155; color: #f1f5f9;
+  padding: 14px 16px; border-radius: 12px; max-width: 320px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.45); animation: fadeIn .25s ease;
+  font-size: 13px; line-height: 1.4;
+}
+.toast-aviso b { color: var(--accent); }
+.toast-aviso .toast-actions { margin-top: 8px; display: flex; gap: 8px; }
+.toast-aviso button { border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 600; }
+
 </style>
 </head>
 <body>
@@ -783,6 +795,95 @@ function nomeValido(n) {
 const DONO = "MVOIDv";
 const SENHA_DONO = "Wr0ck3t#Adm2026!";
 const EMOJIS = ["😎","🔥","🚀","👾","🐱","🐶","🌈","⚡","🎮","🍕","🎸","👻","🐸","🦄","💀","👑","🌟","🎯","🍀","🏀","🎵","💻","🧠","😈","🤖","👁️","🦊","🐻"];
+
+// Mapa permissões cargo → objeto do usuário
+const MAPA_PERMS = {
+  kick: "kick",
+  ban: "ban",
+  gerenciar_grupos: "gerenciarCanais",
+  criar_cargos: "criarCargos",
+  apagar_msg: "apagarMsg",
+  convidar: "convidar",
+  editar_canal: "editarCanal",
+  ver_logs: "verLogs",
+  mutar: "mutar",
+  ver_tickets: "ver_tickets",
+  gerenciar_tickets: "gerenciar_tickets",
+  subadmin: "subadmin"
+};
+function permsArrayToObj(arr) {
+  const o = {};
+  (arr || []).forEach(id => {
+    const key = MAPA_PERMS[id] || id;
+    o[key] = true;
+    // aliases
+    if (id === "apagar_msg") o.apagarMsg = true;
+    if (id === "gerenciar_grupos") o.gerenciarCanais = true;
+  });
+  return o;
+}
+function temPerm(chave) {
+  if (!usuarioAtual) return false;
+  if (usuarioAtual.role === "admin" || nome === DONO) return true;
+  if (usuarioAtual.role === "subadmin") {
+    // subadmin tem quase tudo, menos afetar o dono
+    return true;
+  }
+  const p = usuarioAtual.permissoes || {};
+  if (p[chave] === true) return true;
+  // também checa cargos em cache em tempo real
+  const cargos = Object.values(cargosCache || {}).filter(c =>
+    (c.escopo === "global" || !c.escopo) && (c.membros || []).includes(nome)
+  );
+  for (const c of cargos) {
+    const arr = c.permissoes || [];
+    if (arr.includes(chave)) return true;
+    // ids do cargo
+    const mapRev = Object.entries(MAPA_PERMS).find(([k,v]) => v === chave);
+    if (mapRev && arr.includes(mapRev[0])) return true;
+    if (chave === "apagarMsg" && arr.includes("apagar_msg")) return true;
+    if (chave === "gerenciarCanais" && arr.includes("gerenciar_grupos")) return true;
+    if (chave === "ban" && arr.includes("ban")) return true;
+    if (chave === "kick" && arr.includes("kick")) return true;
+  }
+  return false;
+}
+async function sincronizarPermsUsuario(userNome) {
+  if (!userNome || userNome === DONO) return;
+  const cargosUser = Object.values(cargosCache || {}).filter(c =>
+    (c.escopo === "global" || !c.escopo) && (c.membros || []).includes(userNome)
+  );
+  let perms = {};
+  let role = "user";
+  let cor = null;
+  cargosUser.forEach(c => {
+    Object.assign(perms, permsArrayToObj(c.permissoes || []));
+    if ((c.permissoes || []).includes("subadmin")) role = "subadmin";
+    if (c.cor) cor = c.cor;
+  });
+  const data = { permissoes: perms, role: role === "subadmin" ? "subadmin" : "user" };
+  if (cor) data.corNome = cor;
+  else data.corNome = null;
+  try {
+    await updateDoc(doc(db, "usuarios", userNome), data);
+  } catch(e) { console.error("sync perms", e); }
+  // se for o usuário logado, atualiza local e UI
+  if (userNome === nome) {
+    usuarioAtual = { ...usuarioAtual, ...data };
+    atualizarUIPerms();
+  }
+}
+function atualizarUIPerms() {
+  if (!usuarioAtual) return;
+  const showBan = temPerm("ban") || temPerm("kick");
+  const showAdm = usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || temPerm("criarCargos") || temPerm("gerenciarCanais");
+  if (btnAdmin) btnAdmin.style.display = showAdm ? "flex" : "none";
+  if (btnBans) btnBans.style.display = showBan ? "flex" : "none";
+  const podeTickets = temPerm("ver_tickets") || temPerm("gerenciar_tickets") || usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin";
+  const btnTA = document.getElementById("btnTicketsAdm");
+  if (btnTA) btnTA.style.display = podeTickets ? "flex" : "none";
+}
+
 const PERMISSOES_CARGO = [
   {id:"kick", label:"Kick"},
   {id:"ban", label:"Ban"},
@@ -799,6 +900,18 @@ const PERMISSOES_CARGO = [
 ];
 
 let nome = null, usuarioAtual = null, canalAtual = null;
+
+function buscarUsuario(n) {
+  if (!n) return {};
+  if (usuariosCache[n]) return usuariosCache[n];
+  const key = Object.keys(usuariosCache || {}).find(k => k.toLowerCase() === String(n).toLowerCase());
+  return key ? usuariosCache[key] : {};
+}
+function emojiDe(n) {
+  const u = buscarUsuario(n);
+  return (u && u.emoji) ? u.emoji : "😎";
+}
+
 let canaisCache = {}, usuariosCache = {}, cargosCache = {}, convitesCache = [], ticketsCache = [];
 let ticketTipoAtual = "";
 let unsubscribeMensagens = null, msgCtxId = null, emojiEscolhido = "😎";
@@ -896,6 +1009,19 @@ document.getElementById("btnLoginAcao").onclick = async () => {
       criadoEm: serverTimestamp(),
       ultimoAcesso: serverTimestamp()
     });
+    if (!isDono) {
+      const agora = new Date();
+      const quando = agora.toLocaleString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      await addDoc(collection(db, "notificacoes"), {
+        para: DONO,
+        tipo: "novo_usuario",
+        texto: `Nova conta: ${n}`,
+        detalhes: `Entrou em ${quando}`,
+        usuario: n,
+        lida: false,
+        data: serverTimestamp()
+      });
+    }
     nome = n;
     localStorage.setItem("wrocket_user", n);
     telaLogin.style.display = "none";
@@ -1095,10 +1221,14 @@ function filtrarAbaCanaisDms(tipo) {
 
 
 function atualizarBadges() {
+  let total = 0, totalCanais = 0, totalDms = 0;
   document.querySelectorAll(".group-item").forEach(el => {
     const id = el.dataset.id;
     if (!id) return;
     const count = unreadCounts[id] || 0;
+    total += count;
+    if (el.dataset.dm === "1") totalDms += count;
+    else if (el.dataset.expulso !== "1") totalCanais += count;
     let badge = el.querySelector(".unread-badge");
     if (count > 0) {
       if (!badge) {
@@ -1109,7 +1239,60 @@ function atualizarBadges() {
       badge.textContent = count > 99 ? "99+" : count;
     } else if (badge) badge.remove();
   });
+  // badge na casinha
+  const home = document.getElementById("btnHome");
+  if (home) {
+    let hb = home.querySelector(".com-badge");
+    if (total > 0) {
+      if (!hb) {
+        hb = document.createElement("span");
+        hb.className = "com-badge";
+        home.appendChild(hb);
+      }
+      hb.textContent = total > 99 ? "99+" : total;
+      hb.style.display = "flex";
+    } else if (hb) hb.style.display = "none";
+  }
+  // badges nas abas Canais / DMs
+  const tabCanais = document.querySelector('#sideTabs .side-tab[data-tab="canais"]');
+  const tabDms = document.querySelector('#sideTabs .side-tab[data-tab="dms"]');
+  function setTabBadge(tab, count, label) {
+    if (!tab) return;
+    let b = tab.querySelector(".tab-badge");
+    if (count > 0) {
+      if (!b) {
+        b = document.createElement("span");
+        b.className = "tab-badge";
+        tab.appendChild(b);
+      }
+      b.textContent = count > 99 ? "99+" : count;
+      b.style.display = "inline-flex";
+    } else if (b) b.style.display = "none";
+    // mantém o texto da aba
+    const textNode = label;
+    if (!tab.dataset.baseLabel) tab.dataset.baseLabel = label;
+  }
+  setTabBadge(tabCanais, totalCanais, "Canais");
+  setTabBadge(tabDms, totalDms, "DMs");
 }
+
+function mostrarToast(html, ms = 6000) {
+  const t = document.createElement("div");
+  t.className = "toast-aviso";
+  t.innerHTML = html;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), ms);
+}
+async function enviarNotif(para, tipo, texto, extra = {}) {
+  try {
+    await addDoc(collection(db, "notificacoes"), {
+      para, tipo, texto, ...extra,
+      lida: false,
+      data: serverTimestamp()
+    });
+  } catch(e) { console.error("notif", e); }
+}
+
 function notificar(titulo, corpo) {
   if (!tabFocused && "Notification" in window && Notification.permission === "granted") {
     try {
@@ -1195,16 +1378,9 @@ async function carregarUsuario() {
   userNameBottom.textContent = nome;
   if (nome === DONO) userNameBottom.innerHTML = nome + ' <span class="badge-dono">DONO</span>';
   userNameBottom.style.color = usuarioAtual.corNome || (usuarioAtual.role === "admin" ? "#ef4444" : "");
-  const temPermBan = usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || usuarioAtual.permissoes?.ban || (usuarioAtual.permissoes && (usuarioAtual.permissoes.ban === true));
-  if (usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || temPermBan) {
-    btnAdmin.style.display = "flex";
-    btnBans.style.display = "flex";
-  }
-  const podeTickets = usuarioAtual.role === "admin" || usuarioAtual.role === "subadmin" || usuarioAtual.permissoes?.ver_tickets || usuarioAtual.permissoes?.gerenciar_tickets;
-  if (podeTickets) {
-    const btnTA = document.getElementById("btnTicketsAdm");
-    if (btnTA) btnTA.style.display = "flex";
-  }
+  atualizarUIPerms();
+  // re-sync perms from cargos
+  setTimeout(() => sincronizarPermsUsuario(nome), 800);
   btnConvites.style.display = "flex";
   iniciarApp();
 }
@@ -1213,9 +1389,9 @@ document.getElementById("btnLogout").onclick = () => {
   if (confirm("Sair da conta?")) { localStorage.removeItem("wrocket_user"); location.reload(); }
 };
 
-function podeApagarQualquer() { return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.apagarMsg; }
-function podeGerenciarCanais() { return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.gerenciarCanais; }
-function podeConvidar() { return usuarioAtual?.role === "admin" || usuarioAtual?.permissoes?.convidar !== false; }
+function podeApagarQualquer() { return temPerm("apagarMsg"); }
+function podeGerenciarCanais() { return temPerm("gerenciarCanais"); }
+function podeConvidar() { return temPerm("convidar") || usuarioAtual?.role === "admin"; }
 
 
 
@@ -1657,6 +1833,42 @@ onSnapshot(query(collection(db, "alarmes"), orderBy("data", "desc")), snap => {
 });
 
 function iniciarApp() {
+
+  // NOTIFICAÇÕES (cargo + novos usuários pro DONO)
+  onSnapshot(query(collection(db, "notificacoes"), where("para", "==", nome), where("lida", "==", false)), snap => {
+    snap.docChanges().forEach(change => {
+      if (change.type !== "added") return;
+      const n = change.doc.data();
+      const id = change.doc.id;
+      if (n.tipo === "cargo") {
+        mostrarToast(`<b>Cargo</b><br>${n.texto || ""}`);
+        notificar("Wrocket", n.texto || "Atualização de cargo");
+      } else if (n.tipo === "novo_usuario" && (nome === DONO || usuarioAtual?.role === "admin")) {
+        mostrarToast(`
+          <b>Nova pessoa no Wrocket</b><br>
+          ${n.texto || ""}<br>
+          <span style="color:#94a3b8;font-size:12px">${n.detalhes || ""}</span>
+          <div class="toast-actions">
+            <button style="background:var(--accent);color:#fff" id="toastVerPerfil">Ver perfil</button>
+            <button style="background:#334155;color:#fff" id="toastOk">Ok</button>
+          </div>
+        `, 12000);
+        setTimeout(() => {
+          document.getElementById("toastVerPerfil")?.addEventListener("click", () => {
+            const u = buscarUsuario(n.usuario);
+            if (u && u.nome) abrirPessoa(u);
+            else alert("Usuário: " + (n.usuario || "?"));
+          });
+          document.getElementById("toastOk")?.addEventListener("click", (e) => {
+            e.target.closest(".toast-aviso")?.remove();
+          });
+        }, 50);
+        notificar("Nova conta", (n.texto || "") + " — " + (n.detalhes || ""));
+      }
+      updateDoc(doc(db, "notificacoes", id), { lida: true }).catch(() => {});
+    });
+  });
+
   
   // Ban/Kick em tempo real → joga a pessoa na tela imediatamente
   onSnapshot(query(collection(db, "punicoes"), where("usuario", "==", nome), where("ativo", "==", true)), snap => {
@@ -1831,7 +2043,7 @@ function iniciarApp() {
           vistoHtml = `<div class="visto">${visto ? "visto" : "enviado"}</div>`;
         }
 
-        const u = usuariosCache[m.nome] || {};
+        const u = buscarUsuario(m.nome);
         const cor = u.corNome || (m.nome === DONO ? "#ef4444" : "");
         const nomeStyle = cor ? `style="color:${cor}"` : "";
         const emojiShow = u.emoji || m.emoji || "😎";
@@ -1940,7 +2152,7 @@ function iniciarApp() {
       btnDM.onclick = () => iniciarDM(userNome);
       actions.appendChild(btnDM);
 
-      if (usuarioAtual.role === "admin") {
+      if (usuarioAtual.role === "admin" || temPerm("ban") || temPerm("kick")) {
         const btnBan = document.createElement("button");
         btnBan.textContent = "Banir / Kickar";
         btnBan.style.background = "#7f1d1d";
@@ -2028,13 +2240,16 @@ function iniciarApp() {
     const isAdmin = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
     Object.values(canaisCache).forEach(canal => {
       if (canal.tipo === "dm") {
-        if (!(canal.membros || []).includes(nome)) return;
-        const outro = (canal.membros || []).find(m => m !== nome) || "DM";
+        const membros = canal.membros || [];
+        const souMembro = membros.some(m => m.toLowerCase() === (nome || "").toLowerCase());
+        if (!souMembro) return;
+        const outro = membros.find(m => m.toLowerCase() !== (nome || "").toLowerCase()) || "DM";
         const div = document.createElement("div");
         div.className = "group-item" + (canalAtual === canal.id ? " active" : "");
         div.dataset.id = canal.id;
-        const outroUser = usuariosCache[outro] || {};
-        div.innerHTML = `<div class="avatar" style="width:28px;height:28px;font-size:16px">${outroUser.emoji||"😎"}</div><span>@${outro}</span>`;
+        div.dataset.outro = outro;
+        const em = emojiDe(outro);
+        div.innerHTML = `<div class="avatar" style="width:28px;height:28px;font-size:16px">${em}</div><span>@${outro}</span>`;
         div.dataset.dm = "1";
         div.dataset.expulso = "0";
         div.onclick = () => selecionarCanal({ ...canal, nome: `@${outro}` });
@@ -2151,6 +2366,8 @@ function iniciarApp() {
       const u = docSnap.data();
       if (!u.nome) return;
       usuariosCache[u.nome] = u;
+      // também por id do doc (às vezes o id é o nome)
+      usuariosCache[docSnap.id] = { ...u, nome: u.nome };
       const div = document.createElement("div");
       div.className = "user-item";
       const cor = u.corNome || (u.role === "admin" ? "#ef4444" : "");
@@ -2160,6 +2377,13 @@ function iniciarApp() {
       `;
       div.onclick = () => abrirPessoa(u);
       listaUsuarios.appendChild(div);
+    });
+    // atualiza emojis das DMs na lista lateral
+    document.querySelectorAll('#listaGrupos .group-item[data-dm="1"]').forEach(el => {
+      const outro = el.dataset.outro;
+      if (!outro) return;
+      const av = el.querySelector(".avatar");
+      if (av) av.textContent = emojiDe(outro);
     });
   });
 
@@ -2175,7 +2399,7 @@ function iniciarApp() {
       b1.onclick = () => { document.getElementById("modalPessoa").classList.remove("active"); iniciarDM(u.nome); };
       box.appendChild(b1);
     }
-    if (usuarioAtual.role === "admin" && u.nome !== DONO) {
+    if ((usuarioAtual.role === "admin" || temPerm("ban") || temPerm("kick")) && u.nome !== DONO) {
       const b2 = document.createElement("div");
       b2.className = "action-item";
       b2.innerHTML = `<span style="color:#f87171">Banir / Kickar</span>`;
@@ -2195,25 +2419,20 @@ function iniciarApp() {
   document.getElementById("btnFecharPessoa").onclick = () => document.getElementById("modalPessoa").classList.remove("active");
 
   function abrirAtribuirCargo(userNome) {
-    const cargos = Object.values(cargosCache);
-    if (!cargos.length) return alert("Nenhum cargo criado ainda");
+    const cargos = Object.values(cargosCache).filter(c => c.escopo === "global" || !c.escopo);
+    if (!cargos.length) return alert("Nenhum cargo global criado ainda");
     const nomeCargo = prompt("Digite o nome do cargo para atribuir a " + userNome + ":\n\n" + cargos.map(c => c.nome).join("\n"));
     if (!nomeCargo) return;
     const cargo = cargos.find(c => c.nome.toLowerCase() === nomeCargo.toLowerCase());
     if (!cargo) return alert("Cargo não encontrado");
     const membros = cargo.membros || [];
     if (!membros.includes(userNome)) {
-      updateDoc(doc(db, "cargos", cargo.id), { membros: arrayUnion(userNome) });
-      if (cargo.permissoes?.includes("subadmin") && userNome !== DONO) {
-        updateDoc(doc(db, "usuarios", userNome), {
-          role: "subadmin",
-          permissoes: { apagarMsg: true, gerenciarCanais: true, convidar: true },
-          corNome: cargo.cor || null
-        });
-      } else if (cargo.cor) {
-        updateDoc(doc(db, "usuarios", userNome), { corNome: cargo.cor });
-      }
-      alert("Cargo atribuído!");
+      updateDoc(doc(db, "cargos", cargo.id), { membros: arrayUnion(userNome) }).then(async () => {
+        cargosCache[cargo.id] = { ...cargo, membros: [...membros, userNome] };
+        await sincronizarPermsUsuario(userNome);
+        await enviarNotif(userNome, "cargo", `Você recebeu o cargo: ${cargo.nome}`, { cargo: cargo.nome });
+        alert("Cargo atribuído! Permissões aplicadas.");
+      });
     } else alert("Essa pessoa já tem esse cargo");
   }
 
@@ -2325,13 +2544,29 @@ function iniciarApp() {
     editandoCanalId = canal.id;
     document.getElementById("editNome").value = canal.nome;
     document.getElementById("editDesc").value = canal.descricao || "";
+    const boxPub = document.getElementById("editPublicoBox");
+    const boxPriv = document.getElementById("editPrivadoBox");
+    const isPublico = !canal.privado;
+
+    if (isPublico) {
+      if (boxPub) boxPub.style.display = "block";
+      if (boxPriv) boxPriv.style.display = "none";
+      document.getElementById("modalEditar").classList.add("active");
+      return;
+    }
+
+    if (boxPub) boxPub.style.display = "none";
+    if (boxPriv) boxPriv.style.display = "block";
     const lista = document.getElementById("listaMembros");
     lista.innerHTML = "";
-    const membros = canal.membros || [];
+    const membros = [...(canal.membros || [])];
+    if (canal.criadoPor && canal.criadoPor !== "Sistema" && !membros.includes(canal.criadoPor)) {
+      membros.unshift(canal.criadoPor);
+    }
     membros.forEach(m => {
       const item = document.createElement("div");
       item.className = "membro-item";
-      item.innerHTML = `<span>${m}${m === canal.criadoPor ? " (criador)" : ""}</span>${m !== canal.criadoPor ? `<button data-user="${m}">remover</button>` : ""}`;
+      item.innerHTML = `<span>${m}${m === canal.criadoPor ? " (criador)" : ""}</span>${m !== canal.criadoPor ? `<button data-user="${m}">expulsar</button>` : ""}`;
       if (m !== canal.criadoPor) {
         item.querySelector("button").onclick = async () => {
           if (!confirm("Expulsar " + m + " do canal?")) return;
@@ -2344,10 +2579,13 @@ function iniciarApp() {
       }
       lista.appendChild(item);
     });
+    if (!membros.length) {
+      lista.innerHTML = '<div style="color:#64748b;font-size:13px">Só você no canal por enquanto</div>';
+    }
     const select = document.getElementById("selectAddMembro");
     select.innerHTML = `<option value="">Escolher...</option>`;
     Object.keys(usuariosCache).forEach(u => {
-      if (!membros.includes(u)) {
+      if (!membros.includes(u) && u !== nome) {
         const opt = document.createElement("option");
         opt.value = u; opt.textContent = u;
         select.appendChild(opt);
@@ -2356,7 +2594,6 @@ function iniciarApp() {
     select.onchange = async () => {
       if (!select.value) return;
       const convidado = select.value;
-      // manda convite em vez de adicionar direto
       await addDoc(collection(db, "convites"), {
         de: nome, para: convidado, canalId: canal.id, canalNome: canal.nome,
         status: "pendente", data: serverTimestamp()
@@ -2425,6 +2662,10 @@ function iniciarApp() {
   onSnapshot(collection(db, "cargos"), snap => {
     cargosCache = {};
     snap.forEach(d => cargosCache[d.id] = { id: d.id, ...d.data() });
+    if (nome) {
+      sincronizarPermsUsuario(nome);
+      atualizarUIPerms();
+    }
   });
 
   function renderAdmin() {
@@ -2531,27 +2772,36 @@ function iniciarApp() {
       }
     });
     const membros = [...(window._cargoMembrosSel || [])];
-    const data = { nome: nomeCargo, cor, permissoes: perms, membros, escopo };
-    if (editandoCargoId) await updateDoc(doc(db, "cargos", editandoCargoId), data);
-    else await addDoc(collection(db, "cargos"), data);
-
-    if (perms.includes("subadmin")) {
-      for (const m of membros) {
-        if (m !== DONO) {
-          await updateDoc(doc(db, "usuarios", m), {
-            role: "subadmin",
-            permissoes: { apagarMsg: true, gerenciarCanais: true, convidar: true },
-            corNome: cor
-          });
-        }
-      }
+    const data = { nome: nomeCargo, cor, permissoes: perms, membros, escopo: escopo || "global" };
+    // membros antigos (pra quem saiu do cargo)
+    let membrosAntigos = [];
+    if (editandoCargoId && cargosCache[editandoCargoId]) {
+      membrosAntigos = [...(cargosCache[editandoCargoId].membros || [])];
+    }
+    if (editandoCargoId) {
+      await updateDoc(doc(db, "cargos", editandoCargoId), data);
+      cargosCache[editandoCargoId] = { ...cargosCache[editandoCargoId], ...data };
     } else {
-      for (const m of membros) {
-        if (m !== DONO) await updateDoc(doc(db, "usuarios", m), { corNome: cor });
+      const ref = await addDoc(collection(db, "cargos"), data);
+      cargosCache[ref.id] = { id: ref.id, ...data };
+    }
+    const todos = new Set([...membrosAntigos, ...membros]);
+    for (const m of membros) {
+      if (m !== DONO && !membrosAntigos.includes(m)) {
+        await enviarNotif(m, "cargo", `Você recebeu o cargo: ${nomeCargo}`, { cargo: nomeCargo });
       }
+    }
+    for (const m of membrosAntigos) {
+      if (m !== DONO && !membros.includes(m)) {
+        await enviarNotif(m, "cargo", `Você foi removido do cargo: ${nomeCargo}`, { cargo: nomeCargo });
+      }
+    }
+    for (const m of todos) {
+      if (m !== DONO) await sincronizarPermsUsuario(m);
     }
     document.getElementById("modalCargo").classList.remove("active");
     renderAdmin();
+    atualizarUIPerms();
   };
 
   // BAN
