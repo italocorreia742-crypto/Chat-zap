@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0f19">
 <title>Wrocket</title>
 <link rel="icon" type="image/jpeg" href="favicon.jpg" sizes="32x32">
 <link rel="icon" type="image/jpeg" href="favicon.jpg" sizes="192x192">
@@ -233,26 +237,44 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
 @media (max-width: 768px) {
-  body, #app { height: 100dvh; max-height: 100dvh; }
-  .comunidades { width: 52px; padding: 8px 0; gap: 6px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
-  .com-icon, .ticket-btn { width: 40px; height: 40px; font-size: 15px; border-radius: 12px; flex-shrink: 0; }
+  body, #app {
+    height: 100dvh;
+    max-height: 100dvh;
+    padding-bottom: 0;
+  }
+  .comunidades {
+    width: 52px;
+    padding: 8px 0;
+    gap: 6px;
+    padding-bottom: max(56px, calc(env(safe-area-inset-bottom, 0px) + 48px));
+  }
+  .com-icon, .ticket-btn {
+    width: 40px; height: 40px; font-size: 15px; border-radius: 12px; flex-shrink: 0;
+  }
   .sidebar { width: 0; min-width: 0; overflow: hidden; border: none; transition: width .25s ease; }
-  .sidebar.open { width: 75vw; max-width: 280px; min-width: 200px; border-right: 1px solid #1f2937; position: absolute; left: 52px; top: 0; bottom: 0; z-index: 40; box-shadow: 8px 0 30px rgba(0,0,0,.4); }
+  .sidebar.open {
+    width: 75vw; max-width: 280px; min-width: 200px;
+    border-right: 1px solid #1f2937;
+    position: absolute; left: 52px; top: 0; bottom: 0; z-index: 40;
+    box-shadow: 8px 0 30px rgba(0,0,0,.4);
+  }
   .main { width: 100%; min-height: 0; overflow: hidden; }
   .msg { max-width: 88%; }
   .topbar { padding: 0 10px; height: 48px; flex-shrink: 0; }
   #mensagens { padding: 10px; min-height: 0; flex: 1; }
   .bottom {
-    padding: 6px 10px;
-    padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    padding: 8px 10px;
+    /* espaço grande pra barra do Android/iOS não cobrir */
+    padding-bottom: max(56px, calc(env(safe-area-inset-bottom, 0px) + 48px));
     flex-shrink: 0;
   }
-  .user-bar { margin-bottom: 4px; }
+  .user-bar { margin-bottom: 6px; }
   .user-profile .user-info small { display: none; }
-  .avatar-wrap, .avatar { width: 28px; height: 28px; font-size: 16px; }
-  .input-wrapper { min-height: 42px; }
-  #msgInput { padding: 8px 10px; font-size: 16px; } /* 16px evita zoom no iOS */
-  .btn-send { width: 36px; height: 36px; }
+  .avatar-wrap, .avatar { width: 30px; height: 30px; font-size: 16px; }
+  .avatar-letter { width: 14px; height: 14px; font-size: 9px; bottom: -1px; right: -1px; }
+  .input-wrapper { min-height: 44px; }
+  #msgInput { padding: 10px 12px; font-size: 16px; }
+  .btn-send { width: 38px; height: 38px; }
   .modal-box { width: 96%; max-height: 85dvh; padding: 16px; }
   .profile-card { width: 85vw; max-width: 300px; }
   .side-tabs { padding: 0 6px 8px; }
@@ -261,9 +283,8 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 }
 #btnMenuMobile { display: none; }
 
-/* teclado mobile: garante que o input continue visível */
 @supports (height: 100dvh) {
-  body { height: 100dvh; }
+  body, #app { height: 100dvh; max-height: 100dvh; }
 }
 
 
@@ -699,6 +720,49 @@ const firebaseConfig = {
   appId: "1:974920784341:web:8eb8b14928d01a9ed3855c",
   measurementId: "G-8D8SN57CQM"
 };
+
+
+// Mobile: sobe layout quando barra do sistema cobre + tenta tela cheia
+(function() {
+  function aplicarEspacoMobile() {
+    const vv = window.visualViewport;
+    const bottom = document.querySelector(".bottom");
+    const com = document.querySelector(".comunidades");
+    if (!bottom) return;
+    // altura da barra do browser/sistema (quando existir)
+    let extra = 0;
+    if (vv) {
+      extra = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    }
+    const base = 48;
+    const safe = 56;
+    const pad = Math.max(safe, base + extra);
+    bottom.style.paddingBottom = pad + "px";
+    if (com) com.style.paddingBottom = pad + "px";
+  }
+  window.addEventListener("resize", aplicarEspacoMobile);
+  window.addEventListener("orientationchange", () => setTimeout(aplicarEspacoMobile, 200));
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", aplicarEspacoMobile);
+    window.visualViewport.addEventListener("scroll", aplicarEspacoMobile);
+  }
+  setTimeout(aplicarEspacoMobile, 100);
+  setTimeout(aplicarEspacoMobile, 500);
+
+  // tenta entrar em tela cheia no primeiro toque (alguns Android escondem a barra)
+  let tentouFS = false;
+  document.addEventListener("touchend", () => {
+    if (tentouFS) return;
+    tentouFS = true;
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+    // só tenta se for mobile
+    if (req && window.innerWidth < 900) {
+      try { req.call(el); } catch(e) {}
+    }
+    aplicarEspacoMobile();
+  }, { once: true, passive: true });
+})();
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
