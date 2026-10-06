@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Wrocket</title>
 <link rel="icon" type="image/jpeg" href="favicon.jpg" sizes="32x32">
 <link rel="icon" type="image/jpeg" href="favicon.jpg" sizes="192x192">
@@ -24,7 +24,7 @@
   --adm: #ef4444;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; height: 100dvh; display: flex; overflow: hidden; }
 
 /* LOGIN / ONBOARDING / BAN */
 #telaLogin, #telaOnboarding, #telaBan {
@@ -54,7 +54,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 #telaBan p { color: var(--text-muted); max-width: 320px; text-align: center; line-height: 1.5; }
 #banTimer { font-size: 28px; font-weight: 700; color: #fbbf24; margin: 12px 0; }
 
-#app { display: none; width: 100%; height: 100%; }
+#app { display: none; width: 100%; height: 100%; height: 100dvh; min-height: 0; }
 
 /* SIDEBAR ICONS */
 .comunidades {
@@ -94,7 +94,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .group-item .criador { font-size: 11px; opacity: 0.55; margin-left: auto; }
 
 /* MAIN */
-.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; overflow: hidden; }
 .topbar {
   height: 54px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between;
   border-bottom: 1px solid #1f2937; background: rgba(11,15,25,0.9);
@@ -108,7 +108,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 }
 .topbar-btn:hover { background: rgba(255,255,255,0.08); color: white; }
 
-#mensagens { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+#mensagens { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; min-height: 0; -webkit-overflow-scrolling: touch; }
 .empty-state { margin: auto; text-align: center; color: var(--text-muted); font-size: 14px; line-height: 1.5; }
 
 .msg {
@@ -123,7 +123,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .msg .reacao { background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 10px; font-size: 12px; }
 .msg .visto { font-size: 10px; opacity: 0.6; text-align: right; margin-top: 2px; }
 
-.bottom { padding: 10px 14px 14px; border-top: 1px solid #1f2937; background: var(--sidebar); }
+.bottom { padding: 10px 14px 14px; padding-bottom: max(14px, env(safe-area-inset-bottom)); border-top: 1px solid #1f2937; background: var(--sidebar); flex-shrink: 0; }
 .user-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .user-profile {
   display: flex; align-items: center; gap: 9px; cursor: pointer; padding: 4px 8px; border-radius: 10px; transition: 0.15s;
@@ -233,23 +233,38 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
 @media (max-width: 768px) {
-  .comunidades { width: 52px; padding: 10px 0; gap: 8px; }
-  .com-icon, .ticket-btn { width: 40px; height: 40px; font-size: 15px; border-radius: 12px; }
+  body, #app { height: 100dvh; max-height: 100dvh; }
+  .comunidades { width: 52px; padding: 8px 0; gap: 6px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .com-icon, .ticket-btn { width: 40px; height: 40px; font-size: 15px; border-radius: 12px; flex-shrink: 0; }
   .sidebar { width: 0; min-width: 0; overflow: hidden; border: none; transition: width .25s ease; }
   .sidebar.open { width: 75vw; max-width: 280px; min-width: 200px; border-right: 1px solid #1f2937; position: absolute; left: 52px; top: 0; bottom: 0; z-index: 40; box-shadow: 8px 0 30px rgba(0,0,0,.4); }
-  .main { width: 100%; }
+  .main { width: 100%; min-height: 0; overflow: hidden; }
   .msg { max-width: 88%; }
-  .topbar { padding: 0 10px; height: 50px; }
-  #mensagens { padding: 12px; }
-  .bottom { padding: 8px 10px 12px; }
-  .modal-box { width: 96%; max-height: 85vh; padding: 16px; }
+  .topbar { padding: 0 10px; height: 48px; flex-shrink: 0; }
+  #mensagens { padding: 10px; min-height: 0; flex: 1; }
+  .bottom {
+    padding: 6px 10px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
+    flex-shrink: 0;
+  }
+  .user-bar { margin-bottom: 4px; }
+  .user-profile .user-info small { display: none; }
+  .avatar-wrap, .avatar { width: 28px; height: 28px; font-size: 16px; }
+  .input-wrapper { min-height: 42px; }
+  #msgInput { padding: 8px 10px; font-size: 16px; } /* 16px evita zoom no iOS */
+  .btn-send { width: 36px; height: 36px; }
+  .modal-box { width: 96%; max-height: 85dvh; padding: 16px; }
   .profile-card { width: 85vw; max-width: 300px; }
   .side-tabs { padding: 0 6px 8px; }
   .group-item { font-size: 13px; padding: 10px; }
-  /* botão menu mobile */
   #btnMenuMobile { display: flex !important; }
 }
 #btnMenuMobile { display: none; }
+
+/* teclado mobile: garante que o input continue visível */
+@supports (height: 100dvh) {
+  body { height: 100dvh; }
+}
 
 
 /* PERMISSÕES + WELCOME + UNREAD */
@@ -631,7 +646,14 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
       <option value="kick">Kick (temporário)</option>
       <option value="ban">Ban (permanente)</option>
     </select>
-    <input type="number" id="banTempo" placeholder="Minutos (só pro kick)" min="1" value="10">
+    <div id="banTempoWrap" style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+      <input type="number" id="banTempo" placeholder="Tempo" min="1" value="10" style="flex:1;margin-bottom:0">
+      <select id="banUnidade" style="width:120px;margin-bottom:0">
+        <option value="minutos">Minutos</option>
+        <option value="horas">Horas</option>
+        <option value="segundos">Segundos</option>
+      </select>
+    </div>
     <input type="text" id="banMotivo" placeholder="Motivo (opcional)">
     <div class="modal-buttons">
       <button class="btn-cancel" id="btnCancelarBan">Cancelar</button>
@@ -1186,11 +1208,13 @@ function processarComandos(texto) {
   if (texto.toLowerCase().startsWith("@alarme") && isAdm) {
     const msg = texto.slice(7).trim() || "Venham para este canal!";
     const canalNome = canaisCache[canalAtual]?.nome || "canal";
-    addDoc(collection(db, "mensagens"), {
-      grupo: canalAtual, nome: "SISTEMA", texto: `🚨 ALARME: ${msg} — vão para #${canalNome}`, data: serverTimestamp(), reacoes: {}, emoji: "🚨", sistema: true
+    addDoc(collection(db, "alarmes"), {
+      texto: `🚨 ${msg} — vão para #${canalNome}`,
+      canalId: canalAtual,
+      canalNome,
+      de: nome,
+      data: serverTimestamp()
     });
-    // broadcast toast via a special doc or just local for now + message
-    mostrarAlarme(`🚨 ${msg} — Canal: #${canalNome}`);
     return true;
   }
   if (texto.toLowerCase().startsWith("@limpar") && isAdm) {
@@ -1231,6 +1255,7 @@ function checarAlarmeMsg(m) {
 document.getElementById("btnFecharTicketChat")?.addEventListener("click", () => {
   document.getElementById("modalTicketChat").classList.remove("active");
   ticketAbertoId = null;
+  if (typeof unsubTicketChat !== "undefined" && unsubTicketChat) { unsubTicketChat(); unsubTicketChat = null; }
 });
 document.getElementById("btnTicketChatEnviar")?.addEventListener("click", enviarTicketMsg);
 document.getElementById("ticketChatInput")?.addEventListener("keydown", e => {
@@ -1272,25 +1297,39 @@ document.getElementById("btnResolverTicket")?.addEventListener("click", async ()
   alert("Ticket marcado como resolvido");
 });
 
+let unsubTicketChat = null;
 window.abrirTicketChat = function abrirTicketChat(t) {
   ticketAbertoId = t.id;
   document.getElementById("ticketChatTitulo").textContent = t.assunto || "Ticket";
-  document.getElementById("ticketChatInfo").textContent = `De: ${t.de} · Tipo: ${t.tipo}`;
-  const box = document.getElementById("ticketChatMsgs");
-  box.innerHTML = "";
-  (t.mensagens || []).forEach(m => {
-    const d = document.createElement("div");
-    d.className = "ticket-msg" + (m.de === nome ? " eu" : "");
-    d.innerHTML = `<b>${m.de}</b>: ${m.texto}`;
-    box.appendChild(d);
+  document.getElementById("ticketChatInfo").textContent = `De: ${t.de} · Tipo: ${t.tipo} · ${t.status || ""}`;
+  const isAdm = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
+  // botões de ADM só pro ADM
+  const btnAceitar = document.getElementById("btnAceitarTicket");
+  const btnResolver = document.getElementById("btnResolverTicket");
+  const btnNao = document.getElementById("btnNaoResolvido");
+  if (btnAceitar) btnAceitar.style.display = isAdm ? "block" : "none";
+  if (btnResolver) btnResolver.style.display = isAdm ? "block" : "none";
+  if (btnNao) btnNao.style.display = isAdm ? "block" : "none";
+
+  if (unsubTicketChat) { unsubTicketChat(); unsubTicketChat = null; }
+  unsubTicketChat = onSnapshot(doc(db, "tickets", t.id), snap => {
+    if (!snap.exists()) return;
+    const data = snap.data();
+    const box = document.getElementById("ticketChatMsgs");
+    if (!box) return;
+    box.innerHTML = "";
+    const d0 = document.createElement("div");
+    d0.className = "ticket-msg";
+    d0.innerHTML = `<b>${data.de}</b>: ${data.motivo || ""}`;
+    box.appendChild(d0);
+    (data.mensagens || []).forEach(m => {
+      const d = document.createElement("div");
+      d.className = "ticket-msg" + (m.de === nome ? " eu" : "");
+      d.innerHTML = `<b>${m.de}</b>: ${m.texto}`;
+      box.appendChild(d);
+    });
+    box.scrollTop = box.scrollHeight;
   });
-  // first message = original
-  if (!(t.mensagens || []).length) {
-    const d = document.createElement("div");
-    d.className = "ticket-msg";
-    d.innerHTML = `<b>${t.de}</b>: ${t.motivo}`;
-    box.appendChild(d);
-  }
   document.getElementById("modalTicketChat").classList.add("active");
 }
 
@@ -1539,6 +1578,19 @@ document.getElementById("ctxPerfil")?.addEventListener("click", (e) => {
   document.getElementById("ctxMenu")?.classList.remove("active");
 });
 
+
+// ALARMES globais (aparecem pra TODOS)
+onSnapshot(query(collection(db, "alarmes"), orderBy("data", "desc")), snap => {
+  snap.docChanges().forEach(change => {
+    if (change.type !== "added") return;
+    // ignora alarmes antigos (> 30s)
+    const d = change.doc.data();
+    const t = d.data?.toMillis ? d.data.toMillis() : 0;
+    if (t && Date.now() - t > 30000) return;
+    if (typeof mostrarAlarme === "function") mostrarAlarme(d.texto || "Alarme!");
+  });
+});
+
 function iniciarApp() {
   
   // Ban/Kick em tempo real → joga a pessoa na tela imediatamente
@@ -1639,16 +1691,22 @@ function iniciarApp() {
     if (!canalAtual) return;
     const q = query(collection(db, "mensagens"), where("grupo", "==", canalAtual), orderBy("data", "asc"));
     unsubscribeMensagens = onSnapshot(q, snap => {
-      mensagensEl.innerHTML = "";
+      const existing = new Map();
+      mensagensEl.querySelectorAll(".msg[data-id]").forEach(el => existing.set(el.dataset.id, el));
+      const seen = new Set();
+
       if (snap.empty) {
         mensagensEl.innerHTML = `<div class="empty-state">Nenhuma mensagem ainda.<br>Manda a primeira 🚀</div>`;
         return;
       }
+      // remove empty state if present
+      const empty = mensagensEl.querySelector(".empty-state");
+      if (empty) empty.remove();
+
       snap.forEach(docSnap => {
         const m = docSnap.data();
-        const div = document.createElement("div");
-        div.className = "msg " + (m.nome === nome ? "eu" : "outro");
-        div.dataset.id = docSnap.id;
+        const id = docSnap.id;
+        seen.add(id);
 
         let hora = "";
         if (m.data?.toDate) hora = m.data.toDate().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -1668,8 +1726,7 @@ function iniciarApp() {
         const u = usuariosCache[m.nome] || {};
         const cor = u.corNome || (m.nome === DONO ? "#ef4444" : "");
         const nomeStyle = cor ? `style="color:${cor}"` : "";
-
-        div.innerHTML = `
+        const html = `
           <b ${nomeStyle}>${m.emoji || "😎"} ${m.nome}${m.nome === DONO ? ' <span class="badge-dono">DONO</span>' : ""}</b>
           <div>${m.texto}</div>
           ${reacoesHtml}
@@ -1677,22 +1734,39 @@ function iniciarApp() {
           ${vistoHtml}
         `;
 
-        if (isDM && m.nome !== nome && !(m.visualizadoPor || []).includes(nome)) {
-          updateDoc(doc(db, "mensagens", docSnap.id), { visualizadoPor: arrayUnion(nome) }).catch(() => {});
+        let div = existing.get(id);
+        if (div) {
+          // atualiza sem recriar (evita flicker)
+          if (div.innerHTML !== html) div.innerHTML = html;
+          div.className = "msg " + (m.nome === nome ? "eu" : "outro");
+        } else {
+          div = document.createElement("div");
+          div.className = "msg " + (m.nome === nome ? "eu" : "outro");
+          div.dataset.id = id;
+          div.innerHTML = html;
+          let pressTimer;
+          div.addEventListener("contextmenu", e => { e.preventDefault(); abrirCtx(e, id, m); });
+          div.addEventListener("touchstart", e => { pressTimer = setTimeout(() => abrirCtx(e.touches[0], id, m), 500); });
+          div.addEventListener("touchend", () => clearTimeout(pressTimer));
+          div.addEventListener("touchmove", () => clearTimeout(pressTimer));
+          div.addEventListener("click", e => {
+            if (e.target.closest(".reacao")) return;
+            e.stopPropagation();
+            mostrarPerfilCard(m.nome, m.emoji || "😎", e);
+          });
+          mensagensEl.appendChild(div);
         }
 
-        let pressTimer;
-        div.addEventListener("contextmenu", e => { e.preventDefault(); abrirCtx(e, docSnap.id, m); });
-        div.addEventListener("touchstart", e => { pressTimer = setTimeout(() => abrirCtx(e.touches[0], docSnap.id, m), 500); });
-        div.addEventListener("touchend", () => clearTimeout(pressTimer));
-        div.addEventListener("touchmove", () => clearTimeout(pressTimer));
-        div.addEventListener("click", e => {
-          if (e.target.closest(".reacao")) return;
-          e.stopPropagation();
-          mostrarPerfilCard(m.nome, m.emoji || "😎", e);
-        });
-        mensagensEl.appendChild(div);
+        if (isDM && m.nome !== nome && !(m.visualizadoPor || []).includes(nome)) {
+          updateDoc(doc(db, "mensagens", id), { visualizadoPor: arrayUnion(nome) }).catch(() => {});
+        }
       });
+
+      // remove mensagens que não existem mais
+      existing.forEach((el, id) => {
+        if (!seen.has(id)) el.remove();
+      });
+
       mensagensEl.scrollTop = mensagensEl.scrollHeight;
     }, err => {
       console.error(err);
@@ -1859,6 +1933,8 @@ function iniciarApp() {
         return;
       }
       const foiExpulso = (canal.expulsos || []).includes(nome);
+      const dismissedExp = JSON.parse(localStorage.getItem("wrocket_exp_dismiss") || "[]");
+      if (foiExpulso && dismissedExp.includes(canal.id)) return; // escondido da lista, mas ainda bloqueado
       if (foiExpulso) {
         const div = document.createElement("div");
         div.className = "group-item expulso";
@@ -1867,17 +1943,28 @@ function iniciarApp() {
         div.dataset.expulso = "1";
         div.innerHTML = `<div class="canal-icon" style="background:#334155;color:#94a3b8">!</div><span>${canal.nome}</span><span class="criador">expulso</span>`;
         div.onclick = () => {
-          if (confirm("Você foi expulso deste canal.\n\nOK = dispensar (apagar da lista)\nCancelar = manter")) {
-            updateDoc(doc(db, "canais", canal.id), { expulsos: arrayRemove(nome) });
+          if (confirm("Você foi expulso deste canal.\n\nOK = esconder da lista (você NÃO volta ao canal)\nCancelar = manter")) {
+            const dismissed = JSON.parse(localStorage.getItem("wrocket_exp_dismiss") || "[]");
+            if (!dismissed.includes(canal.id)) {
+              dismissed.push(canal.id);
+              localStorage.setItem("wrocket_exp_dismiss", JSON.stringify(dismissed));
+            }
+            div.remove();
           }
         };
         listaGrupos.appendChild(div);
         return;
       }
-      const isMembro = !canal.privado || canal.criadoPor === nome || (canal.membros || []).includes(nome) || isAdmin;
-      if (!isMembro) return;
-      // se não é membro de canal privado, não mostra
-      if (canal.privado && canal.criadoPor !== nome && !(canal.membros || []).includes(nome) && !isAdmin) return;
+      // expulsos NUNCA veem o canal normal (mesmo público)
+      if ((canal.expulsos || []).includes(nome)) return;
+      const isMembro = canal.criadoPor === nome || (canal.membros || []).includes(nome) || isAdmin || (!canal.privado && canal.criadoPor === "Sistema");
+      // canais de pessoas normais: só membros
+      if (canal.privado || (canal.criadoPor && canal.criadoPor !== "Sistema")) {
+        if (!(canal.criadoPor === nome || (canal.membros || []).includes(nome) || isAdmin)) return;
+      }
+      if (!isMembro && canal.criadoPor === "Sistema") {
+        // Geral público ok
+      } else if (!isMembro) return;
       const div = document.createElement("div");
       div.className = "group-item" + (canalAtual === canal.id ? " active" : "");
       div.dataset.id = canal.id;
@@ -2070,6 +2157,17 @@ function iniciarApp() {
       o.value = u; o.textContent = u;
       sel.appendChild(o);
     });
+    const priv = document.getElementById("grupoPrivado");
+    if (priv) {
+      if (usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin") {
+        priv.disabled = false;
+        priv.parentElement.style.opacity = "1";
+      } else {
+        priv.checked = true;
+        priv.disabled = true;
+        priv.parentElement.style.opacity = "0.7";
+      }
+    }
     document.getElementById("modalCriar").classList.add("active");
     document.getElementById("grupoNome").focus();
   };
@@ -2077,7 +2175,8 @@ function iniciarApp() {
   document.getElementById("btnCriarFinal").onclick = async () => {
     const nomeGrupo = document.getElementById("grupoNome").value.trim();
     const descricao = document.getElementById("grupoDescricao").value.trim();
-    const privado = document.getElementById("grupoPrivado").checked;
+    let privado = document.getElementById("grupoPrivado").checked;
+    if (usuarioAtual?.role !== "admin" && usuarioAtual?.role !== "subadmin") privado = true;
     if (!nomeGrupo) return;
     const membrosSel = [...document.getElementById("criarMembros").selectedOptions].map(o => o.value);
     // só o criador entra direto; outros recebem convite
@@ -2223,16 +2322,7 @@ function iniciarApp() {
       btnBan.style.background = "rgba(239,68,68,0.12)";
       btnBan.innerHTML = `<i class="fas fa-gavel"></i> <span>Banir / Kickar</span>`;
       btnBan.onclick = () => {
-        const sel = document.getElementById("banUser");
-        sel.innerHTML = `<option value="">Escolher...</option>`;
-        Object.keys(usuariosCache).forEach(u => {
-          if (u !== DONO) {
-            const o = document.createElement("option");
-            o.value = u; o.textContent = u;
-            sel.appendChild(o);
-          }
-        });
-        document.getElementById("modalBan").classList.add("active");
+        abrirBanUser("");
       };
       listaAdmin.appendChild(btnBan);
     }
@@ -2345,18 +2435,48 @@ function iniciarApp() {
   };
 
   // BAN
+  function preencherBanUsers(selected) {
+    const sel = document.getElementById("banUser");
+    if (!sel) return;
+    sel.innerHTML = `<option value="">Escolher usuário...</option>`;
+    const nomes = Object.keys(usuariosCache || {}).filter(u => u !== DONO && u !== nome);
+    // also from usuariosCache values if keyed differently
+    Object.values(usuariosCache || {}).forEach(u => {
+      const n = u.nome || u.id;
+      if (n && n !== DONO && n !== nome && !nomes.includes(n)) nomes.push(n);
+    });
+    nomes.sort().forEach(u => {
+      const o = document.createElement("option");
+      o.value = u; o.textContent = u;
+      if (selected && u === selected) o.selected = true;
+      sel.appendChild(o);
+    });
+    if (selected) sel.value = selected;
+  }
+  function atualizarBanTempoUI() {
+    const tipo = document.getElementById("banTipo")?.value;
+    const wrap = document.getElementById("banTempoWrap");
+    if (wrap) wrap.style.display = (tipo === "ban") ? "none" : "flex";
+  }
+  document.getElementById("banTipo")?.addEventListener("change", atualizarBanTempoUI);
+
   function abrirBanUser(user) {
-    document.getElementById("banUser").value = user;
+    preencherBanUsers(user || "");
+    atualizarBanTempoUI();
     document.getElementById("modalBan").classList.add("active");
   }
   document.getElementById("btnCancelarBan").onclick = () => document.getElementById("modalBan").classList.remove("active");
   document.getElementById("btnConfirmarBan").onclick = async () => {
     const user = document.getElementById("banUser").value;
     const tipo = document.getElementById("banTipo").value;
-    const minutos = parseInt(document.getElementById("banTempo").value) || 10;
+    const tempo = parseInt(document.getElementById("banTempo").value) || 10;
+    const unidade = document.getElementById("banUnidade")?.value || "minutos";
     const motivo = document.getElementById("banMotivo").value.trim();
     if (!user) return alert("Escolha um usuário");
-    const ate = tipo === "kick" ? new Date(Date.now() + minutos * 60000) : null;
+    let ms = tempo * 60000;
+    if (unidade === "horas") ms = tempo * 3600000;
+    if (unidade === "segundos") ms = tempo * 1000;
+    const ate = tipo === "kick" ? new Date(Date.now() + ms) : null;
     await addDoc(collection(db, "punicoes"), {
       usuario: user, tipo, motivo, ate, ativo: true, por: nome, data: serverTimestamp()
     });
