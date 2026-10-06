@@ -379,6 +379,50 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .toast-aviso .toast-actions { margin-top: 8px; display: flex; gap: 8px; }
 .toast-aviso button { border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 600; }
 
+
+.toast-aviso .toast-bar {
+  height: 3px; background: #334155; border-radius: 2px; margin-top: 10px; overflow: hidden;
+}
+.toast-aviso .toast-bar > i {
+  display: block; height: 100%; width: 100%; background: var(--accent);
+  transform-origin: left; animation: toastBar 10s linear forwards;
+}
+@keyframes toastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+#telaCargoUnlock {
+  display: none; position: fixed; inset: 0; z-index: 10000;
+  background: rgba(11,15,25,0.92); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center; flex-direction: column;
+  opacity: 0; transition: opacity .4s ease;
+}
+#telaCargoUnlock.show { display: flex; opacity: 1; }
+.unlock-card {
+  width: 90%; max-width: 380px; background: #111827; border: 1px solid #1f2937;
+  border-radius: 22px; padding: 28px 22px; text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5); overflow: hidden;
+}
+.unlock-icon {
+  font-size: 56px; margin-bottom: 12px;
+  animation: unlockSlide .55s cubic-bezier(.16,1,.3,1);
+}
+@keyframes unlockSlide {
+  from { opacity: 0; transform: translateX(80px) scale(.8); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+.unlock-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.unlock-desc { color: #94a3b8; font-size: 14px; margin-bottom: 18px; line-height: 1.45; min-height: 40px; }
+.unlock-actions { display: flex; gap: 10px; justify-content: center; }
+.unlock-actions button {
+  border: none; border-radius: 12px; padding: 12px 18px; font-weight: 600; cursor: pointer; font-size: 14px;
+}
+.unlock-next { background: var(--accent); color: #fff; }
+.unlock-skip { background: #1e293b; color: #94a3b8; }
+.unlock-dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+.unlock-dots span {
+  width: 8px; height: 8px; border-radius: 50%; background: #334155;
+}
+.unlock-dots span.on { background: var(--accent); }
+
 </style>
 </head>
 <body>
@@ -506,6 +550,18 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 </div>
 
 <!-- APP -->
+<div id="telaCargoUnlock">
+  <div class="unlock-card">
+    <div class="unlock-dots" id="unlockDots"></div>
+    <div class="unlock-icon" id="unlockIcon">🛡️</div>
+    <div class="unlock-title" id="unlockTitle">Novo poder</div>
+    <div class="unlock-desc" id="unlockDesc"></div>
+    <div class="unlock-actions">
+      <button class="unlock-skip" id="unlockSkip">Pular</button>
+      <button class="unlock-next" id="unlockNext">Próximo</button>
+    </div>
+  </div>
+</div>
 <div id="app">
   <div class="comunidades">
     <button class="com-icon active" id="btnHome" title="Canais"><i class="fas fa-home"></i></button>
@@ -883,6 +939,22 @@ function atualizarUIPerms() {
   const btnTA = document.getElementById("btnTicketsAdm");
   if (btnTA) btnTA.style.display = podeTickets ? "flex" : "none";
 }
+
+
+const PERM_LABELS = {
+  kick: { icon: "👢", titulo: "Kick", desc: "Você pode expulsar pessoas temporariamente." },
+  ban: { icon: "🔨", titulo: "Ban", desc: "Você pode banir pessoas do Wrocket." },
+  gerenciar_grupos: { icon: "📁", titulo: "Gerenciar grupos", desc: "Você pode gerenciar canais e grupos." },
+  criar_cargos: { icon: "🎖️", titulo: "Criar cargos", desc: "Você pode criar e editar cargos." },
+  apagar_msg: { icon: "🗑️", titulo: "Apagar mensagens", desc: "Você pode apagar mensagens de qualquer pessoa." },
+  convidar: { icon: "📨", titulo: "Convidar", desc: "Você pode convidar pessoas para canais." },
+  editar_canal: { icon: "⚙️", titulo: "Editar canal", desc: "Você pode editar canais." },
+  ver_logs: { icon: "📋", titulo: "Ver logs", desc: "Você pode ver registros do sistema." },
+  mutar: { icon: "🔇", titulo: "Mutar", desc: "Você pode mutar membros." },
+  ver_tickets: { icon: "🎫", titulo: "Ver tickets", desc: "Você pode ver tickets de suporte." },
+  gerenciar_tickets: { icon: "🛠️", titulo: "Gerenciar tickets", desc: "Você pode responder e fechar tickets." },
+  subadmin: { icon: "⭐", titulo: "Sub-ADM", desc: "Você tem poderes altos de administração." }
+};
 
 const PERMISSOES_CARGO = [
   {id:"kick", label:"Kick"},
@@ -1274,6 +1346,70 @@ function atualizarBadges() {
   }
   setTabBadge(tabCanais, totalCanais, "Canais");
   setTabBadge(tabDms, totalDms, "DMs");
+}
+
+
+function mostrarToastCargo(texto, perms, cargoNome) {
+  const t = document.createElement("div");
+  t.className = "toast-aviso";
+  t.innerHTML = `<b>Novo cargo</b><br>${texto || ""}<div class="toast-bar"><i></i></div>`;
+  document.body.appendChild(t);
+  setTimeout(() => {
+    t.style.opacity = "0";
+    t.style.transition = "opacity .4s";
+    setTimeout(() => t.remove(), 400);
+    abrirTelaCargoUnlock(perms || [], cargoNome || "Cargo");
+  }, 10000);
+}
+
+function abrirTelaCargoUnlock(perms, cargoNome) {
+  const ids = (perms || []).filter(p => PERM_LABELS[p]);
+  if (!ids.length) {
+    atualizarUIPerms();
+    return;
+  }
+  const tela = document.getElementById("telaCargoUnlock");
+  const icon = document.getElementById("unlockIcon");
+  const title = document.getElementById("unlockTitle");
+  const desc = document.getElementById("unlockDesc");
+  const dots = document.getElementById("unlockDots");
+  const btnNext = document.getElementById("unlockNext");
+  const btnSkip = document.getElementById("unlockSkip");
+  let i = 0;
+  function render() {
+    const p = PERM_LABELS[ids[i]];
+    icon.style.animation = "none";
+    void icon.offsetWidth;
+    icon.style.animation = "unlockSlide .55s cubic-bezier(.16,1,.3,1)";
+    icon.textContent = p.icon;
+    title.textContent = p.titulo;
+    desc.textContent = p.desc;
+    dots.innerHTML = ids.map((_, idx) => `<span class="${idx === i ? "on" : ""}"></span>`).join("");
+    btnNext.textContent = i >= ids.length - 1 ? "Ir pro Wrocket" : "Próximo";
+  }
+  render();
+  tela.classList.add("show");
+  tela.style.display = "flex";
+  requestAnimationFrame(() => { tela.style.opacity = "1"; });
+  btnNext.onclick = () => {
+    if (i >= ids.length - 1) {
+      fecharTelaCargoUnlock();
+    } else {
+      i++;
+      render();
+    }
+  };
+  btnSkip.onclick = () => fecharTelaCargoUnlock();
+}
+
+function fecharTelaCargoUnlock() {
+  const tela = document.getElementById("telaCargoUnlock");
+  tela.style.opacity = "0";
+  setTimeout(() => {
+    tela.classList.remove("show");
+    tela.style.display = "none";
+    atualizarUIPerms();
+  }, 350);
 }
 
 function mostrarToast(html, ms = 6000) {
@@ -1834,6 +1970,17 @@ onSnapshot(query(collection(db, "alarmes"), orderBy("data", "desc")), snap => {
 
 function iniciarApp() {
 
+  
+  // permissões em tempo real (sem precisar reiniciar)
+  onSnapshot(doc(db, "usuarios", nome), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+    usuarioAtual = { ...usuarioAtual, ...d };
+    if (d.emoji) { emojiEscolhido = d.emoji; if (avatarEl) avatarEl.textContent = d.emoji; }
+    if (d.corNome && userNameBottom) userNameBottom.style.color = d.corNome;
+    atualizarUIPerms();
+  });
+
   // NOTIFICAÇÕES (cargo + novos usuários pro DONO)
   onSnapshot(query(collection(db, "notificacoes"), where("para", "==", nome), where("lida", "==", false)), snap => {
     snap.docChanges().forEach(change => {
@@ -1841,7 +1988,13 @@ function iniciarApp() {
       const n = change.doc.data();
       const id = change.doc.id;
       if (n.tipo === "cargo") {
-        mostrarToast(`<b>Cargo</b><br>${n.texto || ""}`);
+        // aplica perms na hora
+        sincronizarPermsUsuario(nome).then(() => atualizarUIPerms());
+        if ((n.texto || "").toLowerCase().includes("removido")) {
+          mostrarToast(`<b>Cargo</b><br>${n.texto || ""}`, 5000);
+        } else {
+          mostrarToastCargo(n.texto || "Você ganhou um cargo", n.permissoes || [], n.cargo || "Cargo");
+        }
         notificar("Wrocket", n.texto || "Atualização de cargo");
       } else if (n.tipo === "novo_usuario" && (nome === DONO || usuarioAtual?.role === "admin")) {
         mostrarToast(`
@@ -2430,7 +2583,7 @@ function iniciarApp() {
       updateDoc(doc(db, "cargos", cargo.id), { membros: arrayUnion(userNome) }).then(async () => {
         cargosCache[cargo.id] = { ...cargo, membros: [...membros, userNome] };
         await sincronizarPermsUsuario(userNome);
-        await enviarNotif(userNome, "cargo", `Você recebeu o cargo: ${cargo.nome}`, { cargo: cargo.nome });
+        await enviarNotif(userNome, "cargo", `Você recebeu o cargo: ${cargo.nome}`, { cargo: cargo.nome, permissoes: cargo.permissoes || [] });
         alert("Cargo atribuído! Permissões aplicadas.");
       });
     } else alert("Essa pessoa já tem esse cargo");
@@ -2788,7 +2941,7 @@ function iniciarApp() {
     const todos = new Set([...membrosAntigos, ...membros]);
     for (const m of membros) {
       if (m !== DONO && !membrosAntigos.includes(m)) {
-        await enviarNotif(m, "cargo", `Você recebeu o cargo: ${nomeCargo}`, { cargo: nomeCargo });
+        await enviarNotif(m, "cargo", `Você recebeu o cargo: ${nomeCargo}`, { cargo: nomeCargo, permissoes: perms });
       }
     }
     for (const m of membrosAntigos) {
