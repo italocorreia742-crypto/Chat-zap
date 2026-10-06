@@ -2523,46 +2523,59 @@ function iniciarApp() {
   onSnapshot(collection(db, "canais"), snap => {
     canaisCache = {};
     listaGrupos.innerHTML = "";
-    let temOficial = false;
-    const paraRenomear = [];
+    canaisCache = {};
+    const oficiais = [];
+    const gerais = [];
     snap.forEach(docSnap => {
       const c = docSnap.data();
       canaisCache[docSnap.id] = { id: docSnap.id, ...c };
-      if (c.nome === "Global-Squad" || c.oficial === true) temOficial = true;
-      if (c.nome === "Geral") paraRenomear.push(docSnap.id);
+      if (c.nome === "Global-Squad" || c.oficial === true) oficiais.push(docSnap.id);
+      if (c.nome === "Geral") gerais.push(docSnap.id);
     });
-    // renomeia Geral antigo → Global-Squad (só 1)
-    if (paraRenomear.length) {
-      const id0 = paraRenomear[0];
-      updateDoc(doc(db, "canais", id0), {
-        nome: "Global-Squad",
-        descricao: "Canal oficial da comunidade",
-        privado: false,
-        oficial: true,
-        protegido: true,
-        criadoPor: "Sistema"
-      }).catch(() => {});
-      // apaga Gerais duplicados extras
-      paraRenomear.slice(1).forEach(id => deleteDoc(doc(db, "canais", id)).catch(() => {}));
-      temOficial = true;
-    }
-    if (!temOficial) {
-      // só cria se realmente não existir
-      const jaTem = Object.values(canaisCache).some(c => c.nome === "Global-Squad" || c.oficial);
-      if (!jaTem) {
-        addDoc(collection(db, "canais"), {
-          nome: "Global-Squad",
-          descricao: "Canal oficial da comunidade",
-          privado: false,
-          oficial: true,
-          protegido: true,
-          criadoPor: "Sistema",
-          membros: [],
-          tipo: "canal",
-          data: serverTimestamp()
-        }).catch(() => {});
-      }
-      // não return — evita loop de recriação; próximo snapshot atualiza
+
+    // Garante UM único Global-Squad com ID fixo (sem duplicar)
+    if (!window._gsFixando) {
+      window._gsFixando = true;
+      (async () => {
+        try {
+          const fixId = "global-squad";
+          const fixRef = doc(db, "canais", fixId);
+          const fixSnap = await getDoc(fixRef);
+          if (!fixSnap.exists()) {
+            await setDoc(fixRef, {
+              nome: "Global-Squad",
+              descricao: "Canal oficial da comunidade",
+              privado: false,
+              oficial: true,
+              protegido: true,
+              criadoPor: "Sistema",
+              membros: [],
+              tipo: "canal",
+              data: serverTimestamp()
+            });
+          } else {
+            const d = fixSnap.data();
+            if (d.nome !== "Global-Squad" || !d.oficial) {
+              await updateDoc(fixRef, {
+                nome: "Global-Squad",
+                oficial: true,
+                protegido: true,
+                privado: false,
+                criadoPor: "Sistema"
+              });
+            }
+          }
+          // apaga TODAS as cópias extras (Global-Squad / Geral / oficial com outro id)
+          const extras = [...oficiais, ...gerais].filter(id => id !== fixId);
+          for (const id of extras) {
+            await deleteDoc(doc(db, "canais", id)).catch(() => {});
+          }
+        } catch (e) {
+          console.error("fix Global-Squad", e);
+        } finally {
+          setTimeout(() => { window._gsFixando = false; }, 2000);
+        }
+      })();
     }
     const isAdmin = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
     Object.values(canaisCache).forEach(canal => {
@@ -2583,6 +2596,8 @@ function iniciarApp() {
         listaGrupos.appendChild(div);
         return;
       }
+      // não mostra cópias do Global-Squad
+      if ((canal.nome === "Global-Squad" || canal.oficial || canal.nome === "Geral") && canal.id !== "global-squad") return;
       const foiExpulso = (canal.expulsos || []).includes(nome);
       const dismissedExp = JSON.parse(localStorage.getItem("wrocket_exp_dismiss") || "[]");
       if (foiExpulso && dismissedExp.includes(canal.id)) return; // escondido da lista, mas ainda bloqueado
@@ -3060,10 +3075,48 @@ function iniciarApp() {
       btnBan.className = "admin-item";
       btnBan.style.background = "rgba(239,68,68,0.12)";
       btnBan.innerHTML = `<i class="fas fa-gavel"></i> <span>Banir / Kickar</span>`;
-      btnBan.onclick = () => {
-        abrirBanUser("");
-      };
+      btnBan.onclick = () => abrirBanUser("");
       listaAdmin.appendChild(btnBan);
+
+      const btnPurge = document.createElement("div");
+      btnPurge.className = "admin-item";
+      btnPurge.style.background = "rgba(239,68,68,0.2)";
+      btnPurge.innerHTML = `<i class="fas fa-trash"></i> <span>Apagar TODOS os canais (exceto Global-Squad)</span>`;
+      btnPurge.onclick = async () => {
+        if (!confirm("Isso apaga TODOS os canais (não-DMs), menos o Global-Squad.\nTem certeza?")) return;
+        if (!confirm("Última confirmação: apagar todos?")) return;
+        let n = 0;
+        const ids = Object.keys(canaisCache);
+        for (const id of ids) {
+          const c = canaisCache[id];
+          if (!c || c.tipo === "dm") continue;
+          if (id === "global-squad") continue;
+          try {
+            const msgs = await getDocs(query(collection(db, "mensagens"), where("grupo", "==", id)));
+            for (const m of msgs.docs) await deleteDoc(doc(db, "mensagens", m.id));
+            await deleteDoc(doc(db, "canais", id));
+            n++;
+          } catch(e) { console.error(e); }
+        }
+        alert("Canais removidos: " + n + "\nO Global-Squad oficial foi mantido.");
+      };
+      listaAdmin.appendChild(btnPurge);
+
+      const btnDup = document.createElement("div");
+      btnDup.className = "admin-item";
+      btnDup.style.background = "rgba(251,191,36,0.15)";
+      btnDup.innerHTML = `<i class="fas fa-broom"></i> <span>Limpar só duplicatas Global-Squad</span>`;
+      btnDup.onclick = async () => {
+        if (!confirm("Apagar todas as cópias extras do Global-Squad?")) return;
+        let n = 0;
+        for (const [id, c] of Object.entries(canaisCache)) {
+          if ((c.nome === "Global-Squad" || c.oficial || c.nome === "Geral") && id !== "global-squad") {
+            try { await deleteDoc(doc(db, "canais", id)); n++; } catch(e) {}
+          }
+        }
+        alert("Duplicatas removidas: " + n);
+      };
+      listaAdmin.appendChild(btnDup);
     }
     Object.values(cargosCache).forEach(c => {
       const div = document.createElement("div");
