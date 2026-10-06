@@ -562,9 +562,10 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
     <input type="text" id="grupoNome" placeholder="Nome do canal" maxlength="40">
     <textarea id="grupoDescricao" placeholder="Descrição (opcional)" maxlength="200"></textarea>
     <div class="privado-area">
-      <span>Privado (só quem for convidado)</span>
+      <span id="privadoLabelHint">Privado (só quem for convidado)</span>
       <label class="switch"><input type="checkbox" id="grupoPrivado" checked><span class="slider"></span></label>
     </div>
+    <div id="publicoHint" style="font-size:12px;color:var(--text-muted);margin:-8px 0 12px;display:none">Desmarcado = canal público (todos veem sem convite)</div>
     <div style="font-size:13px;color:var(--text-muted);margin-bottom:6px">Adicionar membros agora (opcional)</div>
     <select id="criarMembros" multiple style="height:90px"></select>
     <div class="modal-buttons">
@@ -2024,7 +2025,7 @@ function iniciarApp() {
       });
       return;
     }
-    const isAdmin = usuarioAtual?.role === "admin";
+    const isAdmin = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
     Object.values(canaisCache).forEach(canal => {
       if (canal.tipo === "dm") {
         if (!(canal.membros || []).includes(nome)) return;
@@ -2063,16 +2064,15 @@ function iniciarApp() {
         listaGrupos.appendChild(div);
         return;
       }
-      // expulsos NUNCA veem o canal normal (mesmo público)
+      // expulsos NUNCA veem o canal normal
       if ((canal.expulsos || []).includes(nome)) return;
-      const isMembro = canal.criadoPor === nome || (canal.membros || []).includes(nome) || isAdmin || (!canal.privado && canal.criadoPor === "Sistema");
-      // canais de pessoas normais: só membros
-      if (canal.privado || (canal.criadoPor && canal.criadoPor !== "Sistema")) {
-        if (!(canal.criadoPor === nome || (canal.membros || []).includes(nome) || isAdmin)) return;
+      // PÚBLICO: todo mundo vê (ADM ou Sistema criou público)
+      // PRIVADO: só criador, membros ou ADM
+      if (canal.privado) {
+        const podeVer = canal.criadoPor === nome || (canal.membros || []).includes(nome) || isAdmin;
+        if (!podeVer) return;
       }
-      if (!isMembro && canal.criadoPor === "Sistema") {
-        // Geral público ok
-      } else if (!isMembro) return;
+      // se não é privado → aparece pra todos
       const div = document.createElement("div");
       div.className = "group-item" + (canalAtual === canal.id ? " active" : "");
       div.dataset.id = canal.id;
@@ -2266,14 +2266,17 @@ function iniciarApp() {
       sel.appendChild(o);
     });
     const priv = document.getElementById("grupoPrivado");
+    const hint = document.getElementById("publicoHint");
     if (priv) {
       if (usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin") {
         priv.disabled = false;
         priv.parentElement.style.opacity = "1";
+        if (hint) hint.style.display = "block";
       } else {
         priv.checked = true;
         priv.disabled = true;
         priv.parentElement.style.opacity = "0.7";
+        if (hint) hint.style.display = "none";
       }
     }
     document.getElementById("modalCriar").classList.add("active");
@@ -2284,13 +2287,22 @@ function iniciarApp() {
     const nomeGrupo = document.getElementById("grupoNome").value.trim();
     const descricao = document.getElementById("grupoDescricao").value.trim();
     let privado = document.getElementById("grupoPrivado").checked;
-    if (usuarioAtual?.role !== "admin" && usuarioAtual?.role !== "subadmin") privado = true;
+    const isAdm = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin";
+    // pessoa normal: sempre privado
+    if (!isAdm) privado = true;
     if (!nomeGrupo) return;
     const membrosSel = [...document.getElementById("criarMembros").selectedOptions].map(o => o.value);
-    // só o criador entra direto; outros recebem convite
+    // só o criador entra direto; outros (se privado) recebem convite
     const membros = [nome];
     const ref = await addDoc(collection(db, "canais"), {
-      nome: nomeGrupo, descricao, privado: privado || membrosSel.length > 0, criadoPor: nome, membros, expulsos: [], tipo: "canal", data: serverTimestamp()
+      nome: nomeGrupo,
+      descricao,
+      privado: !!privado,
+      criadoPor: nome,
+      membros,
+      expulsos: [],
+      tipo: "canal",
+      data: serverTimestamp()
     });
     const agora = Date.now();
     if (agora - ultimoConvite < 8000 && membrosSel.length > 0) {
