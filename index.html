@@ -2596,8 +2596,10 @@ function iniciarApp() {
         listaGrupos.appendChild(div);
         return;
       }
-      // não mostra cópias do Global-Squad
-      if ((canal.nome === "Global-Squad" || canal.oficial || canal.nome === "Geral") && canal.id !== "global-squad") return;
+      // cópias do Global-Squad: esconde pra usuário normal; ADM/Sub veem pra poder limpar
+      if ((canal.nome === "Global-Squad" || canal.oficial || canal.nome === "Geral") && canal.id !== "global-squad") {
+        if (!(usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin" || nome === DONO)) return;
+      }
       const foiExpulso = (canal.expulsos || []).includes(nome);
       const dismissedExp = JSON.parse(localStorage.getItem("wrocket_exp_dismiss") || "[]");
       if (foiExpulso && dismissedExp.includes(canal.id)) return; // escondido da lista, mas ainda bloqueado
@@ -2633,7 +2635,9 @@ function iniciarApp() {
       const div = document.createElement("div");
       div.className = "group-item" + (canalAtual === canal.id ? " active" : "");
       div.dataset.id = canal.id;
-      div.innerHTML = `<div class="canal-icon">${(canal.nome||"#")[0].toUpperCase()}</div><span>${canal.nome}</span><span class="criador">${canal.criadoPor === "Sistema" ? "" : canal.criadoPor}</span>`;
+      const isCopiaGS = (canal.nome === "Global-Squad" || canal.oficial) && canal.id !== "global-squad";
+      div.innerHTML = `<div class="canal-icon">${(canal.nome||"#")[0].toUpperCase()}</div><span>${canal.nome}${isCopiaGS ? " (cópia)" : ""}</span><span class="criador">${isCopiaGS ? "apagar" : (canal.criadoPor === "Sistema" ? "" : canal.criadoPor)}</span>`;
+      if (isCopiaGS) div.style.opacity = "0.7";
       div.dataset.dm = "0";
       div.dataset.expulso = "0";
       div.onclick = () => selecionarCanal(canal);
@@ -2904,11 +2908,25 @@ function iniciarApp() {
     const protArea = document.getElementById("editProtegidoArea");
     const protCb = document.getElementById("editProtegido");
     if (protArea && protCb) {
-      if (isAdm && !canal.oficial) {
+      if (isAdm && canal.id !== "global-squad") {
         protArea.style.display = "flex";
         protCb.checked = !!canal.protegido;
       } else {
         protArea.style.display = "none";
+      }
+    }
+    // botão apagar: esconde no oficial fixo
+    const btnAp = document.getElementById("btnApagarCanal");
+    if (btnAp) {
+      if (canal.id === "global-squad") {
+        btnAp.style.display = "none";
+      } else {
+        btnAp.style.display = "";
+        if ((canal.nome === "Global-Squad" || canal.oficial) && isAdm) {
+          btnAp.textContent = "Apagar cópia";
+        } else {
+          btnAp.textContent = "Apagar canal";
+        }
       }
     }
 
@@ -2989,8 +3007,13 @@ function iniciarApp() {
     const canal = canaisCache[editandoCanalId];
     if (!canal) return;
     const isAdm = usuarioAtual?.role === "admin" || usuarioAtual?.role === "subadmin" || nome === DONO;
-    if (canal.oficial || canal.nome === "Global-Squad") {
-      return alert("O canal Global-Squad é oficial e não pode ser apagado.");
+    // só o ID fixo é intocável; cópias ADM/Sub podem apagar
+    if (editandoCanalId === "global-squad") {
+      return alert("O Global-Squad oficial não pode ser apagado.");
+    }
+    // cópias antigas (mesmo nome) podem ser apagadas por ADM/Sub
+    if ((canal.oficial || canal.nome === "Global-Squad") && !isAdm) {
+      return alert("Só ADM ou Sub-ADM pode limpar cópias deste canal.");
     }
     if (canal.protegido && !isAdm) {
       return alert("Este canal está protegido. Só ADM ou Sub-ADM pode apagar.");
